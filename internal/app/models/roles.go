@@ -6,11 +6,10 @@ import (
 	"gorm.io/gorm"
 )
 
-type Credentials struct {
+type Roles struct {
 	Id        uint           `gorm:"primaryKey;"`
-	Username  string         `gorm:"type:varchar(100)"`
-	Password  string         `gorm:"type:varchar(255)"`
+	Name      string         `gorm:"type:varchar(50)"`
 	CreatedAt time.Time      `gorm:"autoCreateTime"`
-	UpdatedAt time.Time      `gorm:"autoUpdateTime:mili"`
+	UpdatedAt time.Time      `gorm:"autoUpdateTime:milli"`
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
