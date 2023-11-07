@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"woman-center-be/internal/app/services"
+	"woman-center-be/internal/app/v1/services"
 
 	"github.com/labstack/echo/v4"
 )

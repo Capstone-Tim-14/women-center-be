@@ -1,7 +1,7 @@
 package services
 
 import (
-	"woman-center-be/internal/app/repositories"
+	"woman-center-be/internal/app/v1/repositories"
 
 	"github.com/go-playground/validator/v10"
 )

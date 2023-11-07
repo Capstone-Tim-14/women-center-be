@@ -3,7 +3,7 @@ package config
 import (
 	"fmt"
 	"log"
-	"woman-center-be/internal/app/models"
+	"woman-center-be/internal/app/v1/models"
 
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
