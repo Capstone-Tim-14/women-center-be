@@ -3,7 +3,7 @@ package config
 import (
 	"fmt"
 	"log"
-	"woman-center-be/internal/app/v1/models"
+	"woman-center-be/internal/app/v1/models/schema"
 
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
@@ -32,5 +32,5 @@ func InitDatabase() *gorm.DB {
 }
 
 func migrations(db *gorm.DB) {
-	db.AutoMigrate(models.Users{})
+	db.AutoMigrate(schema.Users{})
 }
