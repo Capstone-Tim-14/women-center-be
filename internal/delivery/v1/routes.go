@@ -3,7 +3,7 @@ package v1
 import (
 	"net/http"
 	routes "woman-center-be/internal/delivery/v1/http"
-	"woman-center-be/utils/middlewares"
+	"woman-center-be/internal/delivery/v1/middlewares"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
