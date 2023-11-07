@@ -2,7 +2,7 @@ package v1
 
 import (
 	"net/http"
-	routes "woman-center-be/internal/delivery/http"
+	routes "woman-center-be/internal/delivery/v1/http"
 	"woman-center-be/utils/middlewares"
 
 	"github.com/go-playground/validator/v10"

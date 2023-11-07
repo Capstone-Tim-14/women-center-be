@@ -1,4 +1,4 @@
-package routes
+package http
 
 import (
 	"woman-center-be/internal/app/handlers"
