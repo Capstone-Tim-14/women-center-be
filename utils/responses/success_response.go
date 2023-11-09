@@ -9,7 +9,7 @@ import (
 type WebResponse struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
-	Data    any    `json:"data"`
+	Data    any    `json:"data,omitempty"`
 }
 
 func successResponse(ctx echo.Context, code int, message string, data any) error {

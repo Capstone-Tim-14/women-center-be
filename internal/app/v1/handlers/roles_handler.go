@@ -1,8 +1,9 @@
 package handlers
 
 import (
+	"strconv"
 	"woman-center-be/internal/app/v1/services"
-	"woman-center-be/internal/web/conversion"
+	conversion "woman-center-be/internal/web/conversion/resource/v1"
 	"woman-center-be/internal/web/requests/v1"
 	"woman-center-be/utils/exceptions"
 	"woman-center-be/utils/responses"
@@ -12,6 +13,8 @@ import (
 
 type RoleHandler interface {
 	CreateRoleHandler(echo.Context) error
+	FindRolesHandler(echo.Context) error
+	DeleteRoleByIdHandler(echo.Context) error
 }
 
 type RoleHandlerImpl struct {
@@ -40,7 +43,36 @@ func (handler *RoleHandlerImpl) CreateRoleHandler(ctx echo.Context) error {
 	if err != nil {
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
-	roleCreateResponse := conversion.RoleDomainToRoleResponse(response)
+	roleCreateResponse := conversion.RoleDomainToRoleResource(response)
+
 	return responses.StatusCreated(ctx, "Role created successfully", roleCreateResponse)
+
+}
+
+func (handler *RoleHandlerImpl) FindRolesHandler(ctx echo.Context) error {
+	response, err := handler.RoleService.FindRoles(ctx)
+	if err != nil {
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	roleResponse := conversion.ConvertRoleResource(response)
+
+	return responses.StatusOK(ctx, "Success Get All Role", roleResponse)
+
+}
+
+func (handler *RoleHandlerImpl) DeleteRoleByIdHandler(ctx echo.Context) error {
+	roleId := ctx.Param("id")
+	roleIdInt, err := strconv.Atoi(roleId)
+	if err != nil {
+		return exceptions.StatusBadRequest(ctx, err)
+	}
+
+	err = handler.RoleService.DeleteRoleById(ctx, roleIdInt)
+	if err != nil {
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Success Delete Role By Id", nil)
 
 }

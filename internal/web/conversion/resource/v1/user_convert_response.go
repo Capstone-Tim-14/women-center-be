@@ -5,7 +5,7 @@ import (
 	"woman-center-be/internal/web/resources/v1"
 )
 
-func UserDomainToUserResponse(user *domain.Users) resources.UserResource {
+func UserDomainToUserResource(user *domain.Users) resources.UserResource {
 	return resources.UserResource{
 		Id:              user.Id,
 		First_name:      user.First_name,
@@ -16,12 +16,5 @@ func UserDomainToUserResponse(user *domain.Users) resources.UserResource {
 		Phone_number:    user.Phone_number,
 		Address:         user.Address,
 		Status:          user.Status,
-	}
-}
-
-func RoleDomainToRoleResponse(role *domain.Roles) resources.RoleResource {
-	return resources.RoleResource{
-		Id:   role.Id,
-		Name: role.Name,
 	}
 }

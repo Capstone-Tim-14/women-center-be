@@ -18,6 +18,8 @@ func HttpRoleRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate)
 
 	role := group.Group("/roles")
 
-	role.POST("/create", RoleHandler.CreateRoleHandler)
+	role.POST("", RoleHandler.CreateRoleHandler)
+	role.GET("", RoleHandler.FindRolesHandler)
+	role.DELETE("/delete/:id", RoleHandler.DeleteRoleByIdHandler)
 
 }

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/app/v1/repositories"
-	"woman-center-be/internal/web/conversion"
+	conversion "woman-center-be/internal/web/conversion/request/v1"
 	"woman-center-be/internal/web/requests/v1"
 	"woman-center-be/utils/exceptions"
 	"woman-center-be/utils/helpers"
@@ -19,6 +19,7 @@ type UserService interface {
 
 type UserServiceImpl struct {
 	UserRepo  repositories.UserRepository
+	RoleRepo  repositories.RoleRepository
 	validator *validator.Validate
 }
 
@@ -39,6 +40,13 @@ func (service *UserServiceImpl) RegisterUser(ctx echo.Context, request requests.
 	if existingUser != nil {
 		return nil, nil, fmt.Errorf("email already exist")
 	}
+
+	getRoleUser, _ := service.RoleRepo.FindByName("user")
+	if getRoleUser == nil {
+		return nil, nil, fmt.Errorf("role user not found")
+	}
+
+	request.Role_id = uint(getRoleUser.Id)
 
 	user := conversion.UserCreateRequestToUserDomain(request)
 

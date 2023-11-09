@@ -21,9 +21,3 @@ func UserCreateRequestToUserDomain(request requests.UserRequest) *domain.Users {
 		Status:          "ACTIVE",
 	}
 }
-
-func RoleCreateRequestToRoleDomain(request requests.RoleRequest) *domain.Roles {
-	return &domain.Roles{
-		Name: request.Name,
-	}
-}

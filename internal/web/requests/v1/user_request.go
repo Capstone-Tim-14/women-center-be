@@ -9,5 +9,5 @@ type UserRequest struct {
 	Address         string `json:"address" validate:"required"`
 	Username        string `json:"username" validate:"required"`
 	Password        string `json:"password" validate:"required"`
-	Role_id         uint   `json:"role" validate:"required"`
+	Role_id         uint
 }
