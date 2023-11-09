@@ -21,7 +21,7 @@ func NewAdminRepository(db *gorm.DB) AdminRepository {
 }
 
 func (repository *AdminRepositoryImpl) CreateAdmin(admin *domain.Admin) (*domain.Admin, error) {
-	result := admin.db.Create(&admin)
+	result := repository.db.Create(&admin)
 	if result.Error != nil {
 		return nil, result.Error
 	}
