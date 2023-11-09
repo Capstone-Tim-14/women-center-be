@@ -2,10 +2,11 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 	"woman-center-be/internal/app/v1/services"
+	"woman-center-be/utils/exceptions"
 
 	"github.com/labstack/echo/v4"
-	"github.com/spf13/viper"
 )
 
 type AuthHandler interface {
@@ -31,10 +32,18 @@ func (auth *AuthServiceImpl) OauthGoogleHandler(ctx echo.Context) error {
 }
 func (auth *AuthServiceImpl) OauthCallbackGoogleHandler(ctx echo.Context) error {
 
-	Getquery := ctx.Request().URL.Query()
+	errMessage := auth.AuthService.GoogleCallbackService(ctx)
 
-	if Getquery["state"][0] != viper.GetString("GOOGLE_OAUTH.STATE_STRING") {
-		return echo.NewHTTPError(http.StatusInternalServerError, "state dont match")
+	if errMessage != nil {
+
+		if strings.Contains(errMessage.Error(), "State is not match") {
+			return exceptions.BadRequestException(errMessage.Error(), ctx)
+		}
+
+		if strings.Contains(errMessage.Error(), "User denied access login") {
+			return exceptions.BadRequestException(errMessage.Error(), ctx)
+		}
+
 	}
 
 	return nil
