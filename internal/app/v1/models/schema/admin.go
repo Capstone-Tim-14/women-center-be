@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type Users struct {
+type Admin struct {
 	Id            uint `gorm:"primaryKey;"`
 	Credential_id uint
 	Credential    *Credentials   `gorm:"foreignKey:Credential_id;references:Id;"`
