@@ -4,12 +4,14 @@ import (
 	"net/http"
 	"strings"
 	"woman-center-be/internal/app/v1/services"
+	"woman-center-be/internal/web/requests/v1"
 	"woman-center-be/utils/exceptions"
 
 	"github.com/labstack/echo/v4"
 )
 
 type AuthHandler interface {
+	AuthHandler(echo.Context) error
 	OauthGoogleHandler(echo.Context) error
 	OauthCallbackGoogleHandler(echo.Context) error
 }
@@ -22,6 +24,19 @@ func NewAuthHandler(auth services.AuthService) AuthHandler {
 	return &AuthServiceImpl{
 		AuthService: auth,
 	}
+}
+
+func (auth *AuthServiceImpl) AuthHandler(ctx echo.Context) error {
+
+	var request requests.AuthRequest
+
+	ErrBindRequest := ctx.Bind(&request)
+
+	if ErrBindRequest != nil {
+		return exceptions.BadRequestException("Invalid binding form input", ctx)
+	}
+
+	return nil
 }
 
 func (auth *AuthServiceImpl) OauthGoogleHandler(ctx echo.Context) error {
