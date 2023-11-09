@@ -2,6 +2,7 @@ package http
 
 import (
 	"woman-center-be/internal/app/v1/handlers"
+	"woman-center-be/internal/app/v1/repositories"
 	"woman-center-be/internal/app/v1/services"
 
 	"github.com/go-playground/validator/v10"
@@ -11,7 +12,9 @@ import (
 
 func HttpAuthRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate) {
 
-	AuthService := services.NewAuthService(validate)
+	RoleRepo := repositories.NewRoleRepository(db)
+	UserRepo := repositories.NewUserRepository(db)
+	AuthService := services.NewAuthService(RoleRepo, UserRepo, validate)
 	AuthHandler := handlers.NewAuthHandler(AuthService)
 
 	group.GET("/google-auth", AuthHandler.OauthGoogleHandler)

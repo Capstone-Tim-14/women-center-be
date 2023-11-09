@@ -18,3 +18,9 @@ type UserGoogleInfo struct {
 	Picture       string `json:"picture"`
 	Locale        string `json:"locale"`
 }
+
+type AuthTokenResource struct {
+	Fullname string `json:"fullname"`
+	Email    string `json:"email"`
+	Token    string `json:"token"`
+}
