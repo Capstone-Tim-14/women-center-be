@@ -6,6 +6,7 @@ import (
 	"woman-center-be/internal/app/v1/repositories"
 	"woman-center-be/internal/web/conversion"
 	"woman-center-be/internal/web/requests/v1"
+	"woman-center-be/utils/exceptions"
 	"woman-center-be/utils/helpers"
 
 	"github.com/go-playground/validator/v10"
@@ -13,7 +14,7 @@ import (
 )
 
 type RoleService interface {
-	CreateRole(ctx echo.Context, request requests.RoleRequest) (*domain.Roles, error)
+	CreateRole(ctx echo.Context, request requests.RoleRequest) (*domain.Roles, []exceptions.ValidationMessage, error)
 }
 
 type RoleServiceImpl struct {
@@ -28,18 +29,18 @@ func NewRoleService(role repositories.RoleRepository, validator *validator.Valid
 	}
 }
 
-func (service *RoleServiceImpl) CreateRole(ctx echo.Context, request requests.RoleRequest) (*domain.Roles, error) {
+func (service *RoleServiceImpl) CreateRole(ctx echo.Context, request requests.RoleRequest) (*domain.Roles, []exceptions.ValidationMessage, error) {
 	err := service.validator.Struct(request)
 	if err != nil {
-		return nil, helpers.ValidationError(ctx, err)
+		return nil, helpers.ValidationError(ctx, err), nil
 	}
 
 	role := conversion.RoleCreateRequestToRoleDomain(request)
 
 	result, err := service.RoleRepo.CreateRole(role)
 	if err != nil {
-		return nil, fmt.Errorf("Error when create role: %s", err.Error())
+		return nil, nil, fmt.Errorf("Error when create role: %s", err.Error())
 	}
 
-	return result, nil
+	return result, nil, nil
 }

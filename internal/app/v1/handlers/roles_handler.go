@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"strings"
 	"woman-center-be/internal/app/v1/services"
 	"woman-center-be/internal/web/conversion"
 	"woman-center-be/internal/web/requests/v1"
@@ -32,11 +31,13 @@ func (handler *RoleHandlerImpl) CreateRoleHandler(ctx echo.Context) error {
 		return exceptions.StatusBadRequest(ctx, err)
 	}
 
-	response, err := handler.RoleService.CreateRole(ctx, roleCreateRequest)
+	response, validation, err := handler.RoleService.CreateRole(ctx, roleCreateRequest)
+
+	if validation != nil {
+		return exceptions.ValidationException(ctx, "Error validation", validation)
+	}
+
 	if err != nil {
-		if strings.Contains(err.Error(), "Validation failed") {
-			return exceptions.StatusBadRequest(ctx, err)
-		}
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 	roleCreateResponse := conversion.RoleDomainToRoleResponse(response)

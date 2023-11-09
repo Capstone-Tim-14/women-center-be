@@ -1,22 +1,31 @@
 package helpers
 
 import (
-	"fmt"
-	"strings"
+	"woman-center-be/utils/exceptions"
 
-	"github.com/go-playground/validator"
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
 
-func ValidationError(ctx echo.Context, err error) error {
+func ValidationError(ctx echo.Context, err error) []exceptions.ValidationMessage {
 	validationError, ok := err.(validator.ValidationErrors)
 	if ok {
-		messages := make([]string, 0)
+
+		ValidationMessages := []exceptions.ValidationMessage{}
+
 		for _, e := range validationError {
-			messages = append(messages, fmt.Sprintf("Validation error on field %s, tag %s", e.Field(), e.Tag()))
+
+			Message := exceptions.ValidationMessage{
+				Field:   e.Field(),
+				Message: e.Tag(),
+			}
+
+			ValidationMessages = append(ValidationMessages, Message)
+
 		}
 
-		return fmt.Errorf("Validation failed: %s", strings.Join(messages, "; "))
+		return ValidationMessages
+
 	}
 
 	return nil

@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"strings"
 	"woman-center-be/internal/app/v1/services"
 	"woman-center-be/internal/web/conversion"
@@ -32,21 +31,20 @@ func (handler *UserHandlerImpl) RegisterHandler(ctx echo.Context) error {
 	if err != nil {
 		return exceptions.StatusBadRequest(ctx, err)
 	}
-	fmt.Println(userCreateRequest)
 
-	response, err := handler.UserService.RegisterUser(ctx, userCreateRequest)
+	response, validation, err := handler.UserService.RegisterUser(ctx, userCreateRequest)
+
+	if validation != nil {
+		return exceptions.ValidationException(ctx, "Error validation", validation)
+	}
+
 	if err != nil {
-		if strings.Contains(err.Error(), "Validation failed") {
-			return exceptions.StatusBadRequest(ctx, err)
-		}
-
 		if strings.Contains(err.Error(), "Email already exists") {
 			return exceptions.StatusAlreadyExist(ctx, err)
 		}
 
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
-	fmt.Println(response)
 
 	userCreateResponse := conversion.UserDomainToUserResponse(response)
 

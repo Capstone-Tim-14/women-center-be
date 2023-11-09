@@ -8,6 +8,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+type ErrorField struct {
+	Code    int         `json:"code"`
+	Message string      `json:"message"`
+	Errors  interface{} `json:"errors,omitempty"`
+}
+
 func errorResponse(ctx echo.Context, code int, message string) error {
 	return ctx.JSON(code, responses.WebResponse{
 		Code:    code,
