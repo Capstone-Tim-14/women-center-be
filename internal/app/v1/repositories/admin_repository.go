@@ -8,6 +8,7 @@ import (
 
 type AdminRepository interface {
 	CreateAdmin(admin *domain.Admin) (*domain.Admin, error)
+	FindyByEmail(email string) (*domain.Admin, error)
 }
 
 type AdminRepositoryImpl struct {
@@ -27,4 +28,15 @@ func (repository *AdminRepositoryImpl) CreateAdmin(admin *domain.Admin) (*domain
 	}
 
 	return admin, nil
+}
+
+func (repository *AdminRepositoryImpl) FindyByEmail(email string) (*domain.Admin, error) {
+	admin := domain.Admin{}
+
+	result := repository.db.Where("email = ?", email).First(&admin)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &admin, nil
 }
