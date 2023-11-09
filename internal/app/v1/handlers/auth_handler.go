@@ -63,5 +63,5 @@ func (auth *AuthServiceImpl) OauthCallbackGoogleHandler(ctx echo.Context) error 
 		return exceptions.BadRequestException(errMessage.Error(), ctx)
 	}
 
-	return responses.BaseResponse(ctx, http.StatusCreated, "Success get data", GetResponseEmail)
+	return responses.StatusOK(ctx, "Success get data", GetResponseEmail)
 }

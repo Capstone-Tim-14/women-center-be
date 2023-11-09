@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"woman-center-be/internal/web/resources/v1"
 	"woman-center-be/pkg/oauth"
 
 	"github.com/go-playground/validator/v10"
@@ -11,7 +12,7 @@ import (
 
 type AuthService interface {
 	GoogleAuthService() string
-	GoogleCallbackService(echo.Context) (string, error)
+	GoogleCallbackService(echo.Context) (*resources.UserGoogleInfo, error)
 }
 
 type AuthServiceImpl struct {
@@ -33,17 +34,17 @@ func (auth *AuthServiceImpl) GoogleAuthService() string {
 
 }
 
-func (auth *AuthServiceImpl) GoogleCallbackService(ctx echo.Context) (string, error) {
+func (auth *AuthServiceImpl) GoogleCallbackService(ctx echo.Context) (*resources.UserGoogleInfo, error) {
 
 	StateQuery := ctx.FormValue("state")
 	CodeQuery := ctx.FormValue("code")
 
 	if StateQuery != viper.GetString("GOOGLE_OAUTH.STATE_STRING") {
-		return "", errors.New("State is not match")
+		return nil, errors.New("State is not match")
 	}
 
 	if CodeQuery == "" {
-		return "", errors.New("User denied access login")
+		return nil, errors.New("User denied access login")
 	}
 
 	googleSetup := oauth.SetupGoogleOauth()
@@ -51,7 +52,7 @@ func (auth *AuthServiceImpl) GoogleCallbackService(ctx echo.Context) (string, er
 	Response, ErrResponseGoogle := oauth.GetResponseAccountGoogle(CodeQuery, googleSetup)
 
 	if ErrResponseGoogle != nil {
-		return "", errors.New("Error when processing google account")
+		return nil, errors.New("Error when processing google account")
 	}
 
 	return Response, nil
