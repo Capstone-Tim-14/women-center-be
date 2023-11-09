@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/app/v1/repositories"
+	"woman-center-be/internal/web/conversion"
 	"woman-center-be/internal/web/requests/v1"
-	"woman-center-be/utils/conversion"
 	"woman-center-be/utils/helpers"
 
 	"github.com/go-playground/validator/v10"
@@ -29,10 +29,11 @@ func NewUserService(user repositories.UserRepository, validator *validator.Valid
 }
 
 func (service *UserServiceImpl) RegisterUser(ctx echo.Context, request requests.UserRequest) (*domain.Users, error) {
-	err := service.validator.Struct(request)
-	if err != nil {
-		return nil, helpers.ValidationError(ctx, err)
-	}
+	// err := service.validator.Struct(request)
+	// if err != nil {
+	// 	return nil, helpers.ValidationError(ctx, err)
+	// }
+	fmt.Println(request, "request")
 
 	existingUser, _ := service.UserRepo.FindyByEmail(request.Email)
 	if existingUser != nil {
@@ -40,13 +41,15 @@ func (service *UserServiceImpl) RegisterUser(ctx echo.Context, request requests.
 	}
 
 	user := conversion.UserCreateRequestToUserDomain(request)
+	fmt.Println(user)
 
-	user.Password = helpers.HashPassword(request.Password)
+	user.Credential.Password = helpers.HashPassword(request.Password)
 
 	result, err := service.UserRepo.CreateUser(user)
 	if err != nil {
 		return nil, fmt.Errorf("Error when register user: %s", err.Error())
 	}
+	fmt.Println(result)
 
 	return result, nil
 }

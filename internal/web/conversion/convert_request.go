@@ -7,13 +7,23 @@ import (
 
 func UserCreateRequestToUserDomain(request requests.UserRequest) *domain.Users {
 	return &domain.Users{
-		First_name:      request.First_name,
-		Last_name:       request.Last_name,
-		Email:           request.Email,
-		Password:        request.Password,
+		First_name: request.First_name,
+		Last_name:  request.Last_name,
+		Email:      request.Email,
+		Credential: &domain.Credentials{
+			Username: request.Username,
+			Password: request.Password,
+			Role_id:  request.Role_id,
+		},
 		Profile_picture: request.Profile_picture,
 		Phone_number:    request.Phone_number,
 		Address:         request.Address,
 		Status:          "ACTIVE",
+	}
+}
+
+func RoleCreateRequestToRoleDomain(request requests.RoleRequest) *domain.Roles {
+	return &domain.Roles{
+		Name: request.Name,
 	}
 }

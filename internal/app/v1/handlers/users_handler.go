@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"fmt"
 	"strings"
 	"woman-center-be/internal/app/v1/services"
+	"woman-center-be/internal/web/conversion"
 	"woman-center-be/internal/web/requests/v1"
 	"woman-center-be/utils/exceptions"
 	"woman-center-be/utils/responses"
@@ -30,6 +32,7 @@ func (handler *UserHandlerImpl) RegisterHandler(ctx echo.Context) error {
 	if err != nil {
 		return exceptions.StatusBadRequest(ctx, err)
 	}
+	fmt.Println(userCreateRequest)
 
 	response, err := handler.UserService.RegisterUser(ctx, userCreateRequest)
 	if err != nil {
@@ -43,7 +46,10 @@ func (handler *UserHandlerImpl) RegisterHandler(ctx echo.Context) error {
 
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
+	fmt.Println(response)
 
-	return responses.StatusCreated(ctx, "User created successfully", response)
+	userCreateResponse := conversion.UserDomainToUserResponse(response)
+
+	return responses.StatusCreated(ctx, "User created successfully", userCreateResponse)
 
 }
