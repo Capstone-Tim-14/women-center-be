@@ -7,9 +7,9 @@ import (
 )
 
 type BaseField struct {
-	Status  int
-	Message string
-	Data    interface{}
+	Status  int         `json:"status"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
 }
 
 func BaseResponse(ctx echo.Context, status int, message string, data interface{}) error {

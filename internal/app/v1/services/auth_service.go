@@ -7,17 +7,15 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
-	"golang.org/x/oauth2"
 )
 
 type AuthService interface {
 	GoogleAuthService() string
-	GoogleCallbackService(echo.Context) error
+	GoogleCallbackService(echo.Context) (string, error)
 }
 
 type AuthServiceImpl struct {
-	GoogleOauthConfig *oauth2.Config
-	validate          *validator.Validate
+	validate *validator.Validate
 }
 
 func NewAuthService(validate *validator.Validate) AuthService {
@@ -35,19 +33,27 @@ func (auth *AuthServiceImpl) GoogleAuthService() string {
 
 }
 
-func (auth *AuthServiceImpl) GoogleCallbackService(ctx echo.Context) error {
+func (auth *AuthServiceImpl) GoogleCallbackService(ctx echo.Context) (string, error) {
 
 	StateQuery := ctx.FormValue("state")
 	CodeQuery := ctx.FormValue("code")
 
 	if StateQuery != viper.GetString("GOOGLE_OAUTH.STATE_STRING") {
-		return errors.New("State is not match")
+		return "", errors.New("State is not match")
 	}
 
 	if CodeQuery == "" {
-		return errors.New("User denied access login")
+		return "", errors.New("User denied access login")
 	}
 
-	return nil
+	googleSetup := oauth.SetupGoogleOauth()
+
+	Response, ErrResponseGoogle := oauth.GetResponseAccountGoogle(CodeQuery, googleSetup)
+
+	if ErrResponseGoogle != nil {
+		return "", errors.New("Error when processing google account")
+	}
+
+	return Response, nil
 
 }

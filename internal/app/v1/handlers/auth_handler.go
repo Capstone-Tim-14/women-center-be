@@ -6,6 +6,7 @@ import (
 	"woman-center-be/internal/app/v1/services"
 	"woman-center-be/internal/web/requests/v1"
 	"woman-center-be/utils/exceptions"
+	"woman-center-be/utils/responses"
 
 	"github.com/labstack/echo/v4"
 )
@@ -47,7 +48,7 @@ func (auth *AuthServiceImpl) OauthGoogleHandler(ctx echo.Context) error {
 }
 func (auth *AuthServiceImpl) OauthCallbackGoogleHandler(ctx echo.Context) error {
 
-	errMessage := auth.AuthService.GoogleCallbackService(ctx)
+	GetResponseEmail, errMessage := auth.AuthService.GoogleCallbackService(ctx)
 
 	if errMessage != nil {
 
@@ -59,7 +60,8 @@ func (auth *AuthServiceImpl) OauthCallbackGoogleHandler(ctx echo.Context) error 
 			return exceptions.BadRequestException(errMessage.Error(), ctx)
 		}
 
+		return exceptions.BadRequestException(errMessage.Error(), ctx)
 	}
 
-	return nil
+	return responses.BaseResponse(ctx, http.StatusCreated, "Success get data", GetResponseEmail)
 }
