@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/app/v1/repositories"
-	"woman-center-be/internal/web/conversion"
+	conversion "woman-center-be/internal/web/conversion/request/v1"
 	"woman-center-be/internal/web/requests/v1"
 	"woman-center-be/utils/exceptions"
 	"woman-center-be/utils/helpers"
@@ -51,5 +51,3 @@ func (service *CounselorServiceImpl) RegisterCounselor(ctx echo.Context, request
 
 	return result, nil, nil
 }
-
-// Not Yet

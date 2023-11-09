@@ -13,9 +13,8 @@ type Counselors struct {
 	First_name        string
 	Last_name         string
 	Email             string
-	Password          string
 	Profile_picture   string
-	Phone_number      int
+	Phone_number      string
 	Description       string
 	Address           string
 	Certification_url string

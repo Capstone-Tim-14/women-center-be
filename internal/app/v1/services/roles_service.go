@@ -4,12 +4,7 @@ import (
 	"fmt"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/app/v1/repositories"
-<<<<<<< HEAD
-	"woman-center-be/internal/web/conversion"
-=======
-
 	conversion "woman-center-be/internal/web/conversion/request/v1"
->>>>>>> 9c8ba237dcb3f8fb214c9d113b8c187de5b5f160
 	"woman-center-be/internal/web/requests/v1"
 	"woman-center-be/utils/exceptions"
 	"woman-center-be/utils/helpers"

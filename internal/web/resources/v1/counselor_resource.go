@@ -7,7 +7,7 @@ type CounselorResource struct {
 	Email             string `json:"email,omitempty"`
 	Username          string `json:"username,omitempty"`
 	Profile_picture   string `json:"profile_picture,omitempty"`
-	Phone_number      int    `json:"phone_number,omitempty"`
+	Phone_number      string `json:"phone_number,omitempty"`
 	Description       string `json:"description,omitempty"`
 	Address           string `json:"address,omitempty"`
 	Certification_url string `json:"certification,omitempty"`
