@@ -34,7 +34,7 @@ func (repository *UserRepositoryImpl) CreateUser(user *domain.Users) (*domain.Us
 func (repository *UserRepositoryImpl) FindyByEmail(email string) (*domain.Users, error) {
 	user := domain.Users{}
 
-	result := repository.db.Where("email = ?", email).First(&user)
+	result := repository.db.Preload("Credential").Preload("Credential.Role").Where("email = ?", email).First(&user)
 	if result.Error != nil {
 		return nil, result.Error
 	}
