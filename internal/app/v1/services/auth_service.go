@@ -9,6 +9,7 @@ import (
 	"woman-center-be/internal/web/requests/v1"
 	"woman-center-be/internal/web/resources/v1"
 	"woman-center-be/pkg/oauth"
+	"woman-center-be/utils/exceptions"
 	"woman-center-be/utils/helpers"
 
 	"github.com/go-playground/validator/v10"
@@ -17,6 +18,7 @@ import (
 )
 
 type AuthService interface {
+	UserAuthentication(requests.AuthRequest, echo.Context) (*resources.AuthTokenResource, []exceptions.ValidationMessage, error)
 	GoogleAuthService() string
 	GoogleCallbackService(echo.Context) (*resources.AuthTokenResource, error)
 }
@@ -82,7 +84,7 @@ func (auth *AuthServiceImpl) GoogleCallbackService(ctx echo.Context) (*resources
 			Phone_number:    62123456789,
 		}
 
-		GetRole, _ := auth.RoleRepo.FindByName("users")
+		GetRole, _ := auth.RoleRepo.FindByName("user")
 
 		if GetRole == nil {
 			return nil, errors.New("Role not found")
@@ -120,5 +122,39 @@ func (auth *AuthServiceImpl) GoogleCallbackService(ctx echo.Context) (*resources
 	GetAuthWithTokenResponse = conversionResource.AuthResourceToAuthTokenResource(SetAuthenticateData, GetTokenAuth)
 
 	return GetAuthWithTokenResponse, nil
+
+}
+
+func (service *AuthServiceImpl) UserAuthentication(request requests.AuthRequest, ctx echo.Context) (*resources.AuthTokenResource, []exceptions.ValidationMessage, error) {
+
+	ValidationErr := service.validate.Struct(request)
+
+	if ValidationErr != nil {
+		return nil, helpers.ValidationError(ctx, ValidationErr), nil
+	}
+
+	CheckUserAuthentication, UserErr := service.UserRepo.FindyByEmail(request.Email)
+
+	if UserErr != nil {
+		return nil, nil, errors.New("Error uncorrect credential")
+	}
+
+	ErrComparePassword := helpers.ComparePassword(CheckUserAuthentication.Credential.Password, request.Password)
+
+	if ErrComparePassword != nil {
+		return nil, nil, errors.New("Error uncorrect credential")
+	}
+
+	UserConvert := conversionResource.UserDomainToAuthResource(CheckUserAuthentication)
+
+	GetToken, ErrToken := helpers.GenerateToken(UserConvert, ctx)
+
+	if ErrToken != nil {
+		return nil, nil, errors.New("Failed generate token")
+	}
+
+	GetAuthResponse := conversionResource.AuthResourceToAuthTokenResource(UserConvert, GetToken)
+
+	return GetAuthResponse, nil, nil
 
 }

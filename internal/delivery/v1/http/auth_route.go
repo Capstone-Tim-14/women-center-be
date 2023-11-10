@@ -20,4 +20,8 @@ func HttpAuthRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate)
 	group.GET("/google-auth", AuthHandler.OauthGoogleHandler)
 	group.GET("/callback-google-auth", AuthHandler.OauthCallbackGoogleHandler)
 
+	Users := group.Group("/user")
+
+	Users.POST("/auth", AuthHandler.UserAuthHandler)
+
 }

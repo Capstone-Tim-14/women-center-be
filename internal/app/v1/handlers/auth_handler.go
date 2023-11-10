@@ -12,7 +12,7 @@ import (
 )
 
 type AuthHandler interface {
-	AuthHandler(echo.Context) error
+	UserAuthHandler(echo.Context) error
 	OauthGoogleHandler(echo.Context) error
 	OauthCallbackGoogleHandler(echo.Context) error
 }
@@ -27,7 +27,7 @@ func NewAuthHandler(auth services.AuthService) AuthHandler {
 	}
 }
 
-func (auth *AuthServiceImpl) AuthHandler(ctx echo.Context) error {
+func (auth *AuthServiceImpl) UserAuthHandler(ctx echo.Context) error {
 
 	var request requests.AuthRequest
 
@@ -37,7 +37,21 @@ func (auth *AuthServiceImpl) AuthHandler(ctx echo.Context) error {
 		return exceptions.BadRequestException("Invalid binding form input", ctx)
 	}
 
-	return nil
+	GetResponseAuth, ValidationErr, Err := auth.AuthService.UserAuthentication(request, ctx)
+
+	if ValidationErr != nil {
+		return exceptions.ValidationException(ctx, "Error validation", ValidationErr)
+	}
+
+	if Err != nil {
+		if strings.Contains(Err.Error(), "Error uncorrect credential") {
+			return exceptions.StatusUnauthorizedResponse(ctx, Err)
+		}
+
+		return exceptions.StatusInternalServerError(ctx, Err)
+	}
+
+	return responses.StatusOK(ctx, "Authentication Success", GetResponseAuth)
 }
 
 func (auth *AuthServiceImpl) OauthGoogleHandler(ctx echo.Context) error {
@@ -63,5 +77,5 @@ func (auth *AuthServiceImpl) OauthCallbackGoogleHandler(ctx echo.Context) error 
 		return exceptions.BadRequestException(errMessage.Error(), ctx)
 	}
 
-	return responses.StatusOK(ctx, "Google Authentication Success", GetResponseEmail)
+	return responses.StatusCreated(ctx, "Google Authentication Success", GetResponseEmail)
 }
