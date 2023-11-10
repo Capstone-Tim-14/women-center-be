@@ -19,12 +19,14 @@ type CounselorService interface {
 
 type CounselorServiceImpl struct {
 	CounselorRepo repositories.CounselorRepository
+	RoleRepo      repositories.RoleRepository
 	validator     *validator.Validate
 }
 
-func NewCounselorService(counselor repositories.CounselorRepository, validator *validator.Validate) CounselorService {
+func NewCounselorService(counselor repositories.CounselorRepository, validator *validator.Validate, role repositories.RoleRepository) CounselorService {
 	return &CounselorServiceImpl{
 		CounselorRepo: counselor,
+		RoleRepo:      role,
 		validator:     validator,
 	}
 }
@@ -37,8 +39,15 @@ func (service *CounselorServiceImpl) RegisterCounselor(ctx echo.Context, request
 
 	existingCounselor, _ := service.CounselorRepo.FindyByEmail(request.Email)
 	if existingCounselor != nil {
-		return nil, nil, fmt.Errorf("email already exist")
+		return nil, nil, fmt.Errorf("Email already exist")
 	}
+
+	getRoleUser, _ := service.RoleRepo.FindByName("counselor")
+	if getRoleUser == nil {
+		return nil, nil, fmt.Errorf("Role user not found")
+	}
+
+	request.Role_id = uint(getRoleUser.Id)
 
 	counselor := conversion.CounselorCreateRequestToCounselorDomain(request)
 

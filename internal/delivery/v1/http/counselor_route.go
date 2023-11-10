@@ -12,8 +12,9 @@ import (
 
 func HttpCounselorRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate) {
 
+	RoleRepo := repositories.NewRoleRepository(db)
 	CounselorRepo := repositories.NewCounselorRepository(db)
-	CounselorService := services.NewCounselorService(CounselorRepo, validate)
+	CounselorService := services.NewCounselorService(CounselorRepo, validate, RoleRepo)
 	CounselorHandler := handlers.NewCounselorHandler(CounselorService)
 
 	counselor := group.Group("/counselors")
