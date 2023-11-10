@@ -5,7 +5,7 @@ type UserRequest struct {
 	Last_name       string `json:"last_name" validate:"required"`
 	Email           string `json:"email" validate:"required,email"`
 	Profile_picture string `json:"profile_picture"`
-	Phone_number    int    `json:"phone_number" validate:"required"`
+	Phone_number    string `json:"phone_number" validate:"required"`
 	Address         string `json:"address" validate:"required"`
 	Username        string `json:"username" validate:"required"`
 	Password        string `json:"password" validate:"required"`

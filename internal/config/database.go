@@ -33,4 +33,5 @@ func InitDatabase() *gorm.DB {
 
 func migrations(db *gorm.DB) {
 	db.AutoMigrate(schema.Users{})
+	db.AutoMigrate(schema.Counselors{})
 }

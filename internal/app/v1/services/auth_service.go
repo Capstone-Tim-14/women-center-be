@@ -81,7 +81,7 @@ func (auth *AuthServiceImpl) GoogleCallbackService(ctx echo.Context) (*resources
 			Address:         UserGoogleResponse.Locale,
 			Username:        strings.ToLower(UserGoogleResponse.Name),
 			Password:        helpers.StringWithCharset(10),
-			Phone_number:    62123456789,
+			Phone_number:    "62123456789",
 		}
 
 		GetRole, _ := auth.RoleRepo.FindByName("user")
