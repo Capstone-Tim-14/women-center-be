@@ -23,9 +23,10 @@ type UserServiceImpl struct {
 	validator *validator.Validate
 }
 
-func NewUserService(user repositories.UserRepository, validator *validator.Validate) UserService {
+func NewUserService(user repositories.UserRepository, validator *validator.Validate, repo repositories.RoleRepository) UserService {
 	return &UserServiceImpl{
 		UserRepo:  user,
+		RoleRepo:  repo,
 		validator: validator,
 	}
 }
@@ -38,7 +39,7 @@ func (service *UserServiceImpl) RegisterUser(ctx echo.Context, request requests.
 
 	existingUser, _ := service.UserRepo.FindyByEmail(request.Email)
 	if existingUser != nil {
-		return nil, nil, fmt.Errorf("email already exist")
+		return nil, nil, fmt.Errorf("Email already exists")
 	}
 
 	getRoleUser, _ := service.RoleRepo.FindByName("user")
