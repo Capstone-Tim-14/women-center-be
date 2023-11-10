@@ -39,7 +39,7 @@ func (handler *CounselorHandlerImpl) RegisterHandler(ctx echo.Context) error {
 	}
 
 	if err != nil {
-		if strings.Contains(err.Error(), "Email already exists") {
+		if strings.Contains(err.Error(), "Email already exist") {
 			return exceptions.StatusAlreadyExist(ctx, err)
 		}
 
