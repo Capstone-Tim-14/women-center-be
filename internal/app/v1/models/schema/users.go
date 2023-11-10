@@ -13,9 +13,8 @@ type Users struct {
 	First_name      string       `gorm:"type:varchar(100)"`
 	Last_name       string       `gorm:"type:varchar(100)"`
 	Email           string       `gorm:"type:varchar(255)"`
-	Password        string       `gorm:"type:varchar(255)"`
 	Profile_picture string       `gorm:"varchar(255)"`
-	Phone_number    int
+	Phone_number    string       `gorm:"type:varchar(20)"`
 	Address         string
 	Status          string         `gorm:"type:varchar(10);default:INACTIVE"`
 	CreatedAt       time.Time      `gorm:"autoCreateTime"`
