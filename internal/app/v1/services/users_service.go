@@ -42,7 +42,7 @@ func (service *UserServiceImpl) RegisterUser(ctx echo.Context, request requests.
 		return nil, nil, fmt.Errorf("email already exist")
 	}
 
-	getRoleUser, _ := service.RoleRepo.FindByName("users")
+	getRoleUser, _ := service.RoleRepo.FindByName("user")
 	if getRoleUser == nil {
 		return nil, nil, fmt.Errorf("role user not found")
 	}
