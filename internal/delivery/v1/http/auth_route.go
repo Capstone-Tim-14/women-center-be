@@ -15,8 +15,9 @@ func HttpAuthRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate)
 	RoleRepo := repositories.NewRoleRepository(db)
 	CounselorRepo := repositories.NewCounselorRepository(db)
 	UserRepo := repositories.NewUserRepository(db)
+	AdminRepo := repositories.NewAdminRepository(db)
 
-	AuthService := services.NewAuthService(RoleRepo, UserRepo, CounselorRepo, validate)
+	AuthService := services.NewAuthService(RoleRepo, UserRepo, CounselorRepo, AdminRepo, validate)
 	AuthHandler := handlers.NewAuthHandler(AuthService)
 
 	group.GET("/google-auth", AuthHandler.OauthGoogleHandler)
@@ -24,8 +25,10 @@ func HttpAuthRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate)
 
 	Users := group.Group("/user")
 	Counselor := group.Group("/counselor")
+	Admin := group.Group("/admin")
 
 	Users.POST("/auth", AuthHandler.UserAuthHandler)
 	Counselor.POST("/auth", AuthHandler.CounselorAuthHandler)
+	Admin.POST("/auth", AuthHandler.AdminAuthHandler)
 
 }
