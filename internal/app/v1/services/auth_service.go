@@ -19,22 +19,58 @@ import (
 
 type AuthService interface {
 	UserAuthentication(requests.AuthRequest, echo.Context) (*resources.AuthTokenResource, []exceptions.ValidationMessage, error)
+	CounselorAuthentication(requests.AuthRequest, echo.Context) (*resources.AuthTokenResource, []exceptions.ValidationMessage, error)
 	GoogleAuthService() string
 	GoogleCallbackService(echo.Context) (*resources.AuthTokenResource, error)
 }
 
 type AuthServiceImpl struct {
-	RoleRepo repositories.RoleRepository
-	UserRepo repositories.UserRepository
-	validate *validator.Validate
+	RoleRepo      repositories.RoleRepository
+	UserRepo      repositories.UserRepository
+	CounselorRepo repositories.CounselorRepository
+	validate      *validator.Validate
 }
 
-func NewAuthService(role repositories.RoleRepository, user repositories.UserRepository, validate *validator.Validate) AuthService {
+func NewAuthService(role repositories.RoleRepository, user repositories.UserRepository, counselor repositories.CounselorRepository, validate *validator.Validate) AuthService {
 	return &AuthServiceImpl{
-		RoleRepo: role,
-		UserRepo: user,
-		validate: validate,
+		RoleRepo:      role,
+		UserRepo:      user,
+		CounselorRepo: counselor,
+		validate:      validate,
 	}
+}
+
+func (auth *AuthServiceImpl) CounselorAuthentication(request requests.AuthRequest, ctx echo.Context) (*resources.AuthTokenResource, []exceptions.ValidationMessage, error) {
+	ValidationErr := auth.validate.Struct(request)
+
+	if ValidationErr != nil {
+		return nil, helpers.ValidationError(ctx, ValidationErr), nil
+	}
+
+	CheckCounselorEmail, ErrCheckEmail := auth.CounselorRepo.FindyByEmail(request.Email)
+
+	if ErrCheckEmail != nil {
+		return nil, nil, errors.New("Error uncorrect credential")
+	}
+
+	ErrComparePassword := helpers.ComparePassword(CheckCounselorEmail.Credential.Password, request.Password)
+
+	if ErrComparePassword != nil {
+		return nil, nil, errors.New("Error uncorrect credential")
+	}
+
+	CounselorConvert := conversionResource.CounselorDomainToAuthResource(CheckCounselorEmail)
+
+	GetToken, ErrToken := helpers.GenerateToken(CounselorConvert, ctx)
+
+	if ErrToken != nil {
+		return nil, nil, errors.New("Failed generate token")
+	}
+
+	GetAuthResponse := conversionResource.AuthResourceToAuthTokenResource(CounselorConvert, GetToken)
+
+	return GetAuthResponse, nil, nil
+
 }
 
 func (auth *AuthServiceImpl) GoogleAuthService() string {

@@ -13,15 +13,19 @@ import (
 func HttpAuthRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate) {
 
 	RoleRepo := repositories.NewRoleRepository(db)
+	CounselorRepo := repositories.NewCounselorRepository(db)
 	UserRepo := repositories.NewUserRepository(db)
-	AuthService := services.NewAuthService(RoleRepo, UserRepo, validate)
+
+	AuthService := services.NewAuthService(RoleRepo, UserRepo, CounselorRepo, validate)
 	AuthHandler := handlers.NewAuthHandler(AuthService)
 
 	group.GET("/google-auth", AuthHandler.OauthGoogleHandler)
 	group.GET("/callback-google-auth", AuthHandler.OauthCallbackGoogleHandler)
 
 	Users := group.Group("/user")
+	Counselor := group.Group("/counselor")
 
 	Users.POST("/auth", AuthHandler.UserAuthHandler)
+	Counselor.POST("/auth", AuthHandler.CounselorAuthHandler)
 
 }
