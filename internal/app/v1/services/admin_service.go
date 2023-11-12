@@ -23,9 +23,10 @@ type AdminServiceImpl struct {
 	validator *validator.Validate
 }
 
-func NewAdminService(admin repositories.AdminRepository, validator *validator.Validate) AdminService {
+func NewAdminService(admin repositories.AdminRepository, validator *validator.Validate, role repositories.RoleRepository) AdminService {
 	return &AdminServiceImpl{
 		AdminRepo: admin,
+		RoleRepo:  role,
 		validator: validator,
 	}
 }
@@ -38,12 +39,12 @@ func (service *AdminServiceImpl) RegisterAdmin(ctx echo.Context, request request
 
 	existingAdmin, _ := service.AdminRepo.FindyByEmail(request.Email)
 	if existingAdmin != nil {
-		return nil, nil, fmt.Errorf("email already exist")
+		return nil, nil, fmt.Errorf("Email already exists")
 	}
 
 	getRoleAdmin, _ := service.RoleRepo.FindByName("admin")
 	if getRoleAdmin == nil {
-		return nil, nil, fmt.Errorf("role user not found")
+		return nil, nil, fmt.Errorf("role admin not found")
 	}
 
 	request.Role_id = uint(getRoleAdmin.Id)
