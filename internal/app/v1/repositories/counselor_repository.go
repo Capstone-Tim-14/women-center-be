@@ -33,7 +33,7 @@ func (repository *CounselorRepositoryImpl) CreateCounselor(counselor *domain.Cou
 func (repository *CounselorRepositoryImpl) FindyByEmail(email string) (*domain.Counselors, error) {
 	counselor := domain.Counselors{}
 
-	result := repository.db.Where("email = ?", email).First(&counselor)
+	result := repository.db.Preload("Credential").Preload("Credential.Role").Where("email = ?", email).First(&counselor)
 	if result.Error != nil {
 		return nil, result.Error
 	}
