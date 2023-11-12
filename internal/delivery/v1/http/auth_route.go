@@ -10,15 +10,14 @@ import (
 	"gorm.io/gorm"
 )
 
-func HttpUserRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate) {
+func HttpAuthRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate) {
 
 	RoleRepo := repositories.NewRoleRepository(db)
 	UserRepo := repositories.NewUserRepository(db)
-	UserService := services.NewUserService(UserRepo, validate, RoleRepo)
-	UserHandler := handlers.NewUserHandler(UserService)
+	AuthService := services.NewAuthService(RoleRepo, UserRepo, validate)
+	AuthHandler := handlers.NewAuthHandler(AuthService)
 
-	user := group.Group("/users")
-
-	user.POST("/register", UserHandler.RegisterHandler)
+	group.GET("/google-auth", AuthHandler.OauthGoogleHandler)
+	group.GET("/callback-google-auth", AuthHandler.OauthCallbackGoogleHandler)
 
 }
