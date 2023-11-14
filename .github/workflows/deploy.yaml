@@ -10,6 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: install depedencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y make
+
+      - uses: actions/checkout@v3
       - name: setup enviroment
         run: |
           sed -e 's!example-db-user!${{ secrets.DB_USER }}!g' \
@@ -27,20 +33,11 @@ jobs:
           echo "success create enviroment"
           echo "env.yaml created in $PWD"
           ls -al
-
-      - uses: actions/checkout@v3
-      - name: install depedencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y make
-  build-app:
+          make d_build
+  push-app:
     needs: setup-enviroment
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: build
-        run: |
-          make d_build
       - name: docker authentication
         uses: docker/login-action@v3
         with:
@@ -51,7 +48,7 @@ jobs:
   deploy:
     name: deploy to server
     runs-on: ubuntu-latest
-    needs: build-app
+    needs: push-app
     steps:
       - name: SHH and run container
         uses: appleboy/ssh-action@master
