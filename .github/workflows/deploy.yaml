@@ -49,7 +49,7 @@ jobs:
           username: ${{ secrets.SSH_SERVER_USERNAME }}
           script: |
             whoami
-            make d_stop
-            make d_rename
-            make d_pull
-            make d_run_container
+            docker stop fermina-care-app || true
+            docker rm fermina-care-app || true
+            docker pull ${{ secrets.DOCKER_USERNAME }}/fermina-care:latest
+            docker run -d -p 8080:8080 --name fermina-care-app ${{secrets.DOCKER_USERNAME}}/fermina-care:latest
