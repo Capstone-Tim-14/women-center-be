@@ -35,6 +35,7 @@ jobs:
           ls -al
           make d_build
   push-app:
+    needs: setup-enviroment
     runs-on: ubuntu-latest
     steps:
       - name: docker authentication
@@ -46,6 +47,7 @@ jobs:
         run: make d_push
   deploy:
     runs-on: ubuntu-latest
+    needs: push-app
     steps:
       - name: SHH and run container
         uses: appleboy/ssh-action@master
