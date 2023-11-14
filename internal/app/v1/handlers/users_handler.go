@@ -43,6 +43,10 @@ func (handler *UserHandlerImpl) RegisterHandler(ctx echo.Context) error {
 			return exceptions.StatusAlreadyExist(ctx, err)
 		}
 
+		if strings.Contains(err.Error(), "Password and confirm password not match") {
+			return exceptions.StatusBadRequest(ctx, err)
+		}
+
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
