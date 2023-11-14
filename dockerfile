@@ -1,6 +1,6 @@
 FROM golang:alpine3.18 as go-app
 
-RUN apk add make
+RUN apk add --no-cache make
 
 RUN mkdir /app
 ADD . /app
