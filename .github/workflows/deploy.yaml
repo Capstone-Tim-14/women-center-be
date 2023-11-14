@@ -5,6 +5,10 @@ on:
     branches:
       - "main"
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   setup-enviroment:
     runs-on: ubuntu-latest
