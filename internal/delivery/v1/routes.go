@@ -15,6 +15,10 @@ func InitRoutes(e *echo.Echo, db *gorm.DB, validator *validator.Validate) {
 	v1 := e.Group("/api/v1", middlewares.Logger())
 
 	routes.HttpUserRoute(v1, db, validator)
+	routes.HttpAuthRoute(v1, db, validator)
+	routes.HttpRoleRoute(v1, db, validator)
+	routes.HttpCounselorRoute(v1, db, validator)
+	routes.HttpAdminRoute(v1, db, validator)
 
 	v1.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Welcome to woman center api")

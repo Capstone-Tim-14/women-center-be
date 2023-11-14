@@ -12,8 +12,9 @@ import (
 
 func HttpUserRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate) {
 
+	RoleRepo := repositories.NewRoleRepository(db)
 	UserRepo := repositories.NewUserRepository(db)
-	UserService := services.NewUserService(UserRepo, validate)
+	UserService := services.NewUserService(UserRepo, RoleRepo, validate)
 	UserHandler := handlers.NewUserHandler(UserService)
 
 	user := group.Group("/users")
