@@ -6,12 +6,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func AuthorizationException(ctx echo.Context, message string) error {
-
-	return ctx.JSON(http.StatusUnauthorized, ErrorField{
-		Code:    http.StatusUnauthorized,
-		Message: message,
-		Errors:  nil,
-	})
-
+func StatusUnauthorizedResponse(ctx echo.Context, err error) error {
+	return errorResponse(ctx, http.StatusUnauthorized, err.Error())
 }

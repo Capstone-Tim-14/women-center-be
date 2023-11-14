@@ -23,10 +23,10 @@ type UserServiceImpl struct {
 	validator *validator.Validate
 }
 
-func NewUserService(user repositories.UserRepository, validator *validator.Validate, repo repositories.RoleRepository) UserService {
+func NewUserService(user repositories.UserRepository, role repositories.RoleRepository, validator *validator.Validate) UserService {
 	return &UserServiceImpl{
 		UserRepo:  user,
-		RoleRepo:  repo,
+		RoleRepo:  role,
 		validator: validator,
 	}
 }

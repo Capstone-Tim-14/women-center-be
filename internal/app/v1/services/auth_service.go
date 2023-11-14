@@ -9,6 +9,7 @@ import (
 	"woman-center-be/internal/web/requests/v1"
 	"woman-center-be/internal/web/resources/v1"
 	"woman-center-be/pkg/oauth"
+	"woman-center-be/utils/exceptions"
 	"woman-center-be/utils/helpers"
 
 	"github.com/go-playground/validator/v10"
@@ -17,22 +18,96 @@ import (
 )
 
 type AuthService interface {
+	UserAuthentication(requests.AuthRequest, echo.Context) (*resources.AuthTokenResource, []exceptions.ValidationMessage, error)
+	CounselorAuthentication(requests.AuthRequest, echo.Context) (*resources.AuthTokenResource, []exceptions.ValidationMessage, error)
+	AdminAuthentication(requests.AuthRequest, echo.Context) (*resources.AuthTokenResource, []exceptions.ValidationMessage, error)
 	GoogleAuthService() string
 	GoogleCallbackService(echo.Context) (*resources.AuthTokenResource, error)
 }
 
 type AuthServiceImpl struct {
-	RoleRepo repositories.RoleRepository
-	UserRepo repositories.UserRepository
-	validate *validator.Validate
+	AdminRepo     repositories.AdminRepository
+	RoleRepo      repositories.RoleRepository
+	UserRepo      repositories.UserRepository
+	CounselorRepo repositories.CounselorRepository
+	validate      *validator.Validate
 }
 
-func NewAuthService(role repositories.RoleRepository, user repositories.UserRepository, validate *validator.Validate) AuthService {
+func NewAuthService(role repositories.RoleRepository, user repositories.UserRepository, counselor repositories.CounselorRepository, admin repositories.AdminRepository, validate *validator.Validate) AuthService {
 	return &AuthServiceImpl{
-		RoleRepo: role,
-		UserRepo: user,
-		validate: validate,
+		AdminRepo:     admin,
+		RoleRepo:      role,
+		UserRepo:      user,
+		CounselorRepo: counselor,
+		validate:      validate,
 	}
+}
+
+func (auth *AuthServiceImpl) AdminAuthentication(request requests.AuthRequest, ctx echo.Context) (*resources.AuthTokenResource, []exceptions.ValidationMessage, error) {
+
+	ValidationErr := auth.validate.Struct(request)
+
+	if ValidationErr != nil {
+		return nil, helpers.ValidationError(ctx, ValidationErr), nil
+	}
+
+	CheckAdminEmail, ErrCheckEmail := auth.AdminRepo.FindyByEmail(request.Email)
+
+	if ErrCheckEmail != nil {
+		return nil, nil, errors.New("Error uncorrect credential")
+	}
+
+	ErrComparePassword := helpers.ComparePassword(CheckAdminEmail.Credential.Password, request.Password)
+
+	if ErrComparePassword != nil {
+		return nil, nil, errors.New("Error uncorrect credential")
+	}
+
+	AdminConvert := conversionResource.AdminDomainToAuthResource(CheckAdminEmail)
+
+	GetToken, ErrToken := helpers.GenerateToken(AdminConvert, ctx)
+
+	if ErrToken != nil {
+		return nil, nil, errors.New("Failed generate token")
+	}
+
+	GetAuthResponse := conversionResource.AuthResourceToAuthTokenResource(AdminConvert, GetToken)
+
+	return GetAuthResponse, nil, nil
+
+}
+
+func (auth *AuthServiceImpl) CounselorAuthentication(request requests.AuthRequest, ctx echo.Context) (*resources.AuthTokenResource, []exceptions.ValidationMessage, error) {
+	ValidationErr := auth.validate.Struct(request)
+
+	if ValidationErr != nil {
+		return nil, helpers.ValidationError(ctx, ValidationErr), nil
+	}
+
+	CheckCounselorEmail, ErrCheckEmail := auth.CounselorRepo.FindyByEmail(request.Email)
+
+	if ErrCheckEmail != nil {
+		return nil, nil, errors.New("Error uncorrect credential")
+	}
+
+	ErrComparePassword := helpers.ComparePassword(CheckCounselorEmail.Credential.Password, request.Password)
+
+	if ErrComparePassword != nil {
+		return nil, nil, errors.New("Error uncorrect credential")
+	}
+
+	CounselorConvert := conversionResource.CounselorDomainToAuthResource(CheckCounselorEmail)
+
+	GetToken, ErrToken := helpers.GenerateToken(CounselorConvert, ctx)
+
+	if ErrToken != nil {
+		return nil, nil, errors.New("Failed generate token")
+	}
+
+	GetAuthResponse := conversionResource.AuthResourceToAuthTokenResource(CounselorConvert, GetToken)
+
+	return GetAuthResponse, nil, nil
+
 }
 
 func (auth *AuthServiceImpl) GoogleAuthService() string {
@@ -120,5 +195,39 @@ func (auth *AuthServiceImpl) GoogleCallbackService(ctx echo.Context) (*resources
 	GetAuthWithTokenResponse = conversionResource.AuthResourceToAuthTokenResource(SetAuthenticateData, GetTokenAuth)
 
 	return GetAuthWithTokenResponse, nil
+
+}
+
+func (service *AuthServiceImpl) UserAuthentication(request requests.AuthRequest, ctx echo.Context) (*resources.AuthTokenResource, []exceptions.ValidationMessage, error) {
+
+	ValidationErr := service.validate.Struct(request)
+
+	if ValidationErr != nil {
+		return nil, helpers.ValidationError(ctx, ValidationErr), nil
+	}
+
+	CheckUserAuthentication, UserErr := service.UserRepo.FindyByEmail(request.Email)
+
+	if UserErr != nil {
+		return nil, nil, errors.New("Error uncorrect credential")
+	}
+
+	ErrComparePassword := helpers.ComparePassword(CheckUserAuthentication.Credential.Password, request.Password)
+
+	if ErrComparePassword != nil {
+		return nil, nil, errors.New("Error uncorrect credential")
+	}
+
+	UserConvert := conversionResource.UserDomainToAuthResource(CheckUserAuthentication)
+
+	GetToken, ErrToken := helpers.GenerateToken(UserConvert, ctx)
+
+	if ErrToken != nil {
+		return nil, nil, errors.New("Failed generate token")
+	}
+
+	GetAuthResponse := conversionResource.AuthResourceToAuthTokenResource(UserConvert, GetToken)
+
+	return GetAuthResponse, nil, nil
 
 }

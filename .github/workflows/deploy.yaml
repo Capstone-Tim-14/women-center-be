@@ -1,0 +1,55 @@
+name: CI/CD Deploy
+
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  Deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: install depedencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y make
+
+      - uses: actions/checkout@v3
+      - name: setup enviroment and build docker
+        run: |
+          sed -e 's!example-db-user!${{ secrets.DB_USER }}!g' \
+              -e 's!example-db-pass!${{ secrets.DB_PASS }}!g' \
+              -e 's!example-db-port!${{ secrets.DB_PORT }}!g' \
+              -e 's!example-db-host!${{ secrets.DB_HOST }}!g' \
+              -e 's!example-db-name!${{ secrets.DB_NAME }}!g' \
+              -e 's!example-google-client-id!${{ secrets.GOOGLE_CLIENT_ID }}!g' \
+              -e 's!example-google-client-secret!${{ secrets.GOOGLE_CLIENT_SECRET }}!g' \
+              -e 's!example-google-redirect-url!${{ secrets.GOOGLE_REDIRECT_URL }}!g' \
+              -e 's!example-google-state-string!${{ secrets.GOOGLE_STATE_STRING }}!g' \
+              -e 's!example-secret-key!${{ secrets.AUTH_SECRET_KEY }}!g' \
+              -e 's!example-secret-key-admin!${{ secrets.AUTH_ADMIN_SECRET_KEY }}!' \
+            env.example.yaml > env.yaml
+          echo "success create enviroment"
+          make d_build
+
+      - name: docker authentication
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+      - name: docker push
+        run: make d_push
+
+      - name: SHH and run container
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_SERVER_HOST }}
+          key: ${{ secrets.SSH_SERVER_KEY }}
+          username: ${{ secrets.SSH_SERVER_USERNAME }}
+          script: |
+            whoami
+            docker stop fermina-care-app || true
+            docker rm fermina-care-app || true
+            docker pull ${{ secrets.DOCKER_USERNAME }}/fermina-care:latest
+            docker run -d -p 8080:8080 --name fermina-care-app ${{secrets.DOCKER_USERNAME}}/fermina-care:latest
