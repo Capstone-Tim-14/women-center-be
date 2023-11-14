@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: setup enviroment
         run: |
-          sed -e 's/example-db-user/${{ secrets.DB_USER }}/g' env.example.yaml \
+          sed -e 's/example-db-user/${{ secrets.DB_USER }}/g' \
               -e 's/example-db-pass/${{ secrets.DB_PASS }}/g' \
               -e 's/example-db-port/${{ secrets.DB_PORT }}/g' \
               -e 's/example-db-host/${{ secrets.DB_HOST }}/g' \
@@ -23,7 +23,7 @@ jobs:
               -e 's/example-google-state-string/${{ secrets.GOOGLE_STATE_STRING }}/g' \
               -e 's/example-secret-key/${{ secrets.AUTH_SECRET_KEY }}/g' \
               -e 's/example-secret-key-admin/${{ secrets.AUTH_ADMIN_SECRET_KEY }}/' \
-            > env.yaml
+            env.example.yaml > env.yaml
           echo "success create enviroment"
 
       - uses: actions/checkout@v3
