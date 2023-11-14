@@ -14,9 +14,11 @@ func InitRoutes(e *echo.Echo, db *gorm.DB, validator *validator.Validate) {
 
 	v1 := e.Group("/api/v1", middlewares.Logger())
 
+	VerifyTokenAdmin := v1.Group("", middlewares.VerifyTokenSignature("SECRET_KEY_ADMIN"))
+
 	routes.HttpUserRoute(v1, db, validator)
 	routes.HttpAuthRoute(v1, db, validator)
-	routes.HttpRoleRoute(v1, db, validator)
+	routes.HttpRoleRoute(VerifyTokenAdmin, db, validator)
 	routes.HttpCounselorRoute(v1, db, validator)
 	routes.HttpAdminRoute(v1, db, validator)
 
