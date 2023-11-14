@@ -12,17 +12,17 @@ jobs:
       - uses: actions/checkout@v3
       - name: setup enviroment
         run: |
-          sed 's/example-db-user/${{ secrets.DB_USER }}/g' env.example.yaml \
-            | sed 's/example-db-pass/${{ secrets.DB_PASS }}/g' \
-            | sed 's/example-db-port/${{ secrets.DB_PORT }}/g' \
-            | sed 's/example-db-host/${{ secrets.DB_HOST }}/g' \
-            | sed 's/example-db-name/${{ secrets.DB_NAME }}/g' \
-            | sed 's/example-google-client-id/${{ secrets.GOOGLE_CLIENT_ID }}/g' \
-            | sed 's/example-google-client-secret/${{ secrets.GOOGLE_CLIENT_SECRET }}/g' \
-            | sed 's/example-google-redirect-url/${{ secrets.GOOGLE_REDIRECT_URL }}/g' \
-            | sed 's/example-google-state-string/${{ secrets.GOOGLE_STATE_STRING }}/g' \
-            | sed 's/example-secret-key/${{ secrets.AUTH_SECRET_KEY }}/g' \
-            | sed 's/example-secret-key-admin/${{ secrets.AUTH_ADMIN_SECRET_KEY }}/' \
+          sed -e 's/example-db-user/${{ secrets.DB_USER }}/g' env.example.yaml \
+              -e 's/example-db-pass/${{ secrets.DB_PASS }}/g' \
+              -e 's/example-db-port/${{ secrets.DB_PORT }}/g' \
+              -e 's/example-db-host/${{ secrets.DB_HOST }}/g' \
+              -e 's/example-db-name/${{ secrets.DB_NAME }}/g' \
+              -e 's/example-google-client-id/${{ secrets.GOOGLE_CLIENT_ID }}/g' \
+              -e 's/example-google-client-secret/${{ secrets.GOOGLE_CLIENT_SECRET }}/g' \
+              -e 's/example-google-redirect-url/${{ secrets.GOOGLE_REDIRECT_URL }}/g' \
+              -e 's/example-google-state-string/${{ secrets.GOOGLE_STATE_STRING }}/g' \
+              -e 's/example-secret-key/${{ secrets.AUTH_SECRET_KEY }}/g' \
+              -e 's/example-secret-key-admin/${{ secrets.AUTH_ADMIN_SECRET_KEY }}/' \
             > env.yaml
           echo "success create enviroment"
 
