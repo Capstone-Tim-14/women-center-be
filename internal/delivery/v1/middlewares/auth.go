@@ -13,7 +13,7 @@ func VerifyTokenSignature(secretKey string) echo.MiddlewareFunc {
 	return middleware.JWTWithConfig(middleware.JWTConfig{
 		SigningKey: []byte(viper.GetString(secretKey)),
 		ErrorHandlerWithContext: func(err error, ctx echo.Context) error {
-			return echo.NewHTTPError(http.StatusUnauthorized, exceptions.AuthorizationException(ctx, "Unauthorized"))
+			return echo.NewHTTPError(http.StatusUnauthorized, exceptions.StatusUnauthorizedResponse(ctx, err))
 		},
 	})
 }
