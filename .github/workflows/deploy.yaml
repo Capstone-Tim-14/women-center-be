@@ -25,6 +25,7 @@ jobs:
               -e 's!example-secret-key-admin!${{ secrets.AUTH_ADMIN_SECRET_KEY }}!' \
             env.example.yaml > env.yaml
           echo "success create enviroment"
+          echo "env.yaml created in $PWD"
 
       - uses: actions/checkout@v3
       - name: install depedencies
