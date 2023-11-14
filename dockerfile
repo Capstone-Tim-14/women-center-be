@@ -11,6 +11,6 @@ RUN make build-app
 FROM alpine:3.18
 WORKDIR /root/
 COPY --from=go-app /app/main-go .
-COPY /env.yaml /root/env.yaml
+COPY env.yaml /root/env.yaml
 EXPOSE 8080
 CMD [ "./main-go" ]
