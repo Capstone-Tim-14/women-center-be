@@ -19,6 +19,7 @@ jobs:
       - name: setup enviroment and build docker
         run: |
           sed -e 's!example-db-user!${{ secrets.DB_USER }}!g' \
+              -e 's!example-secret-app-port!${{ secrets.SECRET_APP_PORT }}!g' \
               -e 's!example-db-pass!${{ secrets.DB_PASS }}!g' \
               -e 's!example-db-port!${{ secrets.DB_PORT }}!g' \
               -e 's!example-db-host!${{ secrets.DB_HOST }}!g' \
@@ -52,4 +53,4 @@ jobs:
             docker stop fermina-care-app || true
             docker rm fermina-care-app || true
             docker pull ${{ secrets.DOCKER_USERNAME }}/fermina-care:latest
-            docker run -d -p 8080:8080 --name fermina-care-app ${{secrets.DOCKER_USERNAME}}/fermina-care:latest
+            docker run -d -p 80:80 --name fermina-care-app ${{secrets.DOCKER_USERNAME}}/fermina-care:latest
