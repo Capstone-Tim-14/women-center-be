@@ -1,9 +1,11 @@
 package services
 
 import (
+	"fmt"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/app/v1/repositories"
-	"woman-center-be/internal/web/requests"
+	conversion "woman-center-be/internal/web/conversion/request/v1"
+	"woman-center-be/internal/web/requests/v1"
 	"woman-center-be/utils/exceptions"
 	"woman-center-be/utils/helpers"
 
@@ -16,14 +18,18 @@ type ArticleService interface {
 }
 
 type ArticleServiceImpl struct {
-	ArticleRepo repositories.ArticleRepository
-	validator   *validator.Validate
+	ArticleRepo   repositories.ArticleRepository
+	AdminRepo     repositories.AdminRepository
+	CounselorRepo repositories.CounselorRepository
+	validator     *validator.Validate
 }
 
-func NewArticleService(article repositories.ArticleRepository, validator *validator.Validate) ArticleService {
+func NewArticleService(article repositories.ArticleRepository, validator *validator.Validate, admin repositories.AdminRepository, counselor repositories.CounselorRepository) ArticleService {
 	return &ArticleServiceImpl{
-		ArticleRepo: article,
-		validator:   validator,
+		ArticleRepo:   article,
+		AdminRepo:     admin,
+		CounselorRepo: counselor,
+		validator:     validator,
 	}
 }
 
@@ -33,4 +39,30 @@ func (service *ArticleServiceImpl) CreateArticle(ctx echo.Context, request reque
 		return nil, helpers.ValidationError(ctx, err), nil
 	}
 
+	author := helpers.GetAuthClaims(ctx)
+
+	if author.Role == "admin" || author.Role == "super_admin" {
+		admin, err := service.AdminRepo.FindyByEmail(author.Email)
+		if err != nil {
+			return nil, nil, fmt.Errorf("Error get admin")
+		}
+
+		request.Admin_id = &admin.Id
+	} else if author.Role == "counselor" {
+		counselor, err := service.CounselorRepo.FindyByEmail(author.Email)
+		if err != nil {
+			return nil, nil, fmt.Errorf("Error get counselor")
+		}
+
+		request.Counselors_id = &counselor.Id
+	}
+
+	article := conversion.ArticleCreateRequestToArticleDomain(request)
+
+	result, err := service.ArticleRepo.CreateArticle(article)
+	if err != nil {
+		return nil, nil, fmt.Errorf("Error create article")
+	}
+
+	return result, nil, nil
 }

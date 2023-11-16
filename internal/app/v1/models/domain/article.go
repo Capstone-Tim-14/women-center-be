@@ -13,9 +13,9 @@ type Articles struct {
 	Content       string
 	Status        string
 	PublishedAt   time.Time
-	Admin_id      uint
+	Admin_id      *uint
 	Admin         *Admin
-	Counselors_id uint
+	Counselors_id *uint
 	Counselors    *Counselors
 	Thumbnail     string
 	CreatedAt     time.Time

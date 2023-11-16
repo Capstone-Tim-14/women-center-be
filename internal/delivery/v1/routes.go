@@ -4,7 +4,6 @@ import (
 	"net/http"
 	routes "woman-center-be/internal/delivery/v1/http"
 	"woman-center-be/internal/delivery/v1/middlewares"
-	"woman-center-be/utils/helpers"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -22,15 +21,10 @@ func InitRoutes(e *echo.Echo, db *gorm.DB, validator *validator.Validate) {
 	routes.HttpRoleRoute(VerifyTokenAdmin, db, validator)
 	routes.HttpCounselorRoute(v1, db, validator)
 	routes.HttpAdminRoute(v1, db, validator)
+	routes.HttpArticleRoute(v1, db, validator)
 
 	v1.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Welcome to woman center api")
-	})
-
-	VerifyTokenAdmin.GET("/admin", func(ctx echo.Context) error {
-		User := helpers.GetAuthClaims(ctx)
-
-		return ctx.JSON(http.StatusOK, User)
 	})
 
 }
