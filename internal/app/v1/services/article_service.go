@@ -15,6 +15,7 @@ import (
 
 type ArticleService interface {
 	CreateArticle(ctx echo.Context, request requests.ArticleRequest) (*domain.Articles, []exceptions.ValidationMessage, error)
+	FindAllArticle(ctx echo.Context) ([]domain.Articles, error)
 }
 
 type ArticleServiceImpl struct {
@@ -65,4 +66,13 @@ func (service *ArticleServiceImpl) CreateArticle(ctx echo.Context, request reque
 	}
 
 	return result, nil, nil
+}
+
+func (service *ArticleServiceImpl) FindAllArticle(ctx echo.Context) ([]domain.Articles, error) {
+	result, err := service.ArticleRepo.FindAllArticle()
+	if err != nil {
+		return nil, fmt.Errorf("Article not found")
+	}
+
+	return result, nil
 }
