@@ -13,6 +13,7 @@ import (
 type ArticleHandler interface {
 	CreateArticle(ctx echo.Context) error
 	FindAllArticle(ctx echo.Context) error
+	FindArticleBySlug(ctx echo.Context) error
 }
 
 type ArticleHandlerImpl struct {
@@ -48,10 +49,22 @@ func (handler *ArticleHandlerImpl) CreateArticle(ctx echo.Context) error {
 func (handler *ArticleHandlerImpl) FindAllArticle(ctx echo.Context) error {
 	response, err := handler.ArticleService.FindAllArticle(ctx)
 	if err != nil {
-		return exceptions.StatusInternalServerError(ctx, err)
+		return exceptions.StatusNotFound(ctx, err)
 	}
 
 	articleResponse := conversion.ConvertArticleResource(response)
 
 	return responses.StatusOK(ctx, "Success Get All Article", articleResponse)
+}
+
+func (handler *ArticleHandlerImpl) FindArticleBySlug(ctx echo.Context) error {
+	slug := ctx.Param("slug")
+	response, err := handler.ArticleService.FindArticleBySlug(ctx, slug)
+	if err != nil {
+		return exceptions.StatusNotFound(ctx, err)
+	}
+
+	articleResponse := conversion.ConvertSingleArticleResource(response)
+
+	return responses.StatusOK(ctx, "Success Get Article", articleResponse)
 }
