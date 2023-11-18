@@ -41,6 +41,11 @@ func (service *ArticleServiceImpl) CreateArticle(ctx echo.Context, request reque
 		return nil, helpers.ValidationError(ctx, err), nil
 	}
 
+	existingTitle, _ := service.ArticleRepo.FindByTitle(request.Title)
+	if existingTitle != nil {
+		return nil, nil, fmt.Errorf("Title already exists")
+	}
+
 	author := helpers.GetAuthClaims(ctx)
 
 	if author.Role == "admin" || author.Role == "super_admin" {

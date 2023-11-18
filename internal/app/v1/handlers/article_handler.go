@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"strings"
 	"woman-center-be/internal/app/v1/services"
 	conversion "woman-center-be/internal/web/conversion/resource/v1"
 	"woman-center-be/internal/web/requests/v1"
@@ -40,6 +41,10 @@ func (handler *ArticleHandlerImpl) CreateArticle(ctx echo.Context) error {
 	}
 
 	if err != nil {
+		if strings.Contains(err.Error(), "Title already exists") {
+			return exceptions.StatusAlreadyExist(ctx, err)
+		}
+
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
