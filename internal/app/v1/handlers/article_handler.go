@@ -27,12 +27,18 @@ func NewArticleHandler(article services.ArticleService) ArticleHandler {
 
 func (handler *ArticleHandlerImpl) CreateArticle(ctx echo.Context) error {
 	adminCreateRequest := requests.ArticleRequest{}
+	Thumbnail, errThumb := ctx.FormFile("thumbnail")
+
+	if errThumb != nil {
+		return exceptions.StatusBadRequest(ctx, errThumb)
+	}
+
 	err := ctx.Bind(&adminCreateRequest)
+
 	if err != nil {
 		return exceptions.StatusBadRequest(ctx, err)
 	}
-
-	_, validation, err := handler.ArticleService.CreateArticle(ctx, adminCreateRequest)
+	_, validation, err := handler.ArticleService.CreateArticle(ctx, adminCreateRequest, Thumbnail)
 
 	if validation != nil {
 		return exceptions.ValidationException(ctx, "Error validation", validation)

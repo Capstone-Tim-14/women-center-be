@@ -2,10 +2,12 @@ package services
 
 import (
 	"fmt"
+	"mime/multipart"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/app/v1/repositories"
 	conversion "woman-center-be/internal/web/conversion/request/v1"
 	"woman-center-be/internal/web/requests/v1"
+	"woman-center-be/pkg/storage"
 	"woman-center-be/utils/exceptions"
 	"woman-center-be/utils/helpers"
 
@@ -14,8 +16,7 @@ import (
 )
 
 type ArticleService interface {
-	CreateArticle(ctx echo.Context, request requests.ArticleRequest) (*domain.Articles, []exceptions.ValidationMessage, error)
-	FindAllArticle(ctx echo.Context) ([]domain.Articles, error)
+	CreateArticle(ctx echo.Context, request requests.ArticleRequest, thumbnail *multipart.FileHeader) (*domain.Articles, []exceptions.ValidationMessage, error)
 }
 
 type ArticleServiceImpl struct {
@@ -34,7 +35,7 @@ func NewArticleService(article repositories.ArticleRepository, validator *valida
 	}
 }
 
-func (service *ArticleServiceImpl) CreateArticle(ctx echo.Context, request requests.ArticleRequest) (*domain.Articles, []exceptions.ValidationMessage, error) {
+func (service *ArticleServiceImpl) CreateArticle(ctx echo.Context, request requests.ArticleRequest, thumbnail *multipart.FileHeader) (*domain.Articles, []exceptions.ValidationMessage, error) {
 	err := service.validator.Struct(request)
 	if err != nil {
 		return nil, helpers.ValidationError(ctx, err), nil
@@ -57,6 +58,14 @@ func (service *ArticleServiceImpl) CreateArticle(ctx echo.Context, request reque
 
 		request.Counselors_id = &counselor.Id
 	}
+
+	ThumbnailCloudURL, errUploadThumbnail := storage.DropboxUploadEndpoint(thumbnail, "articles")
+
+	if errUploadThumbnail != nil {
+		return nil, nil, errUploadThumbnail
+	}
+
+	request.Thumbnail = ThumbnailCloudURL
 
 	article := conversion.ArticleCreateRequestToArticleDomain(request)
 
