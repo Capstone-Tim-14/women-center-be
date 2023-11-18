@@ -17,8 +17,9 @@ func ConvertTagResource(tags []domain.Tag_Article) []resources.TagArticleResourc
 	tagResource := []resources.TagArticleResource{}
 	for _, tag := range tags {
 		tagResource = append(tagResource, resources.TagArticleResource{
-			Id:   tag.Id,
-			Name: tag.Name,
+			Id:          tag.Id,
+			Name:        tag.Name,
+			Description: tag.Description,
 		})
 	}
 
