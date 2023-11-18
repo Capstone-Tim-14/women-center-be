@@ -36,4 +36,6 @@ func migrations(db *gorm.DB) {
 	db.AutoMigrate(schema.Counselors{})
 	db.AutoMigrate(schema.Admin{})
 	db.AutoMigrate(schema.Tag_Article{})
+	db.AutoMigrate(schema.Articles{})
+
 }
