@@ -69,7 +69,10 @@ func (service *ArticleServiceImpl) CreateArticle(ctx echo.Context, request reque
 }
 
 func (service *ArticleServiceImpl) FindAllArticle(ctx echo.Context) ([]domain.Articles, error) {
-	result, err := service.ArticleRepo.FindAllArticle()
+
+	orderBy := ctx.QueryParam("orderBy")
+
+	result, err := service.ArticleRepo.FindAllArticle(orderBy)
 	if err != nil {
 		return nil, fmt.Errorf("Article not found")
 	}

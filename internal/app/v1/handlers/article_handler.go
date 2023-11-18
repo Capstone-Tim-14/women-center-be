@@ -46,6 +46,7 @@ func (handler *ArticleHandlerImpl) CreateArticle(ctx echo.Context) error {
 }
 
 func (handler *ArticleHandlerImpl) FindAllArticle(ctx echo.Context) error {
+
 	response, err := handler.ArticleService.FindAllArticle(ctx)
 	if err != nil {
 		return exceptions.StatusInternalServerError(ctx, err)
