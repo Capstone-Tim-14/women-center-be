@@ -32,7 +32,12 @@ func (handler *TagHandlerImpl) CreateTag(ctx echo.Context) error {
 	}
 
 	// Call TagService to create a new tag
-	response, err := handler.TagService.CreateTag(ctx, tagCreateRequest)
+	response, validation, err := handler.TagService.CreateTag(ctx, tagCreateRequest)
+
+	if validation != nil {
+		return exceptions.ValidationException(ctx, "Error validation", validation)
+	}
+
 	if err != nil {
 		// Handle specific errors if needed
 		return exceptions.StatusInternalServerError(ctx, err)
