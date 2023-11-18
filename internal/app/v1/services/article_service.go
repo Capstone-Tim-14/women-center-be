@@ -17,6 +17,7 @@ import (
 
 type ArticleService interface {
 	CreateArticle(ctx echo.Context, request requests.ArticleRequest, thumbnail *multipart.FileHeader) (*domain.Articles, []exceptions.ValidationMessage, error)
+	FindAllArticle(ctx echo.Context) ([]domain.Articles, error)
 }
 
 type ArticleServiceImpl struct {
