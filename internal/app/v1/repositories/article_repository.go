@@ -8,6 +8,7 @@ import (
 
 type ArticleRepository interface {
 	CreateArticle(article *domain.Articles) (*domain.Articles, error)
+	FindAllArticle() ([]domain.Articles, error)
 }
 
 type ArticleRepositoryImpl struct {
@@ -28,4 +29,14 @@ func (repository *ArticleRepositoryImpl) CreateArticle(article *domain.Articles)
 
 	return article, nil
 
+}
+
+func (repository *ArticleRepositoryImpl) FindAllArticle() ([]domain.Articles, error) {
+	var articles []domain.Articles
+	result := repository.db.Preload("Admin").Preload("Admin.Credential").Preload("Admin.Credential.Role").Preload("Counselors").Preload("Counselors.Credential").Preload("Counselors.Credential.Role").Find(&articles)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return articles, nil
 }
