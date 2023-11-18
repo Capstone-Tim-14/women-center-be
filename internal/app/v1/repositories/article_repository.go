@@ -8,7 +8,7 @@ import (
 
 type ArticleRepository interface {
 	CreateArticle(article *domain.Articles) (*domain.Articles, error)
-	FindAllArticle() ([]domain.Articles, error)
+	FindAllArticle(orderBy string) ([]domain.Articles, error)
 }
 
 type ArticleRepositoryImpl struct {
@@ -31,9 +31,17 @@ func (repository *ArticleRepositoryImpl) CreateArticle(article *domain.Articles)
 
 }
 
-func (repository *ArticleRepositoryImpl) FindAllArticle() ([]domain.Articles, error) {
+func (repository *ArticleRepositoryImpl) FindAllArticle(orderBy string) ([]domain.Articles, error) {
 	var articles []domain.Articles
-	result := repository.db.Preload("Admin").Preload("Admin.Credential").Preload("Admin.Credential.Role").Preload("Counselors").Preload("Counselors.Credential").Preload("Counselors.Credential.Role").Find(&articles)
+
+	result := repository.db.Preload("Admin").Preload("Admin.Credential").Preload("Admin.Credential.Role").Preload("Counselors").Preload("Counselors.Credential").Preload("Counselors.Credential.Role")
+
+	if orderBy != "" {
+		result.Order("title " + orderBy).Find(&articles)
+	} else {
+		result.Find(&articles)
+	}
+
 	if result.Error != nil {
 		return nil, result.Error
 	}
