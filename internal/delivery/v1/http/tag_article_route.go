@@ -20,7 +20,7 @@ func HttpTagRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate) 
 	tag := group.Group("/admin/articles/category", middlewares.VerifyTokenSignature("SECRET_KEY_ADMIN"))
 
 	tag.POST("", TagHandler.CreateTag)
-	// tag.GET("", TagHandler.FindtagsHandler)
-	// tag.DELETE("/delete/:id", tagHandler.DeletetagByIdHandler)
+	tag.GET("", TagHandler.FindTagsHandler)
+	tag.DELETE("/:id", TagHandler.DeleteTagByIdHandler)
 
 }

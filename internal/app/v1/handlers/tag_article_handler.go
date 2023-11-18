@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"strconv"
 	"woman-center-be/internal/app/v1/services"
 	conversion "woman-center-be/internal/web/conversion/resource/v1"
 	"woman-center-be/internal/web/requests/v1"
@@ -12,6 +13,8 @@ import (
 
 type TagHandler interface {
 	CreateTag(ctx echo.Context) error
+	FindTagsHandler(ctx echo.Context) error
+	DeleteTagByIdHandler(echo.Context) error
 }
 
 type TagHandlerImpl struct {
@@ -49,4 +52,30 @@ func (handler *TagHandlerImpl) CreateTag(ctx echo.Context) error {
 	return responses.StatusCreated(ctx, "Tag created successfully", tagCreateResponse)
 }
 
-// fix harusnya
+func (handler *TagHandlerImpl) FindTagsHandler(ctx echo.Context) error {
+	response, err := handler.TagService.FindTags(ctx)
+	if err != nil {
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	tagResponse := conversion.ConvertTagResource(response)
+
+	return responses.StatusOK(ctx, "Success Get All Tag", tagResponse)
+
+}
+
+func (handler *TagHandlerImpl) DeleteTagByIdHandler(ctx echo.Context) error {
+	tagId := ctx.Param("id")
+	tagIdInt, err := strconv.Atoi(tagId)
+	if err != nil {
+		return exceptions.StatusBadRequest(ctx, err)
+	}
+
+	err = handler.TagService.DeleteTagById(ctx, tagIdInt)
+	if err != nil {
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Success Delete Tag By Id", nil)
+
+}

@@ -8,9 +8,10 @@ import (
 
 type TagRepository interface {
 	CreateTag(tag *domain.Tag_Article) (*domain.Tag_Article, error)
+	FindById(id int) (*domain.Tag_Article, error)
 	FindTagByName(name string) (*domain.Tag_Article, error)
-	GetAllTags() ([]*domain.Tag_Article, error)
-	DeleteTag(tagID int) error
+	FindAllTags() ([]domain.Tag_Article, error)
+	DeleteTagById(tagID int) error
 }
 
 type TagRepositoryImpl struct {
@@ -32,6 +33,17 @@ func (repository *TagRepositoryImpl) CreateTag(tag *domain.Tag_Article) (*domain
 	return tag, nil
 }
 
+func (repository *TagRepositoryImpl) FindById(id int) (*domain.Tag_Article, error) {
+	tag := domain.Tag_Article{}
+
+	result := repository.db.Where("id = ?", id).First(&tag)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &tag, nil
+}
+
 func (repository *TagRepositoryImpl) FindTagByName(name string) (*domain.Tag_Article, error) {
 	tag := domain.Tag_Article{}
 
@@ -43,8 +55,8 @@ func (repository *TagRepositoryImpl) FindTagByName(name string) (*domain.Tag_Art
 	return &tag, nil
 }
 
-func (repository *TagRepositoryImpl) GetAllTags() ([]*domain.Tag_Article, error) {
-	var tags []*domain.Tag_Article
+func (repository *TagRepositoryImpl) FindAllTags() ([]domain.Tag_Article, error) {
+	var tags []domain.Tag_Article
 
 	result := repository.db.Find(&tags)
 	if result.Error != nil {
@@ -54,7 +66,7 @@ func (repository *TagRepositoryImpl) GetAllTags() ([]*domain.Tag_Article, error)
 	return tags, nil
 }
 
-func (repository *TagRepositoryImpl) DeleteTag(tagID int) error {
+func (repository *TagRepositoryImpl) DeleteTagById(tagID int) error {
 	result := repository.db.Delete(&domain.Tag_Article{}, tagID)
 	if result.Error != nil {
 		return result.Error

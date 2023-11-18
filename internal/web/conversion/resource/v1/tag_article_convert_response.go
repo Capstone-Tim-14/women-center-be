@@ -12,3 +12,15 @@ func TagArticleDomainToTagArticleResponse(tag *domain.Tag_Article) resources.Tag
 		Description: tag.Description,
 	}
 }
+
+func ConvertTagResource(tags []domain.Tag_Article) []resources.TagArticleResource {
+	tagResource := []resources.TagArticleResource{}
+	for _, tag := range tags {
+		tagResource = append(tagResource, resources.TagArticleResource{
+			Id:   tag.Id,
+			Name: tag.Name,
+		})
+	}
+
+	return tagResource
+}
