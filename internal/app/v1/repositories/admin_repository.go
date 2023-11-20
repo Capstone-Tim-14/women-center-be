@@ -33,7 +33,7 @@ func (repository *AdminRepositoryImpl) CreateAdmin(admin *domain.Admin) (*domain
 func (repository *AdminRepositoryImpl) FindyByEmail(email string) (*domain.Admin, error) {
 	admin := domain.Admin{}
 
-	result := repository.db.Preload("Credential").Preload("Credential.Role").Where("email = ?", email).First(&admin)
+	result := repository.db.InnerJoins("Credential").InnerJoins("Credential.Role").Where("email = ?", email).First(&admin)
 	if result.Error != nil {
 		return nil, result.Error
 	}

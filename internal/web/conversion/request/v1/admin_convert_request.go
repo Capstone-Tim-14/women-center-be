@@ -9,11 +9,11 @@ func AdminCreateRequestToAdminDomain(request requests.AdminRequest) *domain.Admi
 	return &domain.Admin{
 		First_name: request.First_name,
 		Last_name:  request.Last_name,
-		Email:      request.Email,
 		Credential: &domain.Credentials{
 			Username: request.Username,
 			Password: request.Password,
 			Role_id:  request.Role_id,
+			Email:    request.Email,
 		},
 	}
 }
