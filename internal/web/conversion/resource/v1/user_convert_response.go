@@ -18,3 +18,13 @@ func UserDomainToUserResource(user *domain.Users) resources.UserResource {
 		Status:          user.Status,
 	}
 }
+
+func UserDomainToUserProfileResource(user *domain.Users) resources.GetUserProfile {
+	return resources.GetUserProfile{
+		Id:              user.Id,
+		Profile_picture: user.Profile_picture,
+		Username:        user.Credential.Username,
+		Full_name:       user.First_name + " " + user.Last_name,
+		Email:           user.Email,
+	}
+}

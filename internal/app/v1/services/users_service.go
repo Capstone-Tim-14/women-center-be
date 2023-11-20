@@ -15,6 +15,7 @@ import (
 
 type UserService interface {
 	RegisterUser(ctx echo.Context, request requests.UserRequest) (*domain.Users, []exceptions.ValidationMessage, error)
+	GetUserProfile(ctx echo.Context) (*domain.Users, error)
 }
 
 type UserServiceImpl struct {
@@ -63,4 +64,14 @@ func (service *UserServiceImpl) RegisterUser(ctx echo.Context, request requests.
 	}
 
 	return result, nil, nil
+}
+
+func (s *UserServiceImpl) GetUserProfile(ctx echo.Context) (*domain.Users, error) {
+	getUserClaim := helpers.GetAuthClaims(ctx)
+
+	user, err := s.UserRepo.FindByID(int(getUserClaim.Id))
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }

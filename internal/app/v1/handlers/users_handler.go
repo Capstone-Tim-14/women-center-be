@@ -13,6 +13,7 @@ import (
 
 type UserHandler interface {
 	RegisterHandler(echo.Context) error
+	ProfileHandler(echo.Context) error
 }
 
 type UserHandlerImpl struct {
@@ -23,6 +24,17 @@ func NewUserHandler(user services.UserService) UserHandler {
 	return &UserHandlerImpl{
 		UserService: user,
 	}
+}
+
+func (h *UserHandlerImpl) ProfileHandler(ctx echo.Context) error {
+	getProfileUser, err := h.UserService.GetUserProfile(ctx)
+	if err != nil {
+		return exceptions.StatusNotFound(ctx, err)
+	}
+
+	conversionProfile := conversion.UserDomainToUserProfileResource(getProfileUser)
+
+	return responses.StatusOK(ctx, "Success get user profile", conversionProfile)
 }
 
 func (handler *UserHandlerImpl) RegisterHandler(ctx echo.Context) error {
