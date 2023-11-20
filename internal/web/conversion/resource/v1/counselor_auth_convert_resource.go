@@ -11,6 +11,6 @@ func CounselorDomainToAuthResource(user *domain.Counselors) resources.AuthResour
 		Fullname: user.First_name + " " + user.Last_name,
 		Username: user.Credential.Username,
 		Role:     user.Credential.Role.Name,
-		Email:    user.Email,
+		Email:    user.Credential.Email,
 	}
 }

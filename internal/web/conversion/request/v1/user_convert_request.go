@@ -9,8 +9,8 @@ func UserCreateRequestToUserDomain(request requests.UserRequest) *domain.Users {
 	return &domain.Users{
 		First_name: request.First_name,
 		Last_name:  request.Last_name,
-		Email:      request.Email,
 		Credential: &domain.Credentials{
+			Email:    request.Email,
 			Username: request.Username,
 			Password: request.Password,
 			Role_id:  request.Role_id,

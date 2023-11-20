@@ -12,7 +12,6 @@ type Users struct {
 	Credential      *Credentials `gorm:"foreignKey:Credential_id;references:Id;"`
 	First_name      string       `gorm:"type:varchar(100)"`
 	Last_name       string       `gorm:"type:varchar(100)"`
-	Email           string       `gorm:"type:varchar(255)"`
 	Profile_picture string       `gorm:"varchar(255)"`
 	Phone_number    string       `gorm:"type:varchar(20)"`
 	Address         string
