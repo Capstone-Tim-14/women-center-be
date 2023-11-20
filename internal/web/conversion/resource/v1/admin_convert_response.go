@@ -10,7 +10,7 @@ func AdminDomainToAdminResource(admin *domain.Admin) resources.AdminResource {
 		Id:         int(admin.Id),
 		First_name: admin.First_name,
 		Last_name:  admin.Last_name,
-		Email:      admin.Email,
+		Email:      admin.Credential.Email,
 		Username:   admin.Credential.Username,
 	}
 }
