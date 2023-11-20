@@ -10,7 +10,7 @@ func CounselorDomainToCounselorResponse(counselor *domain.Counselors) resources.
 		Id:           counselor.Id,
 		First_name:   counselor.First_name,
 		Last_name:    counselor.Last_name,
-		Email:        counselor.Email,
+		Email:        counselor.Credential.Email,
 		Phone_number: counselor.Phone_number,
 		Description:  counselor.Description,
 		Address:      counselor.Address,
