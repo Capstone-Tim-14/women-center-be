@@ -5,6 +5,7 @@ import (
 	v1 "woman-center-be/internal/delivery/v1"
 
 	"github.com/labstack/echo/v4"
+	"github.com/spf13/viper"
 )
 
 func main() {
@@ -16,6 +17,6 @@ func main() {
 
 	v1.InitRoutes(e, db, validator)
 
-	e.Logger.Fatal(e.Start(":8080"))
+	e.Logger.Fatal(e.Start(":" + viper.GetString("APP_PORT")))
 
 }
