@@ -11,6 +11,6 @@ func UserDomainToAuthResource(user *domain.Users) resources.AuthResource {
 		Fullname: user.First_name + user.Last_name,
 		Username: user.Credential.Username,
 		Role:     user.Credential.Role.Name,
-		Email:    user.Email,
+		Email:    user.Credential.Email,
 	}
 }
