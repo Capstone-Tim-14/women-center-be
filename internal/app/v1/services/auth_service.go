@@ -168,13 +168,13 @@ func (auth *AuthServiceImpl) GoogleCallbackService(ctx echo.Context) (*resources
 		UserConvert := conversion.UserCreateRequestToUserDomain(SetUser)
 		UserConvert.Credential.Password = helpers.HashPassword(SetUser.Password)
 
-		UserCreate, ErrCreate := auth.UserRepo.CreateUser(UserConvert)
+		_, ErrCreate := auth.UserRepo.CreateUser(UserConvert)
 
 		if ErrCreate != nil {
 			return nil, errors.New("Failed when processing user data")
 		}
 
-		GetUserByEmail, ErrGetUser := auth.UserRepo.FindyByEmail(UserCreate.Email)
+		GetUserByEmail, ErrGetUser := auth.UserRepo.FindyByEmail(UserConvert.Credential.Email)
 
 		if ErrGetUser != nil {
 			return nil, errors.New("Failed when processing user data")
