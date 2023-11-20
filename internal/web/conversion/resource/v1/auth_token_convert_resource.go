@@ -6,6 +6,7 @@ func AuthResourceToAuthTokenResource(auth resources.AuthResource, token string) 
 	return &resources.AuthTokenResource{
 		Fullname: auth.Fullname,
 		Email:    auth.Email,
+		Role:     auth.Role,
 		Token:    token,
 	}
 }

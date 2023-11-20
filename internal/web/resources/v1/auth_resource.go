@@ -21,6 +21,7 @@ type UserGoogleInfo struct {
 
 type AuthTokenResource struct {
 	Fullname string `json:"fullname"`
+	Role     string `json:"role"`
 	Email    string `json:"email"`
 	Token    string `json:"token"`
 }
