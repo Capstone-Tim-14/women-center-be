@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"fmt"
 	"woman-center-be/internal/app/v1/models/domain"
 
 	"gorm.io/gorm"
@@ -59,8 +60,13 @@ func (repository *TagRepositoryImpl) FindAllTags() ([]domain.Tag_Article, error)
 	var tags []domain.Tag_Article
 
 	result := repository.db.Find(&tags)
+
 	if result.Error != nil {
 		return nil, result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return nil, fmt.Errorf("Tags is empty")
 	}
 
 	return tags, nil
