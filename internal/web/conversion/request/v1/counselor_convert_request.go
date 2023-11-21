@@ -9,11 +9,11 @@ func CounselorCreateRequestToCounselorDomain(request requests.CounselorRequest) 
 	return &domain.Counselors{
 		First_name: request.First_name,
 		Last_name:  request.Last_name,
-		Email:      request.Email,
 		Credential: &domain.Credentials{
 			Username: request.Username,
 			Password: request.Password,
 			Role_id:  request.Role_id,
+			Email:    request.Email,
 		},
 		Profile_picture: request.Profile_picture,
 		Phone_number:    request.Phone_number,

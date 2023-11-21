@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"strings"
 	"woman-center-be/internal/app/v1/services"
 	conversion "woman-center-be/internal/web/conversion/resource/v1"
 	"woman-center-be/internal/web/requests/v1"
@@ -52,12 +53,19 @@ func (handler *ArticleHandlerImpl) CreateArticle(ctx echo.Context) error {
 }
 
 func (handler *ArticleHandlerImpl) FindAllArticle(ctx echo.Context) error {
-	response, err := handler.ArticleService.FindAllArticle(ctx)
+
+	response, meta, err := handler.ArticleService.FindAllArticle(ctx)
+
 	if err != nil {
+
+		if strings.Contains(err.Error(), "Article is empty") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
 	articleResponse := conversion.ConvertArticleResource(response)
 
-	return responses.StatusOK(ctx, "Success Get All Article", articleResponse)
+	return responses.StatusOKWithMeta(ctx, "Success Get All Article", meta, articleResponse)
 }

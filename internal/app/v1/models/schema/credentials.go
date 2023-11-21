@@ -11,6 +11,7 @@ type Credentials struct {
 	Role_id   uint
 	Role      *Roles         `gorm:"foreignKey:Role_id;references:Id"`
 	Username  string         `gorm:"type:varchar(100)"`
+	Email     string         `gorm:"type:varchar(255)"`
 	Password  string         `gorm:"type:varchar(255)"`
 	CreatedAt time.Time      `gorm:"autoCreateTime"`
 	UpdatedAt time.Time      `gorm:"autoUpdateTime:mili"`
