@@ -14,6 +14,7 @@ import (
 type ArticleHandler interface {
 	CreateArticle(ctx echo.Context) error
 	FindAllArticle(ctx echo.Context) error
+	DeleteArticle(ctx echo.Context) error
 }
 
 type ArticleHandlerImpl struct {
@@ -68,4 +69,19 @@ func (handler *ArticleHandlerImpl) FindAllArticle(ctx echo.Context) error {
 	articleResponse := conversion.ConvertArticleResource(response)
 
 	return responses.StatusOKWithMeta(ctx, "Success Get All Article", meta, articleResponse)
+}
+
+func (handler *ArticleHandlerImpl) DeleteArticle(ctx echo.Context) error {
+
+	err := handler.ArticleService.DeleteArticle(ctx)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "Article not found") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Article deleted successfully", nil)
 }
