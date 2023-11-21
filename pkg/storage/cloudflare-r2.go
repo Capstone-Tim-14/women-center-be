@@ -9,11 +9,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/viper"
-)
-
-const (
-	article_dir = "/articles/thumbnail/"
 )
 
 func S3Config() *s3.Client {
@@ -28,6 +25,7 @@ func S3Config() *s3.Client {
 	configuration, ErrConfiguration := config.LoadDefaultConfig(context.TODO(),
 		config.WithEndpointResolverWithOptions(r2Resolver),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(viper.GetString("STORAGE.ACCESS_KEY_ID"), viper.GetString("STORAGE.SECRET_ACCESS_KEY"), "")),
+		config.WithRegion("apac"),
 	)
 
 	if ErrConfiguration != nil {
@@ -40,7 +38,7 @@ func S3Config() *s3.Client {
 
 }
 
-func UploadFileImage(file *multipart.FileHeader, category string) (string, error) {
+func S3PutFile(file *multipart.FileHeader, directory string) (string, error) {
 
 	bucket := viper.GetString("STORAGE.BUCKET_NAME")
 	S3 := S3Config()
@@ -53,20 +51,23 @@ func UploadFileImage(file *multipart.FileHeader, category string) (string, error
 
 	defer src.Close()
 
+	generateKey := fmt.Sprintf("%s/%s", directory, uuid.NewV4().String())
+
 	uploadInput := &s3.PutObjectInput{
 		Bucket:      &bucket,
+		Key:         &generateKey,
 		Body:        src,
 		ContentType: aws.String("image/png"),
 	}
 
-	presignClient := s3.NewPresignClient(S3)
-
-	presignResp, errObject := presignClient.PresignPutObject(context.TODO(), uploadInput)
+	_, errObject := S3.PutObject(context.TODO(), uploadInput)
 
 	if errObject != nil {
 		return "", errObject
 	}
 
-	return presignResp.URL, nil
+	publicURL := fmt.Sprintf("https://pub-31b2a1a1e015474f97220ee42fe1d856.r2.dev/%s", generateKey)
+
+	return publicURL, nil
 
 }
