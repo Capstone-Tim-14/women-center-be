@@ -21,3 +21,17 @@ func UserCreateRequestToUserDomain(request requests.UserRequest) *domain.Users {
 		Status:          "ACTIVE",
 	}
 }
+
+func UserUpdateRequestToUserDomain(request requests.UpdateUserProfileRequest) *domain.Users {
+	return &domain.Users{
+		First_name: request.First_name,
+		Last_name:  request.Last_name,
+		Credential: &domain.Credentials{
+			Email:    request.Email,
+			Username: request.Username,
+			Role_id:  request.Role_id,
+		},
+		Birthday:        request.Birthday,
+		Profile_picture: request.Profile_picture,
+	}
+}

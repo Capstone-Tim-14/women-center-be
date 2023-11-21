@@ -14,6 +14,7 @@ import (
 type UserHandler interface {
 	RegisterHandler(echo.Context) error
 	ProfileHandler(echo.Context) error
+	UpdateProfileHandler(echo.Context) error
 }
 
 type UserHandlerImpl struct {
@@ -61,5 +62,32 @@ func (handler *UserHandlerImpl) RegisterHandler(ctx echo.Context) error {
 	userCreateResponse := conversion.UserDomainToUserResource(response)
 
 	return responses.StatusCreated(ctx, "User created successfully", userCreateResponse)
+
+}
+
+func (handler *UserHandlerImpl) UpdateProfileHandler(ctx echo.Context) error {
+	userUpdateRequest := requests.UpdateUserProfileRequest{}
+	err := ctx.Bind(&userUpdateRequest)
+	if err != nil {
+		return exceptions.StatusBadRequest(ctx, err)
+	}
+
+	response, validation, err := handler.UserService.UpdateUserProfile(ctx, userUpdateRequest)
+
+	if validation != nil {
+		return exceptions.ValidationException(ctx, "Error validation", validation)
+	}
+
+	if err != nil {
+		if strings.Contains(err.Error(), "Email already exists") {
+			return exceptions.StatusAlreadyExist(ctx, err)
+		}
+
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	userUpdateResponse := conversion.UserDomainToUserUpdateProfileResource(response)
+
+	return responses.StatusOK(ctx, "User updated successfully", userUpdateResponse)
 
 }

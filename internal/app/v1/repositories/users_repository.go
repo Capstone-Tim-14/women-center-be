@@ -10,6 +10,7 @@ type UserRepository interface {
 	CreateUser(user *domain.Users) (*domain.Users, error)
 	FindyByEmail(email string) (*domain.Users, error)
 	FindByID(id int) (*domain.Users, error)
+	UpdateUser(user *domain.Users) (*domain.Users, error)
 }
 
 type UserRepositoryImpl struct {
@@ -52,4 +53,13 @@ func (repository *UserRepositoryImpl) FindByID(id int) (*domain.Users, error) {
 	}
 
 	return &user, nil
+}
+
+func (repository *UserRepositoryImpl) UpdateUser(user *domain.Users) (*domain.Users, error) {
+	result := repository.db.Save(&user)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return user, nil
 }
