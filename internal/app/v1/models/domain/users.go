@@ -7,7 +7,7 @@ import (
 )
 
 type Users struct {
-	Id              int
+	Id              uint
 	Credential_id   uint
 	Credential      *Credentials
 	First_name      string

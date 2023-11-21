@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"strconv"
+	"strings"
 	"woman-center-be/internal/app/v1/services"
 	conversion "woman-center-be/internal/web/conversion/resource/v1"
 	"woman-center-be/internal/web/requests/v1"
@@ -13,7 +14,7 @@ import (
 
 type TagHandler interface {
 	CreateTag(ctx echo.Context) error
-	FindTagsHandler(ctx echo.Context) error
+	GetAllTagsHandler(ctx echo.Context) error
 	DeleteTagByIdHandler(echo.Context) error
 }
 
@@ -42,7 +43,11 @@ func (handler *TagHandlerImpl) CreateTag(ctx echo.Context) error {
 	}
 
 	if err != nil {
-		// Handle specific errors if needed
+
+		if strings.Contains(err.Error(), "tag already exists") {
+			return exceptions.StatusAlreadyExist(ctx, err)
+		}
+
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
@@ -52,9 +57,14 @@ func (handler *TagHandlerImpl) CreateTag(ctx echo.Context) error {
 	return responses.StatusCreated(ctx, "Tag created successfully", tagCreateResponse)
 }
 
-func (handler *TagHandlerImpl) FindTagsHandler(ctx echo.Context) error {
-	response, err := handler.TagService.FindTags(ctx)
+func (handler *TagHandlerImpl) GetAllTagsHandler(ctx echo.Context) error {
+	response, err := handler.TagService.GetListTags(ctx)
 	if err != nil {
+
+		if strings.Contains(err.Error(), "Tags is empty") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 

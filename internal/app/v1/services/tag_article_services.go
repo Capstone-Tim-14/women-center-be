@@ -15,7 +15,7 @@ import (
 
 type TagService interface {
 	CreateTag(ctx echo.Context, request requests.TagArticleRequest) (*domain.Tag_Article, []exceptions.ValidationMessage, error)
-	FindTags(ctx echo.Context) ([]domain.Tag_Article, error)
+	GetListTags(ctx echo.Context) ([]domain.Tag_Article, error)
 	DeleteTagById(ctx echo.Context, id int) error
 }
 
@@ -54,10 +54,11 @@ func (service *TagServiceImpl) CreateTag(ctx echo.Context, request requests.TagA
 	return createdTag, nil, nil
 }
 
-func (service *TagServiceImpl) FindTags(ctx echo.Context) ([]domain.Tag_Article, error) {
+func (service *TagServiceImpl) GetListTags(ctx echo.Context) ([]domain.Tag_Article, error) {
 	result, err := service.TagRepo.FindAllTags()
+
 	if err != nil {
-		return nil, fmt.Errorf("tags not found")
+		return nil, err
 	}
 
 	return result, nil
