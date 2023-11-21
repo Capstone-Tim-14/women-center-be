@@ -20,6 +20,7 @@ import (
 type ArticleService interface {
 	CreateArticle(ctx echo.Context, request requests.ArticleRequest, thumbnail *multipart.FileHeader) (*domain.Articles, []exceptions.ValidationMessage, error)
 	FindAllArticle(ctx echo.Context) ([]domain.Articles, *query.Pagination, error)
+	DeleteArticle(ctx echo.Context) error
 }
 
 type ArticleServiceImpl struct {
@@ -100,4 +101,15 @@ func (service *ArticleServiceImpl) FindAllArticle(ctx echo.Context) ([]domain.Ar
 	}
 
 	return result, paginate, nil
+}
+
+func (service *ArticleServiceImpl) DeleteArticle(ctx echo.Context) error {
+	id := ctx.Param("id")
+	getId, _ := strconv.Atoi(id)
+	err := service.ArticleRepo.DeleteArticleById(getId)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
