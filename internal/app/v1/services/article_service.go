@@ -96,7 +96,7 @@ func (service *ArticleServiceImpl) FindAllArticle(ctx echo.Context) ([]domain.Ar
 
 	result, paginate, err := service.ArticleRepo.FindAllArticle(orderBy, Paginate)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Article not found")
+		return nil, nil, fmt.Errorf("Article is empty")
 	}
 
 	return result, paginate, nil

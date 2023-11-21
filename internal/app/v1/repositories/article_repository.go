@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"fmt"
 	"strconv"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/pkg/query"
@@ -47,6 +48,10 @@ func (repository *ArticleRepositoryImpl) FindAllArticle(orderBy string, paginate
 
 	if result.Error != nil {
 		return nil, nil, result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return nil, nil, fmt.Errorf("Article is empty")
 	}
 
 	if paginate.Page <= 1 {
