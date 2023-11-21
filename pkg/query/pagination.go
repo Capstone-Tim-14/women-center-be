@@ -10,7 +10,7 @@ type Pagination struct {
 	Page         uint   `json:"page,omitempty"`
 	Limit        uint   `json:"limit,omitempty"`
 	TotalPage    uint   `json:"total_page,omitempty"`
-	TotalData    uint   `json:"total_data,omitempty"`
+	TotalData    uint   `json:"total_rows,omitempty"`
 	NextPage     string `json:"next_page,omitempty"`
 	PreviousPage string `json:"previous_page,omitempty"`
 }
@@ -33,12 +33,13 @@ func (p *Pagination) GetLimit() uint {
 	return p.Limit
 }
 
-func Paginate(data interface{}, pagination Pagination, db *gorm.DB) func(db *gorm.DB) *gorm.DB {
+func Paginate(data interface{}, pagination *Pagination, db *gorm.DB) func(db *gorm.DB) *gorm.DB {
 	var TotalData int64
 
 	db.Model(data).Count(&TotalData)
 	pagination.TotalData = uint(TotalData)
-	pagination.TotalPage = uint(math.Ceil(float64(TotalData) / float64(pagination.Limit)))
+
+	pagination.TotalPage = uint(math.Ceil(float64(TotalData) / float64(pagination.GetLimit())))
 
 	return func(db *gorm.DB) *gorm.DB {
 		return db.Offset(int(pagination.GetOffset())).Limit(int(pagination.GetLimit()))

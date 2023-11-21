@@ -53,12 +53,12 @@ func (handler *ArticleHandlerImpl) CreateArticle(ctx echo.Context) error {
 
 func (handler *ArticleHandlerImpl) FindAllArticle(ctx echo.Context) error {
 
-	response, err := handler.ArticleService.FindAllArticle(ctx)
+	response, meta, err := handler.ArticleService.FindAllArticle(ctx)
 	if err != nil {
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
 	articleResponse := conversion.ConvertArticleResource(response)
 
-	return responses.StatusOK(ctx, "Success Get All Article", articleResponse)
+	return responses.StatusOKWithMeta(ctx, "Success Get All Article", meta, articleResponse)
 }
