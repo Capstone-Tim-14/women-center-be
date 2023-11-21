@@ -1,14 +1,18 @@
 package repositories
 
 import (
+	"fmt"
+	"strconv"
 	"woman-center-be/internal/app/v1/models/domain"
+	"woman-center-be/pkg/query"
 
+	"github.com/spf13/viper"
 	"gorm.io/gorm"
 )
 
 type ArticleRepository interface {
 	CreateArticle(article *domain.Articles) (*domain.Articles, error)
-	FindAllArticle(orderBy string) ([]domain.Articles, error)
+	FindAllArticle(string, query.Pagination) ([]domain.Articles, *query.Pagination, error)
 }
 
 type ArticleRepositoryImpl struct {
@@ -31,10 +35,10 @@ func (repository *ArticleRepositoryImpl) CreateArticle(article *domain.Articles)
 
 }
 
-func (repository *ArticleRepositoryImpl) FindAllArticle(orderBy string) ([]domain.Articles, error) {
+func (repository *ArticleRepositoryImpl) FindAllArticle(orderBy string, paginate query.Pagination) ([]domain.Articles, *query.Pagination, error) {
 	var articles []domain.Articles
 
-	result := repository.db.Preload("Admin").Preload("Admin.Credential").Preload("Admin.Credential.Role").Preload("Counselors").Preload("Counselors.Credential").Preload("Counselors.Credential.Role")
+	result := repository.db.Scopes(query.Paginate(articles, &paginate, repository.db)).Preload("Admin").Preload("Admin.Credential").Preload("Admin.Credential.Role").Preload("Counselors").Preload("Counselors.Credential").Preload("Counselors.Credential.Role")
 
 	if orderBy != "" {
 		result.Order("title " + orderBy).Find(&articles)
@@ -43,8 +47,24 @@ func (repository *ArticleRepositoryImpl) FindAllArticle(orderBy string) ([]domai
 	}
 
 	if result.Error != nil {
-		return nil, result.Error
+		return nil, nil, result.Error
 	}
 
-	return articles, nil
+	if result.RowsAffected == 0 {
+		return nil, nil, fmt.Errorf("Article is empty")
+	}
+
+	if paginate.Page <= 1 {
+		paginate.PreviousPage = ""
+	} else {
+		paginate.PreviousPage = viper.GetString("MAIN_URL") + "/api/" + viper.GetString("API_VERSION") + "/admin/articles?page=" + strconv.Itoa(int(paginate.Page)-1)
+	}
+
+	if paginate.Page >= paginate.TotalPage {
+		paginate.NextPage = ""
+	} else {
+		paginate.NextPage = viper.GetString("MAIN_URL") + "/api/" + viper.GetString("API_VERSION") + "/admin/articles?page=" + strconv.Itoa(int(paginate.Page)+1)
+	}
+
+	return articles, &paginate, nil
 }
