@@ -63,7 +63,7 @@ func (service *ArticleServiceImpl) CreateArticle(ctx echo.Context, request reque
 		request.Counselors_id = &counselor.Id
 	}
 
-	ThumbnailCloudURL, errUploadThumbnail := storage.DropboxUploadEndpoint(thumbnail, "articles")
+	ThumbnailCloudURL, errUploadThumbnail := storage.S3PutFile(thumbnail, "articles/thumbnail")
 
 	if errUploadThumbnail != nil {
 		return nil, nil, errUploadThumbnail
