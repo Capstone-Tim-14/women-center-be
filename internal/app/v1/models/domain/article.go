@@ -18,7 +18,7 @@ type Articles struct {
 	Counselors_id *uint
 	Counselors    *Counselors
 	Thumbnail     string
-	Tag           []Tag_Article `gorm:"many2many:article_has_tags;foreignKey:Id;references:Id;"`
+	Tags          []Tag_Article `gorm:"many2many:article_has_tags;foreignKey:Id;references:Id;"`
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 	DeletedAt     gorm.DeletedAt

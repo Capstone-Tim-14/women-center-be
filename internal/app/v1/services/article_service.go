@@ -135,7 +135,7 @@ func (service *ArticleServiceImpl) AddTagArticle(ctx echo.Context, id int, reque
 		return nil, errTag
 	}
 
-	errAddTag := service.ArticlehasTagRepo.AddTag(article, *tag)
+	errAddTag := service.ArticlehasTagRepo.AddTag(*article, tag)
 	if errAddTag != nil {
 		return nil, errAddTag
 	}

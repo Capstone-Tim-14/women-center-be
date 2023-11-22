@@ -7,22 +7,22 @@ import (
 )
 
 type ArticlehasTagRepository interface {
-	AddTag(article *domain.Articles, tag domain.Tag_Article) error
-	RemoveTagById(article *domain.Articles, tag domain.Tag_Article) error
+	AddTag(article domain.Articles, tag *domain.Tag_Article) error
+	RemoveTagById(article domain.Articles, tag *domain.Tag_Article) error
 }
 
 type ArticlehasTagRepositoryImpl struct {
-	db *gorm.DB
+	Db *gorm.DB
 }
 
 func NewArticlehasTagRepository(db *gorm.DB) ArticlehasTagRepository {
 	return &ArticlehasTagRepositoryImpl{
-		db: db,
+		Db: db,
 	}
 }
 
-func (repository *ArticlehasTagRepositoryImpl) AddTag(article *domain.Articles, tag domain.Tag_Article) error {
-	result := repository.db.Model(&article).Association("Tag_Article").Append(tag)
+func (repository *ArticlehasTagRepositoryImpl) AddTag(article domain.Articles, tag *domain.Tag_Article) error {
+	result := repository.Db.Model(&article).Association("Tags").Append(tag)
 	if result != nil {
 		return result
 	}
@@ -31,8 +31,8 @@ func (repository *ArticlehasTagRepositoryImpl) AddTag(article *domain.Articles, 
 
 }
 
-func (repository *ArticlehasTagRepositoryImpl) RemoveTagById(article *domain.Articles, tag domain.Tag_Article) error {
-	result := repository.db.Model(&article).Association("Tag").Delete(tag)
+func (repository *ArticlehasTagRepositoryImpl) RemoveTagById(article domain.Articles, tag *domain.Tag_Article) error {
+	result := repository.Db.Model(&article).Association("Tags").Delete(tag)
 	if result != nil {
 		return result
 	}
