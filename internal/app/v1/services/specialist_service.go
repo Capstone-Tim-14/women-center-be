@@ -40,7 +40,7 @@ func (service *SpecialistServiceImpl) CreateSpecialist(ctx echo.Context, request
 	// Check if the tag already exists
 	existingTag, _ := service.SpecialistRepo.FindSpecialistByName(request.Name)
 	if existingTag != nil {
-		return nil, nil, fmt.Errorf("specialist name already exists")
+		return nil, nil, fmt.Errorf("Specialist name already exists")
 	}
 
 	newSpecialist := conversion.SpecialistCreateRequestToSpecialistDomain(request)
@@ -48,7 +48,7 @@ func (service *SpecialistServiceImpl) CreateSpecialist(ctx echo.Context, request
 	// Create the new tag
 	createdSpecialist, err := service.SpecialistRepo.CreateSpecialist(newSpecialist)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error while creating specialist: %s", err.Error())
+		return nil, nil, fmt.Errorf("Error while creating specialist: %s", err.Error())
 	}
 
 	return createdSpecialist, nil, nil

@@ -55,7 +55,7 @@ func (repository *SpecialistRepositoryImpl) FindAllSpecialist() ([]domain.Specia
 	}
 
 	if result.RowsAffected == 0 {
-		return nil, fmt.Errorf("specialist name is empty")
+		return nil, fmt.Errorf("Specialist name is empty")
 	}
 
 	return lists, nil

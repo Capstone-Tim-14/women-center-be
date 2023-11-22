@@ -42,7 +42,7 @@ func (handler *SpecialistHandlerImpl) CreateSpecialist(ctx echo.Context) error {
 
 	if err != nil {
 
-		if strings.Contains(err.Error(), "specialist name already exists") {
+		if strings.Contains(err.Error(), "Specialist name already exists") {
 			return exceptions.StatusAlreadyExist(ctx, err)
 		}
 
@@ -59,7 +59,7 @@ func (handler *SpecialistHandlerImpl) GetListSpecialistHandler(ctx echo.Context)
 	response, err := handler.SpecialistService.GetListSpecialist(ctx)
 	if err != nil {
 
-		if strings.Contains(err.Error(), "specialist name is empty") {
+		if strings.Contains(err.Error(), "Specialist name is empty") {
 			return exceptions.StatusNotFound(ctx, err)
 		}
 
