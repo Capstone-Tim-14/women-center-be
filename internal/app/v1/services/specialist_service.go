@@ -15,7 +15,7 @@ import (
 
 type SpecialistService interface {
 	CreateSpecialist(ctx echo.Context, request requests.SpecialistRequest) (*domain.Specialist, []exceptions.ValidationMessage, error)
-	// GetListSpecialist(ctx echo.Context) ([]domain.Specialist, error)
+	GetListSpecialist(ctx echo.Context) ([]domain.Specialist, error)
 	// DeleteSpecialistById(ctx echo.Context, id int) error
 }
 
@@ -52,4 +52,14 @@ func (service *SpecialistServiceImpl) CreateSpecialist(ctx echo.Context, request
 	}
 
 	return createdSpecialist, nil, nil
+}
+
+func (service *SpecialistServiceImpl) GetListSpecialist(ctx echo.Context) ([]domain.Specialist, error) {
+	result, err := service.SpecialistRepo.FindAllSpecialist()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }

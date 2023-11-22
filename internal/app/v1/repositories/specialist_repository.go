@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"fmt"
 	"woman-center-be/internal/app/v1/models/domain"
 
 	"gorm.io/gorm"
@@ -10,7 +11,7 @@ type SpecialistRepository interface {
 	CreateSpecialist(tag *domain.Specialist) (*domain.Specialist, error)
 	// FindById(id int) (*domain.Specialist, error)
 	FindSpecialistByName(name string) (*domain.Specialist, error)
-	// FindAllTags() ([]domain.Specialist, error)
+	FindAllSpecialist() ([]domain.Specialist, error)
 	// DeleteSpecialistById(tagID int) error
 }
 
@@ -42,4 +43,20 @@ func (repository *SpecialistRepositoryImpl) FindSpecialistByName(name string) (*
 	}
 
 	return &specialist, nil
+}
+
+func (repository *SpecialistRepositoryImpl) FindAllSpecialist() ([]domain.Specialist, error) {
+	var lists []domain.Specialist
+
+	result := repository.db.Find(&lists)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return nil, fmt.Errorf("specialist name is empty")
+	}
+
+	return lists, nil
 }

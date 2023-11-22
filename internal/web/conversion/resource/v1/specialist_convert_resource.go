@@ -12,3 +12,16 @@ func SpecialistDomainToSpecialistResponse(specialist *domain.Specialist) resourc
 		Description: specialist.Description,
 	}
 }
+
+func ConvertSpecialistResource(lists []domain.Specialist) []resources.SpecialistResource {
+	listResource := []resources.SpecialistResource{}
+	for _, list := range lists {
+		listResource = append(listResource, resources.SpecialistResource{
+			Id:          list.Id,
+			Name:        list.Name,
+			Description: list.Description,
+		})
+	}
+
+	return listResource
+}

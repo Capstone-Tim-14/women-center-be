@@ -13,6 +13,7 @@ import (
 
 type SpecialistHandler interface {
 	CreateSpecialist(ctx echo.Context) error
+	GetListSpecialistHandler(ctx echo.Context) error
 }
 
 type SpecialistHandlerImpl struct {
@@ -52,4 +53,21 @@ func (handler *SpecialistHandlerImpl) CreateSpecialist(ctx echo.Context) error {
 	specialistCreateResponse := conversion.SpecialistDomainToSpecialistResponse(response)
 
 	return responses.StatusCreated(ctx, "Specialist name created successfully", specialistCreateResponse)
+}
+
+func (handler *SpecialistHandlerImpl) GetListSpecialistHandler(ctx echo.Context) error {
+	response, err := handler.SpecialistService.GetListSpecialist(ctx)
+	if err != nil {
+
+		if strings.Contains(err.Error(), "specialist name is empty") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	specialistResponse := conversion.ConvertSpecialistResource(response)
+
+	return responses.StatusOK(ctx, "Success Get All Specialist", specialistResponse)
+
 }

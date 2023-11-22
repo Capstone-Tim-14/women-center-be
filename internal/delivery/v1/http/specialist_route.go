@@ -20,7 +20,7 @@ func HttpSpecialistRoute(group *echo.Group, db *gorm.DB, validate *validator.Val
 	specialist := group.Group("/admin/specialist", middlewares.VerifyTokenSignature("SECRET_KEY_ADMIN"))
 
 	specialist.POST("", SpecialistHandler.CreateSpecialist)
-	//specialist.GET("", TagHandler.GetAllTagsHandler)
+	specialist.GET("", SpecialistHandler.GetListSpecialistHandler)
 	//specialist.DELETE("/:id", TagHandler.DeleteTagByIdHandler)
 
 }
