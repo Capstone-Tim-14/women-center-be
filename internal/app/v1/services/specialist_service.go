@@ -16,7 +16,7 @@ import (
 type SpecialistService interface {
 	CreateSpecialist(ctx echo.Context, request requests.SpecialistRequest) (*domain.Specialist, []exceptions.ValidationMessage, error)
 	GetListSpecialist(ctx echo.Context) ([]domain.Specialist, error)
-	// DeleteSpecialistById(ctx echo.Context, id int) error
+	DeleteSpecialistById(ctx echo.Context, id int) error
 }
 
 type SpecialistServiceImpl struct {
@@ -62,4 +62,19 @@ func (service *SpecialistServiceImpl) GetListSpecialist(ctx echo.Context) ([]dom
 	}
 
 	return result, nil
+}
+
+func (service *SpecialistServiceImpl) DeleteSpecialistById(ctx echo.Context, id int) error {
+	existingSpecialist, _ := service.SpecialistRepo.FindById(id)
+	if existingSpecialist == nil {
+		return fmt.Errorf("Specialist not found")
+	}
+
+	err := service.SpecialistRepo.DeleteSpecialistById(id)
+	if err != nil {
+		return fmt.Errorf("Error when delete specialist: %s", err.Error())
+	}
+
+	return nil
+
 }

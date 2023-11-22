@@ -21,6 +21,6 @@ func HttpSpecialistRoute(group *echo.Group, db *gorm.DB, validate *validator.Val
 
 	specialist.POST("", SpecialistHandler.CreateSpecialist)
 	specialist.GET("", SpecialistHandler.GetListSpecialistHandler)
-	//specialist.DELETE("/:id", TagHandler.DeleteTagByIdHandler)
+	specialist.DELETE("/:id", SpecialistHandler.DeleteSpecialistHandler)
 
 }

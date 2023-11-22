@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"strconv"
 	"strings"
 	"woman-center-be/internal/app/v1/services"
 	conversion "woman-center-be/internal/web/conversion/resource/v1"
@@ -14,6 +15,7 @@ import (
 type SpecialistHandler interface {
 	CreateSpecialist(ctx echo.Context) error
 	GetListSpecialistHandler(ctx echo.Context) error
+	DeleteSpecialistHandler(ctx echo.Context) error
 }
 
 type SpecialistHandlerImpl struct {
@@ -69,5 +71,21 @@ func (handler *SpecialistHandlerImpl) GetListSpecialistHandler(ctx echo.Context)
 	specialistResponse := conversion.ConvertSpecialistResource(response)
 
 	return responses.StatusOK(ctx, "Success Get All Specialist", specialistResponse)
+
+}
+
+func (handler *SpecialistHandlerImpl) DeleteSpecialistHandler(ctx echo.Context) error {
+	idSpecialist := ctx.Param("id")
+	idInt, err := strconv.Atoi(idSpecialist)
+	if err != nil {
+		return exceptions.StatusBadRequest(ctx, err)
+	}
+
+	err = handler.SpecialistService.DeleteSpecialistById(ctx, idInt)
+	if err != nil {
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Success Delete Specialist By Id", nil)
 
 }

@@ -9,10 +9,10 @@ import (
 
 type SpecialistRepository interface {
 	CreateSpecialist(tag *domain.Specialist) (*domain.Specialist, error)
-	// FindById(id int) (*domain.Specialist, error)
+	FindById(id int) (*domain.Specialist, error)
 	FindSpecialistByName(name string) (*domain.Specialist, error)
 	FindAllSpecialist() ([]domain.Specialist, error)
-	// DeleteSpecialistById(tagID int) error
+	DeleteSpecialistById(id int) error
 }
 
 type SpecialistRepositoryImpl struct {
@@ -59,4 +59,24 @@ func (repository *SpecialistRepositoryImpl) FindAllSpecialist() ([]domain.Specia
 	}
 
 	return lists, nil
+}
+
+func (repository *SpecialistRepositoryImpl) FindById(id int) (*domain.Specialist, error) {
+	specialist := domain.Specialist{}
+
+	result := repository.db.Where("id = ?", id).First(&specialist)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &specialist, nil
+}
+
+func (repository *SpecialistRepositoryImpl) DeleteSpecialistById(id int) error {
+	result := repository.db.Delete(&domain.Specialist{}, id)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
 }
