@@ -19,6 +19,7 @@ type ArticleHandler interface {
 	FindArticleBySlug(ctx echo.Context) error
 	UpdatePublishedArticle(ctx echo.Context) error
 	AddTagArticle(ctx echo.Context) error
+	UpdateArticle(ctx echo.Context) error
 }
 
 type ArticleHandlerImpl struct {
@@ -160,4 +161,27 @@ func (handler *ArticleHandlerImpl) AddTagArticle(ctx echo.Context) error {
 	}
 
 	return responses.StatusCreated(ctx, "Success add category to article", nil)
+}
+
+func (handler *ArticleHandlerImpl) UpdateArticle(ctx echo.Context) error {
+
+	var request requests.ArticleRequest
+	errBinding := ctx.Bind(&request)
+
+	Thumbnail, _ := ctx.FormFile("thumbnail")
+
+	if errBinding != nil {
+		return exceptions.StatusBadRequest(ctx, errBinding)
+	}
+
+	validation, err := handler.ArticleService.UpdateArticle(ctx, request, Thumbnail)
+	if validation != nil {
+		return exceptions.ValidationException(ctx, "Error Validation", validation)
+	}
+
+	if err != nil {
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Article updated!", nil)
 }

@@ -24,6 +24,7 @@ type ArticleService interface {
 	UpdatePublishedArticle(ctx echo.Context, request requests.PublishArticle) ([]exceptions.ValidationMessage, error)
 	FindArticleBySlug(ctx echo.Context, slug string) (*domain.Articles, error)
 	AddTagArticle(ctx echo.Context, id int, request requests.ArticlehasTagRequest) ([]exceptions.ValidationMessage, error)
+	UpdateArticle(ctx echo.Context, request requests.ArticleRequest, thumbnail *multipart.FileHeader) ([]exceptions.ValidationMessage, error)
 }
 
 type ArticleServiceImpl struct {
@@ -81,7 +82,7 @@ func (service *ArticleServiceImpl) CreateArticle(ctx echo.Context, request reque
 		return nil, nil, errUploadThumbnail
 	}
 
-	request.Thumbnail = ThumbnailCloudURL
+	request.Thumbnail = &ThumbnailCloudURL
 
 	article := conversion.ArticleCreateRequestToArticleDomain(request)
 
@@ -196,4 +197,38 @@ func (service *ArticleServiceImpl) FindArticleBySlug(ctx echo.Context, slug stri
 	}
 
 	return result, nil
+}
+
+func (service *ArticleServiceImpl) UpdateArticle(ctx echo.Context, request requests.ArticleRequest, thumbnail *multipart.FileHeader) ([]exceptions.ValidationMessage, error) {
+	err := service.validator.Struct(request)
+	if err != nil {
+		return helpers.ValidationError(ctx, err), nil
+	}
+
+	id := ctx.Param("id")
+	getId, _ := strconv.Atoi(id)
+
+	_, err = service.ArticleRepo.FindById(getId)
+	if err != nil {
+		return nil, fmt.Errorf("Article not found")
+
+	}
+	if thumbnail != nil {
+
+		ThumbnailCloudURL, errUploadThumbnail := storage.S3PutFile(thumbnail, "articles/thumbnail")
+
+		if errUploadThumbnail != nil {
+			return nil, errUploadThumbnail
+		}
+
+		request.Thumbnail = &ThumbnailCloudURL
+	}
+	article := conversion.ArticleUpdateRequestToArticleDomain(request)
+
+	_, err = service.ArticleRepo.UpdateArticle(getId, article), nil
+	if err != nil {
+		return nil, fmt.Errorf("Error update article")
+	}
+
+	return nil, nil
 }

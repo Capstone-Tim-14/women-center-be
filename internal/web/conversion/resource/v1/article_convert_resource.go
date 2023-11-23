@@ -11,7 +11,7 @@ func ConvertArticleResource(articles []domain.Articles) []resources.ArticleResou
 	for _, article := range articles {
 		singleArticleResource := resources.ArticleResource{}
 		singleArticleResource.Title = article.Title
-		singleArticleResource.Thumbnail = article.Thumbnail
+		singleArticleResource.Thumbnail = *article.Thumbnail
 		singleArticleResource.Slug = article.Slug
 		if article.Admin != nil {
 			singleArticleResource.Author = resources.Author{
@@ -38,7 +38,7 @@ func ConvertSingleArticleResource(article *domain.Articles) resources.ArticleRes
 	singleArticleResource := resources.ArticleResource{}
 	singleArticleResource.Id = article.Id
 	singleArticleResource.Title = article.Title
-	singleArticleResource.Thumbnail = article.Thumbnail
+	singleArticleResource.Thumbnail = *article.Thumbnail
 	singleArticleResource.Slug = article.Slug
 	singleArticleResource.Content = article.Content
 	if article.Admin != nil {

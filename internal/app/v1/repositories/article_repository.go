@@ -18,6 +18,7 @@ type ArticleRepository interface {
 	UpdateStatusArticle(slug, status string) error
 	FindBySlug(slug string) (*domain.Articles, error)
 	FindByTitle(title string) (*domain.Articles, error)
+	UpdateArticle(id int, article *domain.Articles) error
 }
 
 type ArticleRepositoryImpl struct {
@@ -130,4 +131,13 @@ func (repository *ArticleRepositoryImpl) FindByTitle(title string) (*domain.Arti
 	}
 
 	return &article, nil
+}
+
+func (repository *ArticleRepositoryImpl) UpdateArticle(id int, article *domain.Articles) error {
+	result := repository.db.Model(&article).Where("id = ?", id).Updates(article)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
 }
