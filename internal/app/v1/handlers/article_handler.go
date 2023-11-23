@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"strconv"
 	"strings"
 	"woman-center-be/internal/app/v1/services"
 	conversion "woman-center-be/internal/web/conversion/resource/v1"
@@ -15,6 +16,7 @@ type ArticleHandler interface {
 	CreateArticle(ctx echo.Context) error
 	FindAllArticle(ctx echo.Context) error
 	DeleteArticle(ctx echo.Context) error
+	AddTagArticle(ctx echo.Context) error
 }
 
 type ArticleHandlerImpl struct {
@@ -84,4 +86,28 @@ func (handler *ArticleHandlerImpl) DeleteArticle(ctx echo.Context) error {
 	}
 
 	return responses.StatusOK(ctx, "Article deleted successfully", nil)
+}
+
+func (handler *ArticleHandlerImpl) AddTagArticle(ctx echo.Context) error {
+
+	id := ctx.Param("id")
+	convertid, _ := strconv.Atoi(id)
+	var request requests.ArticlehasTagRequest
+	errBinding := ctx.Bind(&request)
+
+	if errBinding != nil {
+		return exceptions.StatusBadRequest(ctx, errBinding)
+	}
+
+	validation, err := handler.ArticleService.AddTagArticle(ctx, convertid, request)
+
+	if validation != nil {
+		return exceptions.ValidationException(ctx, "Error Validation", validation)
+	}
+
+	if err != nil {
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusCreated(ctx, "Success add category to article", nil)
 }
