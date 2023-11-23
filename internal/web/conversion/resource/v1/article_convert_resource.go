@@ -34,6 +34,7 @@ func ConvertArticleResource(articles []domain.Articles) []resources.ArticleResou
 }
 
 func ConvertSingleArticleResource(article *domain.Articles) resources.ArticleResource {
+	var category []resources.ArticleCategory
 	singleArticleResource := resources.ArticleResource{}
 	singleArticleResource.Id = article.Id
 	singleArticleResource.Title = article.Title
@@ -51,8 +52,17 @@ func ConvertSingleArticleResource(article *domain.Articles) resources.ArticleRes
 			Role: article.Counselors.Credential.Role.Name,
 		}
 	}
+	for _, tag := range article.Tags {
+		category = append(category, resources.ArticleCategory{
+			Id:   tag.Id,
+			Name: tag.Name,
+		})
+	}
+	singleArticleResource.Tag = category
 	singleArticleResource.Status = article.Status
 	singleArticleResource.PublishedAt = helpers.ParseDateFormat(article.PublishedAt)
+	singleArticleResource.CreatedAt = helpers.ParseDateFormat(article.CreatedAt)
+	singleArticleResource.UpdatedAt = helpers.ParseDateFormat(article.UpdatedAt)
 
 	return singleArticleResource
 }

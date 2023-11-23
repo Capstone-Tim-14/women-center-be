@@ -114,7 +114,7 @@ func (repository *ArticleRepositoryImpl) UpdateStatusArticle(slug, status string
 
 func (repository *ArticleRepositoryImpl) FindBySlug(slug string) (*domain.Articles, error) {
 	article := domain.Articles{}
-	result := repository.db.Preload("Admin").Preload("Admin.Credential").Preload("Admin.Credential.Role").Preload("Counselors").Preload("Counselors.Credential").Preload("Counselors.Credential.Role").Where("slug = ?", slug).First(&article)
+	result := repository.db.Preload("Admin").Preload("Admin.Credential").Preload("Admin.Credential.Role").Preload("Counselors").Preload("Counselors.Credential").Preload("Counselors.Credential.Role").Preload("Tags").Where("slug = ?", slug).First(&article)
 	if result.Error != nil {
 		return nil, result.Error
 	}
