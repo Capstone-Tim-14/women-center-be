@@ -22,23 +22,27 @@ type ArticleService interface {
 	FindAllArticle(ctx echo.Context) ([]domain.Articles, *query.Pagination, error)
 	DeleteArticle(ctx echo.Context) error
 	UpdatePublishedArticle(ctx echo.Context, request requests.PublishArticle) ([]exceptions.ValidationMessage, error)
-
 	FindArticleBySlug(ctx echo.Context, slug string) (*domain.Articles, error)
+	AddTagArticle(ctx echo.Context, id int, request requests.ArticlehasTagRequest) ([]exceptions.ValidationMessage, error)
 }
 
 type ArticleServiceImpl struct {
-	ArticleRepo   repositories.ArticleRepository
-	AdminRepo     repositories.AdminRepository
-	CounselorRepo repositories.CounselorRepository
-	validator     *validator.Validate
+	ArticleRepo       repositories.ArticleRepository
+	AdminRepo         repositories.AdminRepository
+	CounselorRepo     repositories.CounselorRepository
+	validator         *validator.Validate
+	TagRepo           repositories.TagRepository
+	ArticlehasTagRepo repositories.ArticlehasTagRepository
 }
 
-func NewArticleService(article repositories.ArticleRepository, validator *validator.Validate, admin repositories.AdminRepository, counselor repositories.CounselorRepository) ArticleService {
+func NewArticleService(article repositories.ArticleRepository, validator *validator.Validate, admin repositories.AdminRepository, counselor repositories.CounselorRepository, tag repositories.TagRepository, articlehastag repositories.ArticlehasTagRepository) ArticleService {
 	return &ArticleServiceImpl{
-		ArticleRepo:   article,
-		AdminRepo:     admin,
-		CounselorRepo: counselor,
-		validator:     validator,
+		ArticleRepo:       article,
+		AdminRepo:         admin,
+		CounselorRepo:     counselor,
+		validator:         validator,
+		TagRepo:           tag,
+		ArticlehasTagRepo: articlehastag,
 	}
 }
 
@@ -123,10 +127,12 @@ func (service *ArticleServiceImpl) DeleteArticle(ctx echo.Context) error {
 }
 
 func (service *ArticleServiceImpl) UpdatePublishedArticle(ctx echo.Context, request requests.PublishArticle) ([]exceptions.ValidationMessage, error) {
+
 	err := service.validator.Struct(request)
 	if err != nil {
 		return helpers.ValidationError(ctx, err), nil
 	}
+
 	slug := ctx.Param("slug")
 
 	findSlug, err := service.ArticleRepo.FindBySlug(slug)
@@ -152,6 +158,31 @@ func (service *ArticleServiceImpl) UpdatePublishedArticle(ctx echo.Context, requ
 
 	if errUpdateStatus != nil {
 		return nil, fmt.Errorf("Error update status article")
+	}
+
+	return nil, nil
+}
+
+func (service *ArticleServiceImpl) AddTagArticle(ctx echo.Context, id int, request requests.ArticlehasTagRequest) ([]exceptions.ValidationMessage, error) {
+
+	err := service.validator.Struct(request)
+	if err != nil {
+		return helpers.ValidationError(ctx, err), nil
+	}
+
+	article, errArticle := service.ArticleRepo.FindById(id)
+	if errArticle != nil {
+		return nil, errArticle
+	}
+
+	tag, errTag := service.TagRepo.FindTagByName(request.Name)
+	if errTag != nil {
+		return nil, errTag
+	}
+
+	errAddTag := service.ArticlehasTagRepo.AddTag(*article, tag)
+	if errAddTag != nil {
+		return nil, errAddTag
 	}
 
 	return nil, nil

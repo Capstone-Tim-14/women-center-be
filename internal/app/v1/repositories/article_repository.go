@@ -13,6 +13,7 @@ import (
 type ArticleRepository interface {
 	CreateArticle(article *domain.Articles) (*domain.Articles, error)
 	FindAllArticle(string, query.Pagination) ([]domain.Articles, *query.Pagination, error)
+	FindById(id int) (*domain.Articles, error)
 	DeleteArticleById(id int) error
 	UpdateStatusArticle(slug, status string) error
 	FindBySlug(slug string) (*domain.Articles, error)
@@ -71,6 +72,20 @@ func (repository *ArticleRepositoryImpl) FindAllArticle(orderBy string, paginate
 	}
 
 	return articles, &paginate, nil
+}
+
+func (repository *ArticleRepositoryImpl) FindById(id int) (*domain.Articles, error) {
+	var article domain.Articles
+
+	result := repository.db.Where("id = ?", id).First(&article)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return nil, fmt.Errorf("Article not found")
+	}
+	return &article, nil
 }
 
 func (repository *ArticleRepositoryImpl) DeleteArticleById(id int) error {
