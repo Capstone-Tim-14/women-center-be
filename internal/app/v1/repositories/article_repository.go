@@ -14,6 +14,7 @@ type ArticleRepository interface {
 	CreateArticle(article *domain.Articles) (*domain.Articles, error)
 	FindAllArticle(string, query.Pagination) ([]domain.Articles, *query.Pagination, error)
 	DeleteArticleById(id int) error
+	UpdateStatusArticle(slug, status string) error
 }
 
 type ArticleRepositoryImpl struct {
@@ -81,5 +82,15 @@ func (repository *ArticleRepositoryImpl) DeleteArticleById(id int) error {
 	if result.RowsAffected == 0 {
 		return fmt.Errorf("Article not found")
 	}
+	return nil
+}
+
+func (repository *ArticleRepositoryImpl) UpdateStatusArticle(slug, status string) error {
+
+	result := repository.db.Table("articles").Where("slug = ?", slug).Updates(domain.Articles{Status: status})
+	if result.Error != nil {
+		return fmt.Errorf("Error update status article")
+	}
+
 	return nil
 }

@@ -21,6 +21,7 @@ type ArticleService interface {
 	CreateArticle(ctx echo.Context, request requests.ArticleRequest, thumbnail *multipart.FileHeader) (*domain.Articles, []exceptions.ValidationMessage, error)
 	FindAllArticle(ctx echo.Context) ([]domain.Articles, *query.Pagination, error)
 	DeleteArticle(ctx echo.Context) error
+	UpdatePublishedArticle(ctx echo.Context, request requests.PublishArticle, slug string) ([]exceptions.ValidationMessage, error)
 }
 
 type ArticleServiceImpl struct {
@@ -109,6 +110,27 @@ func (service *ArticleServiceImpl) DeleteArticle(ctx echo.Context) error {
 	err := service.ArticleRepo.DeleteArticleById(getId)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (service *ArticleServiceImpl) UpdatePublishedArticle(ctx echo.Context, request requests.PublishArticle) ([]exceptions.ValidationMessage, error) {
+	err := service.validator.Struct(request)
+	if err != nil {
+		return helpers.ValidationError(ctx, err), nil
+	}
+	slug := ctx.Param("slug")
+
+	findSlug, err := service.ArticleRepo.F
+
+	article := service.ArticleRepo.UpdateStatusArticle(slug, request.Status)
+	if article.Status == "Approved" {
+		return nil
+	}
+
+	if article.Status == "Rejected" {
+		return fmt.Errorf("Article already rejected")
 	}
 
 	return nil
