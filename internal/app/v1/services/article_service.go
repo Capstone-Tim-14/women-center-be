@@ -21,6 +21,10 @@ type ArticleService interface {
 	CreateArticle(ctx echo.Context, request requests.ArticleRequest, thumbnail *multipart.FileHeader) (*domain.Articles, []exceptions.ValidationMessage, error)
 	FindAllArticle(ctx echo.Context) ([]domain.Articles, *query.Pagination, error)
 	DeleteArticle(ctx echo.Context) error
+	UpdatePublishedArticle(ctx echo.Context, request requests.PublishArticle) ([]exceptions.ValidationMessage, error)
+	FindArticleBySlug(ctx echo.Context, slug string) (*domain.Articles, error)
+	AddTagArticle(ctx echo.Context, id int, request requests.ArticlehasTagRequest) ([]exceptions.ValidationMessage, error)
+	UpdateArticle(ctx echo.Context, request requests.ArticleRequest, thumbnail *multipart.FileHeader) ([]exceptions.ValidationMessage, error)
 }
 
 type ArticleServiceImpl struct {
@@ -69,7 +73,7 @@ func (service *ArticleServiceImpl) CreateArticle(ctx echo.Context, request reque
 		return nil, nil, errUploadThumbnail
 	}
 
-	request.Thumbnail = ThumbnailCloudURL
+	request.Thumbnail = &ThumbnailCloudURL
 
 	article := conversion.ArticleCreateRequestToArticleDomain(request)
 
@@ -112,4 +116,108 @@ func (service *ArticleServiceImpl) DeleteArticle(ctx echo.Context) error {
 	}
 
 	return nil
+}
+
+func (service *ArticleServiceImpl) UpdatePublishedArticle(ctx echo.Context, request requests.PublishArticle) ([]exceptions.ValidationMessage, error) {
+
+	err := service.validator.Struct(request)
+	if err != nil {
+		return helpers.ValidationError(ctx, err), nil
+	}
+
+	slug := ctx.Param("slug")
+
+	findSlug, err := service.ArticleRepo.FindBySlug(slug)
+	if err != nil {
+		return nil, fmt.Errorf("Article not found")
+
+	}
+	if findSlug.Status == "Published" {
+		return nil, fmt.Errorf("Article already published")
+	}
+
+	if findSlug.Status == "Rejected" {
+		return nil, fmt.Errorf("Article already rejected")
+	}
+
+	var errUpdateStatus error
+
+	if request.Status == "APPROVED" {
+		errUpdateStatus = service.ArticleRepo.UpdateStatusArticle(slug, "PUBLISHED")
+	} else {
+		errUpdateStatus = service.ArticleRepo.UpdateStatusArticle(slug, "REJECTED")
+	}
+
+	if errUpdateStatus != nil {
+		return nil, fmt.Errorf("Error update status article")
+	}
+
+	return nil, nil
+}
+
+func (service *ArticleServiceImpl) AddTagArticle(ctx echo.Context, id int, request requests.ArticlehasTagRequest) ([]exceptions.ValidationMessage, error) {
+
+	err := service.validator.Struct(request)
+	if err != nil {
+		return helpers.ValidationError(ctx, err), nil
+	}
+
+	article, errArticle := service.ArticleRepo.FindById(id)
+	if errArticle != nil {
+		return nil, errArticle
+	}
+
+	tag, errTag := service.TagRepo.FindTagByName(request.Name)
+	if errTag != nil {
+		return nil, errTag
+	}
+
+	errAddTag := service.ArticlehasTagRepo.AddTag(*article, tag)
+	if errAddTag != nil {
+		return nil, errAddTag
+	}
+
+	return nil, nil
+}
+
+func (service *ArticleServiceImpl) FindArticleBySlug(ctx echo.Context, slug string) (*domain.Articles, error) {
+	result, err := service.ArticleRepo.FindBySlug(slug)
+	if err != nil {
+		return nil, fmt.Errorf("Article not found")
+	}
+
+	return result, nil
+}
+
+func (service *ArticleServiceImpl) UpdateArticle(ctx echo.Context, request requests.ArticleRequest, thumbnail *multipart.FileHeader) ([]exceptions.ValidationMessage, error) {
+	err := service.validator.Struct(request)
+	if err != nil {
+		return helpers.ValidationError(ctx, err), nil
+	}
+
+	id := ctx.Param("id")
+	getId, _ := strconv.Atoi(id)
+
+	_, err = service.ArticleRepo.FindById(getId)
+	if err != nil {
+		return nil, fmt.Errorf("Article not found")
+
+	}
+
+	ThumbnailCloudURL, errUploadThumbnail := storage.S3PutFile(thumbnail, "articles/thumbnail")
+
+	if errUploadThumbnail != nil {
+		return nil, errUploadThumbnail
+	}
+
+	request.Thumbnail = &ThumbnailCloudURL
+
+	article := conversion.ArticleUpdateRequestToArticleDomain(request)
+
+	_, err = service.ArticleRepo.UpdateArticle(getId, article)
+	if err != nil {
+		return nil, fmt.Errorf("Error update article")
+	}
+
+	return nil, nil
 }

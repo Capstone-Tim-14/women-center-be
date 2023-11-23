@@ -17,7 +17,8 @@ type Articles struct {
 	Admin         *Admin
 	Counselors_id *uint
 	Counselors    *Counselors
-	Thumbnail     string
+	Thumbnail     *string
+	Tags          []Tag_Article `gorm:"many2many:article_has_tags;foreignKey:Id;references:Id;"`
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 	DeletedAt     gorm.DeletedAt
