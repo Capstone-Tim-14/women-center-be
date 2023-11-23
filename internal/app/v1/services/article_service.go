@@ -129,18 +129,32 @@ func (service *ArticleServiceImpl) UpdatePublishedArticle(ctx echo.Context, requ
 	}
 	slug := ctx.Param("slug")
 
-	findSlug, err := service.ArticleRepo.F
+	findSlug, err := service.ArticleRepo.FindBySlug(slug)
+	if err != nil {
+		return nil, fmt.Errorf("Article not found")
 
-	article := service.ArticleRepo.UpdateStatusArticle(slug, request.Status)
-	if article.Status == "Approved" {
-		return nil
+	}
+	if findSlug.Status == "Published" {
+		return nil, fmt.Errorf("Article already published")
 	}
 
-	if article.Status == "Rejected" {
-		return fmt.Errorf("Article already rejected")
+	if findSlug.Status == "Rejected" {
+		return nil, fmt.Errorf("Article already rejected")
 	}
 
-	return nil
+	var errUpdateStatus error
+
+	if request.Status == "APPROVED" {
+		errUpdateStatus = service.ArticleRepo.UpdateStatusArticle(slug, "PUBLISHED")
+	} else {
+		errUpdateStatus = service.ArticleRepo.UpdateStatusArticle(slug, "REJECTED")
+	}
+
+	if errUpdateStatus != nil {
+		return nil, fmt.Errorf("Error update status article")
+	}
+
+	return nil, nil
 }
 
 func (service *ArticleServiceImpl) FindArticleBySlug(ctx echo.Context, slug string) (*domain.Articles, error) {

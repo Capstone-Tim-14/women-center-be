@@ -16,6 +16,7 @@ type ArticleHandler interface {
 	FindAllArticle(ctx echo.Context) error
 	DeleteArticle(ctx echo.Context) error
 	FindArticleBySlug(ctx echo.Context) error
+	UpdatePublishedArticle(ctx echo.Context) error
 }
 
 type ArticleHandlerImpl struct {
@@ -101,4 +102,36 @@ func (handler *ArticleHandlerImpl) FindArticleBySlug(ctx echo.Context) error {
 	articleResponse := conversion.ConvertSingleArticleResource(response)
 
 	return responses.StatusOK(ctx, "Success Get Article", articleResponse)
+}
+
+func (handler *ArticleHandlerImpl) UpdatePublishedArticle(ctx echo.Context) error {
+	request := requests.PublishArticle{}
+	err := ctx.Bind(&request)
+	if err != nil {
+		return exceptions.StatusBadRequest(ctx, err)
+	}
+
+	validation, err := handler.ArticleService.UpdatePublishedArticle(ctx, request)
+
+	if validation != nil {
+		return exceptions.ValidationException(ctx, "Error validation", validation)
+	}
+
+	if err != nil {
+		if strings.Contains(err.Error(), "Article not found") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+
+		if strings.Contains(err.Error(), "Article already published") {
+			return exceptions.StatusAlreadyExist(ctx, err)
+		}
+
+		if strings.Contains(err.Error(), "Article already rejected") {
+			return exceptions.StatusAlreadyExist(ctx, err)
+		}
+
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Congratulations, the article is APPROVE", nil)
 }
