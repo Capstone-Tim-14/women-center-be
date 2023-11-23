@@ -15,6 +15,9 @@ type ArticleRepository interface {
 	FindAllArticle(string, query.Pagination) ([]domain.Articles, *query.Pagination, error)
 	FindById(id int) (*domain.Articles, error)
 	DeleteArticleById(id int) error
+	UpdateStatusArticle(slug, status string) error
+	FindBySlug(slug string) (*domain.Articles, error)
+	FindByTitle(title string) (*domain.Articles, error)
 }
 
 type ArticleRepositoryImpl struct {
@@ -97,4 +100,34 @@ func (repository *ArticleRepositoryImpl) DeleteArticleById(id int) error {
 		return fmt.Errorf("Article not found")
 	}
 	return nil
+}
+
+func (repository *ArticleRepositoryImpl) UpdateStatusArticle(slug, status string) error {
+
+	result := repository.db.Table("articles").Where("slug = ?", slug).Updates(domain.Articles{Status: status})
+	if result.Error != nil {
+		return fmt.Errorf("Error update status article")
+	}
+
+	return nil
+}
+
+func (repository *ArticleRepositoryImpl) FindBySlug(slug string) (*domain.Articles, error) {
+	article := domain.Articles{}
+	result := repository.db.Preload("Admin").Preload("Admin.Credential").Preload("Admin.Credential.Role").Preload("Counselors").Preload("Counselors.Credential").Preload("Counselors.Credential.Role").Preload("Tags").Where("slug = ?", slug).First(&article)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &article, nil
+}
+
+func (repository *ArticleRepositoryImpl) FindByTitle(title string) (*domain.Articles, error) {
+	article := domain.Articles{}
+	result := repository.db.Where("title = ?", title).First(&article)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &article, nil
 }

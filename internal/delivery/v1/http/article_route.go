@@ -26,8 +26,11 @@ func HttpArticleRoute(group *echo.Group, db *gorm.DB, validate *validator.Valida
 
 	articleAdmin := verifyTokenAdmin.Group("/articles")
 	articleAdmin.POST("", ArticleHandler.CreateArticle)
+
 	articleAdmin.GET("", ArticleHandler.FindAllArticle).Name = "admin.articles.get-all"
 	articleAdmin.DELETE("/:id", ArticleHandler.DeleteArticle)
+	articleAdmin.GET("/:slug", ArticleHandler.FindArticleBySlug)
+	articleAdmin.PUT("/:slug", ArticleHandler.UpdatePublishedArticle)
 	articleAdmin.POST("/:id/add-category", ArticleHandler.AddTagArticle)
 
 	articleCounselor := varifyTokenCounselor.Group("/articles")
