@@ -30,7 +30,7 @@ func HttpArticleRoute(group *echo.Group, db *gorm.DB, validate *validator.Valida
 	articleAdmin.GET("", ArticleHandler.FindAllArticle).Name = "admin.articles.get-all"
 	articleAdmin.DELETE("/:id", ArticleHandler.DeleteArticle)
 	articleAdmin.GET("/:slug", ArticleHandler.FindArticleBySlug)
-	articleAdmin.PUT("/:slug", ArticleHandler.UpdatePublishedArticle)
+	articleAdmin.PUT("/approved-request/:slug", ArticleHandler.UpdatePublishedArticle)
 	articleAdmin.POST("/:id/add-category", ArticleHandler.AddTagArticle)
 	articleAdmin.PUT("/:id", ArticleHandler.UpdateArticle)
 
