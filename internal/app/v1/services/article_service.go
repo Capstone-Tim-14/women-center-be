@@ -213,15 +213,16 @@ func (service *ArticleServiceImpl) UpdateArticle(ctx echo.Context, request reque
 		return nil, fmt.Errorf("Article not found")
 
 	}
+	if thumbnail != nil {
 
-	ThumbnailCloudURL, errUploadThumbnail := storage.S3PutFile(thumbnail, "articles/thumbnail")
+		ThumbnailCloudURL, errUploadThumbnail := storage.S3PutFile(thumbnail, "articles/thumbnail")
 
-	if errUploadThumbnail != nil {
-		return nil, errUploadThumbnail
+		if errUploadThumbnail != nil {
+			return nil, errUploadThumbnail
+		}
+
+		request.Thumbnail = &ThumbnailCloudURL
 	}
-
-	request.Thumbnail = &ThumbnailCloudURL
-
 	article := conversion.ArticleUpdateRequestToArticleDomain(request)
 
 	_, err = service.ArticleRepo.UpdateArticle(getId, article), nil

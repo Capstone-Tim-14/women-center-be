@@ -168,11 +168,7 @@ func (handler *ArticleHandlerImpl) UpdateArticle(ctx echo.Context) error {
 	var request requests.ArticleRequest
 	errBinding := ctx.Bind(&request)
 
-	Thumbnail, errThumb := ctx.FormFile("thumbnail")
-
-	if errThumb != nil {
-		return exceptions.StatusBadRequest(ctx, errThumb)
-	}
+	Thumbnail, _ := ctx.FormFile("thumbnail")
 
 	if errBinding != nil {
 		return exceptions.StatusBadRequest(ctx, errBinding)
@@ -187,5 +183,5 @@ func (handler *ArticleHandlerImpl) UpdateArticle(ctx echo.Context) error {
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
-	return responses.StatusOK(ctx, "Success update article", nil)
+	return responses.StatusOK(ctx, "Article updated!", nil)
 }
