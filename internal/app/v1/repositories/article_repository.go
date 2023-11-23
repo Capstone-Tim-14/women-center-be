@@ -12,7 +12,7 @@ import (
 
 type ArticleRepository interface {
 	CreateArticle(article *domain.Articles) (*domain.Articles, error)
-	FindAllArticle(string, query.Pagination) ([]domain.Articles, *query.Pagination, error)
+	FindAllArticle(string, string, query.Pagination) ([]domain.Articles, *query.Pagination, error)
 	FindById(id int) (*domain.Articles, error)
 	DeleteArticleById(id int) error
 	UpdateStatusArticle(slug, status string) error
@@ -40,10 +40,10 @@ func (repository *ArticleRepositoryImpl) CreateArticle(article *domain.Articles)
 
 }
 
-func (repository *ArticleRepositoryImpl) FindAllArticle(orderBy string, paginate query.Pagination) ([]domain.Articles, *query.Pagination, error) {
+func (repository *ArticleRepositoryImpl) FindAllArticle(orderBy string, search string, paginate query.Pagination) ([]domain.Articles, *query.Pagination, error) {
 	var articles []domain.Articles
 
-	result := repository.db.Scopes(query.Paginate(articles, &paginate, repository.db)).Preload("Admin").Preload("Admin.Credential").Preload("Admin.Credential.Role").Preload("Counselors").Preload("Counselors.Credential").Preload("Counselors.Credential.Role")
+	result := repository.db.Scopes(query.Paginate(articles, &paginate, repository.db)).Preload("Admin").Preload("Admin.Credential").Preload("Admin.Credential.Role").Preload("Counselors").Preload("Counselors.Credential").Preload("Counselors.Credential.Role").Where("title LIKE ?", "%"+search+"%")
 
 	if orderBy != "" {
 		result.Order("title " + orderBy).Find(&articles)
