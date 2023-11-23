@@ -14,7 +14,6 @@ import (
 type AuthHandler interface {
 	AdminAuthHandler(echo.Context) error
 	UserAuthHandler(echo.Context) error
-	CounselorAuthHandler(echo.Context) error
 	OauthGoogleHandler(echo.Context) error
 	OauthCallbackGoogleHandler(echo.Context) error
 }
@@ -55,33 +54,6 @@ func (auth *AuthServiceImpl) AdminAuthHandler(ctx echo.Context) error {
 
 	return responses.StatusOK(ctx, "Authentication Success", AuthResponse)
 
-}
-
-func (auth *AuthServiceImpl) CounselorAuthHandler(ctx echo.Context) error {
-
-	var request requests.AuthRequest
-
-	ErrBindRequest := ctx.Bind(&request)
-
-	if ErrBindRequest != nil {
-		return exceptions.BadRequestException("Invalid binding form input", ctx)
-	}
-
-	AuthResponse, Validation, Err := auth.AuthService.CounselorAuthentication(request, ctx)
-
-	if Validation != nil {
-		return exceptions.ValidationException(ctx, "Error validation", Validation)
-	}
-
-	if Err != nil {
-		if strings.Contains(Err.Error(), "Error uncorrect credential") {
-			return exceptions.StatusUnauthorizedResponse(ctx, Err)
-		}
-
-		return exceptions.StatusInternalServerError(ctx, Err)
-	}
-
-	return responses.StatusOK(ctx, "Authentication Success", AuthResponse)
 }
 
 func (auth *AuthServiceImpl) UserAuthHandler(ctx echo.Context) error {

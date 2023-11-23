@@ -1,7 +1,7 @@
 package resources
 
 type CounselorResource struct {
-	Id                int    `json:"id,omitempty"`
+	Id                uint   `json:"id,omitempty"`
 	First_name        string `json:"first_name,omitempty"`
 	Last_name         string `json:"last_name,omitempty"`
 	Email             string `json:"email,omitempty"`

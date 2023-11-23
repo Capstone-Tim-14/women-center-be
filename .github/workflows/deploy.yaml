@@ -19,6 +19,12 @@ jobs:
       - name: setup enviroment and build docker
         run: |
           sed -e 's!example-db-user!${{ secrets.DB_USER }}!g' \
+              -e 's!example-main-url!${{ secrets.MAIN_URL }}!g' \
+              -e 's!example-bucket-name!${{ secrets.BUCKET_NAME }}!g' \
+              -e 's!example-storage-account-id!${{ secrets.STORAGE_ACCOUNT_ID }}!g' \
+              -e 's!example-access-key-id!${{ secrets.STORAGE_ACCESS_KEY_ID }}!g' \
+              -e 's!example-access-secret-key!${{ secrets.STORAGE_ACCESS_SECRET_KEY }}!g' \
+              -e 's!example-api-version!${{ secrets.API_VERSION }}!g' \
               -e 's!example-secret-app-port!${{ secrets.SECRET_APP_PORT }}!g' \
               -e 's!example-db-pass!${{ secrets.DB_PASS }}!g' \
               -e 's!example-db-port!${{ secrets.DB_PORT }}!g' \

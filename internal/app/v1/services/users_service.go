@@ -49,10 +49,6 @@ func (service *UserServiceImpl) RegisterUser(ctx echo.Context, request requests.
 
 	request.Role_id = uint(getRoleUser.Id)
 
-	if request.Password != request.ConfirmPassword {
-		return nil, nil, fmt.Errorf("Password and confirm password not match")
-	}
-
 	user := conversion.UserCreateRequestToUserDomain(request)
 
 	user.Credential.Password = helpers.HashPassword(request.Password)
