@@ -21,7 +21,9 @@ type ArticleService interface {
 	CreateArticle(ctx echo.Context, request requests.ArticleRequest, thumbnail *multipart.FileHeader) (*domain.Articles, []exceptions.ValidationMessage, error)
 	FindAllArticle(ctx echo.Context) ([]domain.Articles, *query.Pagination, error)
 	DeleteArticle(ctx echo.Context) error
-	UpdatePublishedArticle(ctx echo.Context, request requests.PublishArticle, slug string) ([]exceptions.ValidationMessage, error)
+	UpdatePublishedArticle(ctx echo.Context, request requests.PublishArticle) ([]exceptions.ValidationMessage, error)
+
+	FindArticleBySlug(ctx echo.Context, slug string) (*domain.Articles, error)
 }
 
 type ArticleServiceImpl struct {
@@ -44,6 +46,11 @@ func (service *ArticleServiceImpl) CreateArticle(ctx echo.Context, request reque
 	err := service.validator.Struct(request)
 	if err != nil {
 		return nil, helpers.ValidationError(ctx, err), nil
+	}
+
+	existingTitle, _ := service.ArticleRepo.FindByTitle(request.Title)
+	if existingTitle != nil {
+		return nil, nil, fmt.Errorf("Title already exists")
 	}
 
 	author := helpers.GetAuthClaims(ctx)
@@ -134,4 +141,13 @@ func (service *ArticleServiceImpl) UpdatePublishedArticle(ctx echo.Context, requ
 	}
 
 	return nil
+}
+
+func (service *ArticleServiceImpl) FindArticleBySlug(ctx echo.Context, slug string) (*domain.Articles, error) {
+	result, err := service.ArticleRepo.FindBySlug(slug)
+	if err != nil {
+		return nil, fmt.Errorf("Article not found")
+	}
+
+	return result, nil
 }

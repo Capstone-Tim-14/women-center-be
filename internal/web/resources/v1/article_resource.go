@@ -1,7 +1,7 @@
 package resources
 
 type ArticleResource struct {
-	Id          int    `json:"id,omitempty"`
+	Id          uint   `json:"id,omitempty"`
 	Title       string `json:"title,omitempty"`
 	Thumbnail   string `json:"thumbnail,omitempty"`
 	Slug        string `json:"slug,omitempty"`

@@ -15,6 +15,7 @@ type ArticleHandler interface {
 	CreateArticle(ctx echo.Context) error
 	FindAllArticle(ctx echo.Context) error
 	DeleteArticle(ctx echo.Context) error
+	FindArticleBySlug(ctx echo.Context) error
 }
 
 type ArticleHandlerImpl struct {
@@ -47,6 +48,10 @@ func (handler *ArticleHandlerImpl) CreateArticle(ctx echo.Context) error {
 	}
 
 	if err != nil {
+		if strings.Contains(err.Error(), "Title already exists") {
+			return exceptions.StatusAlreadyExist(ctx, err)
+		}
+
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
@@ -84,4 +89,16 @@ func (handler *ArticleHandlerImpl) DeleteArticle(ctx echo.Context) error {
 	}
 
 	return responses.StatusOK(ctx, "Article deleted successfully", nil)
+}
+
+func (handler *ArticleHandlerImpl) FindArticleBySlug(ctx echo.Context) error {
+	slug := ctx.Param("slug")
+	response, err := handler.ArticleService.FindArticleBySlug(ctx, slug)
+	if err != nil {
+		return exceptions.StatusNotFound(ctx, err)
+	}
+
+	articleResponse := conversion.ConvertSingleArticleResource(response)
+
+	return responses.StatusOK(ctx, "Success Get Article", articleResponse)
 }
