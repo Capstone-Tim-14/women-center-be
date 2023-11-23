@@ -18,6 +18,7 @@ type Articles struct {
 	Counselors_id *uint          `gorm:"default:null"`
 	Counselors    *Counselors    `gorm:"foreignKey:Counselors_id;"`
 	Thumbnail     string         `gorm:"type:varchar(255)"`
+	Tags          []Tag_Article  `gorm:"many2many:article_has_tags;foreignKey:Id;references:Id;"`
 	CreatedAt     time.Time      `gorm:"autoCreateTime"`
 	UpdatedAt     time.Time      `gorm:"autoUpdateTime:mili"`
 	DeletedAt     gorm.DeletedAt `gorm:"index"`

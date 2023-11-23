@@ -12,11 +12,13 @@ import (
 
 type ArticleRepository interface {
 	CreateArticle(article *domain.Articles) (*domain.Articles, error)
-	FindAllArticle(string, query.Pagination) ([]domain.Articles, *query.Pagination, error)
+	FindAllArticle(string, string, query.Pagination) ([]domain.Articles, *query.Pagination, error)
+	FindById(id int) (*domain.Articles, error)
 	DeleteArticleById(id int) error
 	UpdateStatusArticle(slug, status string) error
 	FindBySlug(slug string) (*domain.Articles, error)
 	FindByTitle(title string) (*domain.Articles, error)
+	UpdateArticle(id int, article *domain.Articles) error
 }
 
 type ArticleRepositoryImpl struct {
@@ -39,10 +41,10 @@ func (repository *ArticleRepositoryImpl) CreateArticle(article *domain.Articles)
 
 }
 
-func (repository *ArticleRepositoryImpl) FindAllArticle(orderBy string, paginate query.Pagination) ([]domain.Articles, *query.Pagination, error) {
+func (repository *ArticleRepositoryImpl) FindAllArticle(orderBy string, search string, paginate query.Pagination) ([]domain.Articles, *query.Pagination, error) {
 	var articles []domain.Articles
 
-	result := repository.db.Scopes(query.Paginate(articles, &paginate, repository.db)).Preload("Admin").Preload("Admin.Credential").Preload("Admin.Credential.Role").Preload("Counselors").Preload("Counselors.Credential").Preload("Counselors.Credential.Role")
+	result := repository.db.Scopes(query.Paginate(articles, &paginate, repository.db)).Preload("Admin").Preload("Admin.Credential").Preload("Admin.Credential.Role").Preload("Counselors").Preload("Counselors.Credential").Preload("Counselors.Credential.Role").Where("title LIKE ?", "%"+search+"%")
 
 	if orderBy != "" {
 		result.Order("title " + orderBy).Find(&articles)
@@ -71,6 +73,20 @@ func (repository *ArticleRepositoryImpl) FindAllArticle(orderBy string, paginate
 	}
 
 	return articles, &paginate, nil
+}
+
+func (repository *ArticleRepositoryImpl) FindById(id int) (*domain.Articles, error) {
+	var article domain.Articles
+
+	result := repository.db.Where("id = ?", id).First(&article)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return nil, fmt.Errorf("Article not found")
+	}
+	return &article, nil
 }
 
 func (repository *ArticleRepositoryImpl) DeleteArticleById(id int) error {
@@ -115,4 +131,13 @@ func (repository *ArticleRepositoryImpl) FindByTitle(title string) (*domain.Arti
 	}
 
 	return &article, nil
+}
+
+func (repository *ArticleRepositoryImpl) UpdateArticle(id int, article *domain.Articles) error {
+	result := repository.db.Model(&article).Where("id = ?", id).Updates(article)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
 }

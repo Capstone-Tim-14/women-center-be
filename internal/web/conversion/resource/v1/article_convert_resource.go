@@ -11,7 +11,7 @@ func ConvertArticleResource(articles []domain.Articles) []resources.ArticleResou
 	for _, article := range articles {
 		singleArticleResource := resources.ArticleResource{}
 		singleArticleResource.Title = article.Title
-		singleArticleResource.Thumbnail = article.Thumbnail
+		singleArticleResource.Thumbnail = *article.Thumbnail
 		singleArticleResource.Slug = article.Slug
 		if article.Admin != nil {
 			singleArticleResource.Author = resources.Author{
@@ -31,4 +31,38 @@ func ConvertArticleResource(articles []domain.Articles) []resources.ArticleResou
 	}
 
 	return articleResource
+}
+
+func ConvertSingleArticleResource(article *domain.Articles) resources.ArticleResource {
+	var category []resources.ArticleCategory
+	singleArticleResource := resources.ArticleResource{}
+	singleArticleResource.Id = article.Id
+	singleArticleResource.Title = article.Title
+	singleArticleResource.Thumbnail = *article.Thumbnail
+	singleArticleResource.Slug = article.Slug
+	singleArticleResource.Content = article.Content
+	if article.Admin != nil {
+		singleArticleResource.Author = resources.Author{
+			Name: article.Admin.First_name + " " + article.Admin.Last_name,
+			Role: article.Admin.Credential.Role.Name,
+		}
+	} else if article.Counselors != nil {
+		singleArticleResource.Author = resources.Author{
+			Name: article.Counselors.First_name + " " + article.Counselors.Last_name,
+			Role: article.Counselors.Credential.Role.Name,
+		}
+	}
+	for _, tag := range article.Tags {
+		category = append(category, resources.ArticleCategory{
+			Id:   tag.Id,
+			Name: tag.Name,
+		})
+	}
+	singleArticleResource.Tag = category
+	singleArticleResource.Status = article.Status
+	singleArticleResource.PublishedAt = helpers.ParseDateFormat(article.PublishedAt)
+	singleArticleResource.CreatedAt = helpers.ParseDateFormat(article.CreatedAt)
+	singleArticleResource.UpdatedAt = helpers.ParseDateFormat(article.UpdatedAt)
+
+	return singleArticleResource
 }

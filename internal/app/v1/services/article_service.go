@@ -28,18 +28,22 @@ type ArticleService interface {
 }
 
 type ArticleServiceImpl struct {
-	ArticleRepo   repositories.ArticleRepository
-	AdminRepo     repositories.AdminRepository
-	CounselorRepo repositories.CounselorRepository
-	validator     *validator.Validate
+	ArticleRepo       repositories.ArticleRepository
+	AdminRepo         repositories.AdminRepository
+	CounselorRepo     repositories.CounselorRepository
+	validator         *validator.Validate
+	TagRepo           repositories.TagRepository
+	ArticlehasTagRepo repositories.ArticlehasTagRepository
 }
 
-func NewArticleService(article repositories.ArticleRepository, validator *validator.Validate, admin repositories.AdminRepository, counselor repositories.CounselorRepository) ArticleService {
+func NewArticleService(article repositories.ArticleRepository, validator *validator.Validate, admin repositories.AdminRepository, counselor repositories.CounselorRepository, tag repositories.TagRepository, articlehastag repositories.ArticlehasTagRepository) ArticleService {
 	return &ArticleServiceImpl{
-		ArticleRepo:   article,
-		AdminRepo:     admin,
-		CounselorRepo: counselor,
-		validator:     validator,
+		ArticleRepo:       article,
+		AdminRepo:         admin,
+		CounselorRepo:     counselor,
+		validator:         validator,
+		TagRepo:           tag,
+		ArticlehasTagRepo: articlehastag,
 	}
 }
 
@@ -47,6 +51,11 @@ func (service *ArticleServiceImpl) CreateArticle(ctx echo.Context, request reque
 	err := service.validator.Struct(request)
 	if err != nil {
 		return nil, helpers.ValidationError(ctx, err), nil
+	}
+
+	existingTitle, _ := service.ArticleRepo.FindByTitle(request.Title)
+	if existingTitle != nil {
+		return nil, nil, fmt.Errorf("Title already exists")
 	}
 
 	author := helpers.GetAuthClaims(ctx)
@@ -90,6 +99,7 @@ func (service *ArticleServiceImpl) FindAllArticle(ctx echo.Context) ([]domain.Ar
 	orderBy := ctx.QueryParam("orderBy")
 	QueryLimit := ctx.QueryParam("limit")
 	QueryPage := ctx.QueryParam("page")
+	Search := ctx.QueryParam("search")
 
 	Page, _ := strconv.Atoi(QueryPage)
 	Limit, _ := strconv.Atoi(QueryLimit)
@@ -99,7 +109,7 @@ func (service *ArticleServiceImpl) FindAllArticle(ctx echo.Context) ([]domain.Ar
 		Limit: uint(Limit),
 	}
 
-	result, paginate, err := service.ArticleRepo.FindAllArticle(orderBy, Paginate)
+	result, paginate, err := service.ArticleRepo.FindAllArticle(orderBy, Search, Paginate)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Article is empty")
 	}
@@ -214,7 +224,7 @@ func (service *ArticleServiceImpl) UpdateArticle(ctx echo.Context, request reque
 
 	article := conversion.ArticleUpdateRequestToArticleDomain(request)
 
-	_, err = service.ArticleRepo.UpdateArticle(getId, article)
+	_, err = service.ArticleRepo.UpdateArticle(getId, article), nil
 	if err != nil {
 		return nil, fmt.Errorf("Error update article")
 	}

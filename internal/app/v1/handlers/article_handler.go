@@ -52,6 +52,10 @@ func (handler *ArticleHandlerImpl) CreateArticle(ctx echo.Context) error {
 	}
 
 	if err != nil {
+		if strings.Contains(err.Error(), "Title already exists") {
+			return exceptions.StatusAlreadyExist(ctx, err)
+		}
+
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
