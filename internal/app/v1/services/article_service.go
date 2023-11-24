@@ -60,7 +60,7 @@ func (service *ArticleServiceImpl) CreateArticle(ctx echo.Context, request reque
 
 	author := helpers.GetAuthClaims(ctx)
 
-	if author.Role == "admin" || author.Role == "super_admin" {
+	if author.Role == "admin" || author.Role == "super admin" {
 		admin, err := service.AdminRepo.FindyByEmail(author.Email)
 		if err != nil {
 			return nil, nil, fmt.Errorf("Error get admin")
