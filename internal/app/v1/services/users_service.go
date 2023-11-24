@@ -47,7 +47,7 @@ func (service *UserServiceImpl) RegisterUser(ctx echo.Context, request requests.
 
 	getRoleUser, _ := service.RoleRepo.FindByName("user")
 	if getRoleUser == nil {
-		return nil, nil, fmt.Errorf("role user not found")
+		return nil, nil, fmt.Errorf("Role user not found")
 	}
 
 	request.Role_id = uint(getRoleUser.Id)
@@ -86,17 +86,17 @@ func (service *UserServiceImpl) UpdateUserProfile(ctx echo.Context, request requ
 	// Lakukan konversi dari string ke tipe data yang sesuai (misalnya, uint)
 	parsedUserID, err := strconv.ParseUint(userID, 10, 64)
 	if err != nil {
-		return nil, nil, fmt.Errorf("id user not falid")
+		return nil, nil, fmt.Errorf("Id user not falid")
 	}
 
 	existingUser, err := service.UserRepo.FindByID(int(parsedUserID))
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to find user: %s", err.Error())
+		return nil, nil, fmt.Errorf("Failed to find user: %s", err.Error())
 	}
 
 	// Jika pengguna tidak ditemukan, Anda dapat memberikan tanggapan bahwa pengguna tidak ditemukan
 	if existingUser == nil {
-		return nil, nil, fmt.Errorf("user not found")
+		return nil, nil, fmt.Errorf("User not found")
 	}
 
 	//Perbarui nilai-nilai pengguna yang ada dengan data baru dari request
@@ -106,7 +106,10 @@ func (service *UserServiceImpl) UpdateUserProfile(ctx echo.Context, request requ
 	existingUser.Credential.Email = request.Email
 	existingUser.Birthday = request.Birthday
 	existingUser.Profile_picture = request.Profile_picture
-	// Update nilai-nilai lain sesuai kebutuhan
+
+	fmt.Println(existingUser, "existingUser")
+	fmt.Println(existingUser.Birthday, "existing")
+	fmt.Println(request.Birthday, "birthday")
 
 	// Lakukan operasi update ke dalam database
 	updatedUser, err := service.UserRepo.UpdateUser(existingUser)
@@ -115,13 +118,4 @@ func (service *UserServiceImpl) UpdateUserProfile(ctx echo.Context, request requ
 	}
 
 	return updatedUser, nil, nil
-
-	// user := conversion.UserUpdateRequestToUserDomain(request)
-
-	// updatedUser, err := service.UserRepo.UpdateUser(user)
-	// if err != nil {
-	// 	return nil, nil, fmt.Errorf("error when update user: %s", err.Error())
-	// }
-
-	// return updatedUser, nil, nil
 }

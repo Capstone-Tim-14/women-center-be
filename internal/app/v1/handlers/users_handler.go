@@ -86,8 +86,9 @@ func (handler *UserHandlerImpl) UpdateProfileHandler(ctx echo.Context) error {
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
+	// pake ini dulu biar tau respon di postman, ntar apus + ignore response
 	userUpdateResponse := conversion.UserDomainToUserUpdateProfileResource(response)
 
-	return responses.StatusOK(ctx, "User updated successfully", userUpdateResponse)
+	return responses.StatusOK(ctx, "User profile updated", userUpdateResponse)
 
 }

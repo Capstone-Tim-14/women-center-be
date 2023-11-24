@@ -1,7 +1,6 @@
 package conversion
 
 import (
-	"time"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/web/resources/v1"
 )
@@ -31,20 +30,13 @@ func UserDomainToUserProfileResource(user *domain.Users) resources.GetUserProfil
 }
 
 func UserDomainToUserUpdateProfileResource(user *domain.Users) resources.UpdateUserProfile {
-	userBirthday := user.Birthday
-	convertBirthday := TimeToStringFormat(userBirthday)
-
 	return resources.UpdateUserProfile{
 		Id:              user.Id,
 		First_name:      user.First_name,
 		Last_name:       user.Last_name,
 		Username:        user.Credential.Username,
 		Email:           user.Credential.Email,
-		Birthday:        convertBirthday,
+		Birthday:        user.Birthday,
 		Profile_picture: user.Profile_picture,
 	}
-}
-
-func TimeToStringFormat(t time.Time) string {
-	return t.Format("2006-01-02") // Mengubah time.Time menjadi string dengan format "YYYY-MM-DD"
 }
