@@ -130,7 +130,9 @@ func (repository *ArticleRepositoryImpl) FindById(id int) (*domain.Articles, err
 func (repository *ArticleRepositoryImpl) DeleteArticleById(id int) error {
 	var article domain.Articles
 
-	result := repository.db.Where("id = ?", id).Unscoped().Delete(&article)
+	transaction := repository.db.Begin()
+
+	result := transaction.Where("id = ?", id).First(&article)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -138,6 +140,21 @@ func (repository *ArticleRepositoryImpl) DeleteArticleById(id int) error {
 	if result.RowsAffected == 0 {
 		return fmt.Errorf("Article not found")
 	}
+
+	if errAssociation := transaction.Model(&article).Association("Tags").Clear(); errAssociation != nil {
+		transaction.Rollback()
+		fmt.Errorf(errAssociation.Error())
+		return fmt.Errorf("Error when delete relations")
+	}
+
+	if errDeleteArticle := transaction.Unscoped().Delete(&article).Error; errDeleteArticle != nil {
+		transaction.Rollback()
+		fmt.Errorf(errDeleteArticle.Error())
+		return fmt.Errorf("Error when delete article")
+	}
+
+	transaction.Commit()
+
 	return nil
 }
 
