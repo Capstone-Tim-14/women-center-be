@@ -14,6 +14,7 @@ import (
 
 type ArticleHandler interface {
 	CreateArticle(ctx echo.Context) error
+	FindAllArticleUser(ctx echo.Context) error
 	FindAllArticle(ctx echo.Context) error
 	DeleteArticle(ctx echo.Context) error
 	FindArticleBySlug(ctx echo.Context) error
@@ -62,13 +63,28 @@ func (handler *ArticleHandlerImpl) CreateArticle(ctx echo.Context) error {
 	return responses.StatusCreated(ctx, "Article created successfully", nil)
 }
 
+func (handler *ArticleHandlerImpl) FindAllArticleUser(ctx echo.Context) error {
+
+	GetArticleResource, err := handler.ArticleService.FindAllArticleUser()
+
+	if err != nil {
+		if strings.Contains(err.Error(), "Article is empty") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Success Get All Article", GetArticleResource)
+}
+
 func (handler *ArticleHandlerImpl) FindAllArticle(ctx echo.Context) error {
 
 	response, meta, err := handler.ArticleService.FindAllArticle(ctx)
 
 	if err != nil {
 
-		if strings.Contains(err.Error(), "Article is empty") {
+		if strings.Contains(err.Error(), "Articles is empty") {
 			return exceptions.StatusNotFound(ctx, err)
 		}
 
