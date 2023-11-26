@@ -6,6 +6,31 @@ import (
 	"woman-center-be/utils/helpers"
 )
 
+func ConvertLatestArticleResource(article *domain.Articles) *resources.ArticleResource {
+	ArticleResource := &resources.ArticleResource{
+		Title:     article.Title,
+		Slug:      article.Slug,
+		Thumbnail: *article.Thumbnail,
+	}
+
+	if article.Admin != nil {
+		ArticleResource.Author = resources.Author{
+			Name: article.Admin.First_name + " " + article.Admin.Last_name,
+			Role: article.Admin.Credential.Role.Name,
+		}
+	} else if article.Counselors != nil {
+		ArticleResource.Author = resources.Author{
+			Name: article.Counselors.First_name + " " + article.Counselors.Last_name,
+			Role: article.Counselors.Credential.Role.Name,
+		}
+	}
+
+	ArticleResource.PublishedAt = helpers.ParseDateFormat(article.PublishedAt)
+	ArticleResource.TimeUpload = helpers.GetDurationTime(article.PublishedAt)
+
+	return ArticleResource
+}
+
 func ConvertArticleResource(articles []domain.Articles) []resources.ArticleResource {
 	articleResource := []resources.ArticleResource{}
 	for _, article := range articles {
