@@ -12,6 +12,7 @@ type ArticleResource struct {
 	CreatedAt   string            `json:"created_at,omitempty"`
 	UpdatedAt   string            `json:"updated_at,omitempty"`
 	PublishedAt string            `json:"published_at,omitempty"`
+	TimeUpload  string            `json:"time_upload,omitempty"`
 }
 
 type Author struct {

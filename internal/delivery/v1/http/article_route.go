@@ -48,4 +48,5 @@ func HttpArticleRoute(group *echo.Group, db *gorm.DB, validate *validator.Valida
 
 	articleUser := verifyToken.Group("/articles")
 	articleUser.GET("", ArticleHandler.FindAllArticleUser)
+	verifyToken.GET("/article/latest", ArticleHandler.LatestArticleHandler)
 }

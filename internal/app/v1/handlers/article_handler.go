@@ -13,6 +13,7 @@ import (
 )
 
 type ArticleHandler interface {
+	LatestArticleHandler(ctx echo.Context) error
 	CreateArticle(ctx echo.Context) error
 	FindAllArticleUser(ctx echo.Context) error
 	FindAllArticle(ctx echo.Context) error
@@ -31,6 +32,22 @@ func NewArticleHandler(article services.ArticleService) ArticleHandler {
 	return &ArticleHandlerImpl{
 		ArticleService: article,
 	}
+}
+
+func (handler *ArticleHandlerImpl) LatestArticleHandler(ctx echo.Context) error {
+
+	GetLatestResponse, err := handler.ArticleService.GetLatestArticle()
+
+	if err != nil {
+		if strings.Contains(err.Error(), "Article not found") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Success get latest article", GetLatestResponse)
+
 }
 
 func (handler *ArticleHandlerImpl) CreateArticle(ctx echo.Context) error {

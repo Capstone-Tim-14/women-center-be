@@ -21,6 +21,7 @@ import (
 
 type ArticleService interface {
 	CreateArticle(ctx echo.Context, request requests.ArticleRequest, thumbnail *multipart.FileHeader) (*domain.Articles, []exceptions.ValidationMessage, error)
+	GetLatestArticle() (*resources.ArticleResource, error)
 	FindAllArticleUser() ([]resources.ArticleResource, error)
 	FindAllArticle(ctx echo.Context) ([]domain.Articles, *query.Pagination, error)
 	DeleteArticle(ctx echo.Context) error
@@ -41,6 +42,19 @@ type ArticleServiceImpl struct {
 
 func NewArticleService(articleServiceImpl ArticleServiceImpl) ArticleService {
 	return &articleServiceImpl
+}
+
+func (service *ArticleServiceImpl) GetLatestArticle() (*resources.ArticleResource, error) {
+
+	GetLatestArticle, err := service.ArticleRepo.GetLatestArticleForUser()
+
+	if err != nil {
+		return nil, err
+	}
+
+	GetResources := conResources.ConvertLatestArticleResource(GetLatestArticle)
+
+	return GetResources, nil
 }
 
 func (service *ArticleServiceImpl) FindAllArticleUser() ([]resources.ArticleResource, error) {

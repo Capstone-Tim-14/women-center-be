@@ -47,7 +47,7 @@ func (repository *ArticleRepositoryImpl) GetLatestArticleForUser() (*domain.Arti
 
 	var article *domain.Articles
 
-	errTakeArticle := repository.db.Preload("Admin").Preload("Admin.Credential").Preload("Admin.Credential.Role").Preload("Counselors").Preload("Counselors.Credential").Preload("Counselors.Credential.Role").Order("published_at ASC").Take(&article)
+	errTakeArticle := repository.db.Preload("Admin").Preload("Admin.Credential").Preload("Admin.Credential.Role").Preload("Counselors").Preload("Counselors.Credential").Preload("Counselors.Credential.Role").Order("published_at desc").Take(&article, "status = ?", "PUBLISHED")
 
 	if errTakeArticle.Error != nil {
 		fmt.Errorf(errTakeArticle.Error.Error())
