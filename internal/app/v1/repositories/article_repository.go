@@ -12,6 +12,8 @@ import (
 
 type ArticleRepository interface {
 	CreateArticle(article *domain.Articles) (*domain.Articles, error)
+	GetLatestArticleForUser() (*domain.Articles, error)
+	GetListArticleForUser() ([]domain.Articles, error)
 	FindAllArticle(string, string, query.Pagination) ([]domain.Articles, *query.Pagination, error)
 	FindById(id int) (*domain.Articles, error)
 	DeleteArticleById(id int) error
@@ -38,6 +40,42 @@ func (repository *ArticleRepositoryImpl) CreateArticle(article *domain.Articles)
 	}
 
 	return article, nil
+
+}
+
+func (repository *ArticleRepositoryImpl) GetLatestArticleForUser() (*domain.Articles, error) {
+
+	var article *domain.Articles
+
+	errTakeArticle := repository.db.Preload("Admin").Preload("Admin.Credential").Preload("Admin.Credential.Role").Preload("Counselors").Preload("Counselors.Credential").Preload("Counselors.Credential.Role").Order("published_at desc").Take(&article, "status = ?", "PUBLISHED")
+
+	if errTakeArticle.Error != nil {
+		fmt.Errorf(errTakeArticle.Error.Error())
+		return nil, fmt.Errorf("Error to find article")
+	}
+
+	if errTakeArticle.RowsAffected == 0 {
+		return nil, fmt.Errorf("Article not found")
+	}
+
+	return article, nil
+}
+
+func (repository *ArticleRepositoryImpl) GetListArticleForUser() ([]domain.Articles, error) {
+
+	var articles []domain.Articles
+	errListArticles := repository.db.Preload("Admin").Preload("Admin.Credential").Preload("Admin.Credential.Role").Preload("Counselors").Preload("Counselors.Credential").Preload("Counselors.Credential.Role").Find(&articles, "status = ?", "PUBLISHED")
+
+	if errListArticles.Error != nil {
+		fmt.Errorf(errListArticles.Error.Error())
+		return nil, fmt.Errorf("Error to show articles list")
+	}
+
+	if errListArticles.RowsAffected == 0 {
+		return nil, fmt.Errorf("Articles is empty")
+	}
+
+	return articles, nil
 
 }
 
@@ -92,7 +130,9 @@ func (repository *ArticleRepositoryImpl) FindById(id int) (*domain.Articles, err
 func (repository *ArticleRepositoryImpl) DeleteArticleById(id int) error {
 	var article domain.Articles
 
-	result := repository.db.Where("id = ?", id).Unscoped().Delete(&article)
+	transaction := repository.db.Begin()
+
+	result := transaction.Where("id = ?", id).First(&article)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -100,6 +140,21 @@ func (repository *ArticleRepositoryImpl) DeleteArticleById(id int) error {
 	if result.RowsAffected == 0 {
 		return fmt.Errorf("Article not found")
 	}
+
+	if errAssociation := transaction.Model(&article).Association("Tags").Clear(); errAssociation != nil {
+		transaction.Rollback()
+		fmt.Errorf(errAssociation.Error())
+		return fmt.Errorf("Error when delete relations")
+	}
+
+	if errDeleteArticle := transaction.Unscoped().Delete(&article).Error; errDeleteArticle != nil {
+		transaction.Rollback()
+		fmt.Errorf(errDeleteArticle.Error())
+		return fmt.Errorf("Error when delete article")
+	}
+
+	transaction.Commit()
+
 	return nil
 }
 

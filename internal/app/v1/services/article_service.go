@@ -7,7 +7,9 @@ import (
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/app/v1/repositories"
 	conversion "woman-center-be/internal/web/conversion/request/v1"
+	conResources "woman-center-be/internal/web/conversion/resource/v1"
 	"woman-center-be/internal/web/requests/v1"
+	"woman-center-be/internal/web/resources/v1"
 	"woman-center-be/pkg/query"
 	"woman-center-be/pkg/storage"
 	"woman-center-be/utils/exceptions"
@@ -19,6 +21,8 @@ import (
 
 type ArticleService interface {
 	CreateArticle(ctx echo.Context, request requests.ArticleRequest, thumbnail *multipart.FileHeader) (*domain.Articles, []exceptions.ValidationMessage, error)
+	GetLatestArticle() (*resources.ArticleResource, error)
+	FindAllArticleUser() ([]resources.ArticleResource, error)
 	FindAllArticle(ctx echo.Context) ([]domain.Articles, *query.Pagination, error)
 	DeleteArticle(ctx echo.Context) error
 	UpdatePublishedArticle(ctx echo.Context, request requests.PublishArticle) ([]exceptions.ValidationMessage, error)
@@ -31,24 +35,44 @@ type ArticleServiceImpl struct {
 	ArticleRepo       repositories.ArticleRepository
 	AdminRepo         repositories.AdminRepository
 	CounselorRepo     repositories.CounselorRepository
-	validator         *validator.Validate
+	Validator         *validator.Validate
 	TagRepo           repositories.TagRepository
 	ArticlehasTagRepo repositories.ArticlehasTagRepository
 }
 
-func NewArticleService(article repositories.ArticleRepository, validator *validator.Validate, admin repositories.AdminRepository, counselor repositories.CounselorRepository, tag repositories.TagRepository, articlehastag repositories.ArticlehasTagRepository) ArticleService {
-	return &ArticleServiceImpl{
-		ArticleRepo:       article,
-		AdminRepo:         admin,
-		CounselorRepo:     counselor,
-		validator:         validator,
-		TagRepo:           tag,
-		ArticlehasTagRepo: articlehastag,
+func NewArticleService(articleServiceImpl ArticleServiceImpl) ArticleService {
+	return &articleServiceImpl
+}
+
+func (service *ArticleServiceImpl) GetLatestArticle() (*resources.ArticleResource, error) {
+
+	GetLatestArticle, err := service.ArticleRepo.GetLatestArticleForUser()
+
+	if err != nil {
+		return nil, err
 	}
+
+	GetResources := conResources.ConvertLatestArticleResource(GetLatestArticle)
+
+	return GetResources, nil
+}
+
+func (service *ArticleServiceImpl) FindAllArticleUser() ([]resources.ArticleResource, error) {
+
+	Getarticles, err := service.ArticleRepo.GetListArticleForUser()
+
+	if err != nil {
+		return nil, err
+	}
+
+	Resources := conResources.ConvertArticleResource(Getarticles)
+
+	return Resources, nil
+
 }
 
 func (service *ArticleServiceImpl) CreateArticle(ctx echo.Context, request requests.ArticleRequest, thumbnail *multipart.FileHeader) (*domain.Articles, []exceptions.ValidationMessage, error) {
-	err := service.validator.Struct(request)
+	err := service.Validator.Struct(request)
 	if err != nil {
 		return nil, helpers.ValidationError(ctx, err), nil
 	}
@@ -60,7 +84,7 @@ func (service *ArticleServiceImpl) CreateArticle(ctx echo.Context, request reque
 
 	author := helpers.GetAuthClaims(ctx)
 
-	if author.Role == "admin" || author.Role == "super_admin" {
+	if author.Role == "admin" || author.Role == "super admin" {
 		admin, err := service.AdminRepo.FindyByEmail(author.Email)
 		if err != nil {
 			return nil, nil, fmt.Errorf("Error get admin")
@@ -130,7 +154,7 @@ func (service *ArticleServiceImpl) DeleteArticle(ctx echo.Context) error {
 
 func (service *ArticleServiceImpl) UpdatePublishedArticle(ctx echo.Context, request requests.PublishArticle) ([]exceptions.ValidationMessage, error) {
 
-	err := service.validator.Struct(request)
+	err := service.Validator.Struct(request)
 	if err != nil {
 		return helpers.ValidationError(ctx, err), nil
 	}
@@ -167,7 +191,7 @@ func (service *ArticleServiceImpl) UpdatePublishedArticle(ctx echo.Context, requ
 
 func (service *ArticleServiceImpl) AddTagArticle(ctx echo.Context, id int, request requests.ArticlehasTagRequest) ([]exceptions.ValidationMessage, error) {
 
-	err := service.validator.Struct(request)
+	err := service.Validator.Struct(request)
 	if err != nil {
 		return helpers.ValidationError(ctx, err), nil
 	}
@@ -200,7 +224,7 @@ func (service *ArticleServiceImpl) FindArticleBySlug(ctx echo.Context, slug stri
 }
 
 func (service *ArticleServiceImpl) UpdateArticle(ctx echo.Context, request requests.ArticleRequest, thumbnail *multipart.FileHeader) ([]exceptions.ValidationMessage, error) {
-	err := service.validator.Struct(request)
+	err := service.Validator.Struct(request)
 	if err != nil {
 		return helpers.ValidationError(ctx, err), nil
 	}

@@ -9,6 +9,8 @@ import (
 type UserRepository interface {
 	CreateUser(user *domain.Users) (*domain.Users, error)
 	FindyByEmail(email string) (*domain.Users, error)
+	FindByID(id int) (*domain.Users, error)
+	UpdateUser(user *domain.Users, id int) (*domain.Users, error)
 }
 
 type UserRepositoryImpl struct {
@@ -40,4 +42,24 @@ func (repository *UserRepositoryImpl) FindyByEmail(email string) (*domain.Users,
 	}
 
 	return &user, nil
+}
+
+func (repository *UserRepositoryImpl) FindByID(id int) (*domain.Users, error) {
+	user := domain.Users{}
+
+	result := repository.db.Preload("Credential").Where("id = ?", id).First(&user)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &user, nil
+}
+
+func (repository *UserRepositoryImpl) UpdateUser(user *domain.Users, id int) (*domain.Users, error) {
+	result := repository.db.Model(&user).Where("id = ?", id).Updates(user)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return user, nil
 }

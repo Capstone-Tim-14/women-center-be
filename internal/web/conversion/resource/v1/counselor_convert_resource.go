@@ -13,7 +13,6 @@ func CounselorDomainToCounselorResponse(counselor *domain.Counselors) resources.
 		Email:        counselor.Credential.Email,
 		Phone_number: counselor.Phone_number,
 		Description:  counselor.Description,
-		Address:      counselor.Address,
 		Status:       counselor.Status,
 	}
 }

@@ -18,11 +18,20 @@ func HttpArticleRoute(group *echo.Group, db *gorm.DB, validate *validator.Valida
 	CounselorRepo := repositories.NewCounselorRepository(db)
 	TagRepo := repositories.NewTagRepository(db)
 	ArticlehasTagRepo := repositories.NewArticlehasTagRepository(db)
-	ArticleService := services.NewArticleService(ArticleRepo, validate, AdminRepo, CounselorRepo, TagRepo, ArticlehasTagRepo)
+	ArticleService := services.NewArticleService(services.ArticleServiceImpl{
+		ArticleRepo:       ArticleRepo,
+		AdminRepo:         AdminRepo,
+		CounselorRepo:     CounselorRepo,
+		TagRepo:           TagRepo,
+		ArticlehasTagRepo: ArticlehasTagRepo,
+		Validator:         validate,
+	})
 	ArticleHandler := handlers.NewArticleHandler(ArticleService)
 
 	verifyTokenAdmin := group.Group("/admin", middlewares.VerifyTokenSignature("SECRET_KEY_ADMIN"))
-	varifyTokenCounselor := group.Group("/counselor", middlewares.VerifyTokenSignature("SECRET_KEY"))
+	verifyToken := group.Group("", middlewares.VerifyTokenSignature("SECRET_KEY"))
+
+	CounselorGroup := verifyToken.Group("/counselor")
 
 	articleAdmin := verifyTokenAdmin.Group("/articles")
 	articleAdmin.POST("", ArticleHandler.CreateArticle)
@@ -34,6 +43,10 @@ func HttpArticleRoute(group *echo.Group, db *gorm.DB, validate *validator.Valida
 	articleAdmin.POST("/:id/add-category", ArticleHandler.AddTagArticle)
 	articleAdmin.PUT("/:id", ArticleHandler.UpdateArticle)
 
-	articleCounselor := varifyTokenCounselor.Group("/articles")
+	articleCounselor := CounselorGroup.Group("/articles")
 	articleCounselor.POST("", ArticleHandler.CreateArticle)
+
+	articleUser := verifyToken.Group("/articles")
+	articleUser.GET("", ArticleHandler.FindAllArticleUser)
+	verifyToken.GET("/article/latest", ArticleHandler.LatestArticleHandler)
 }

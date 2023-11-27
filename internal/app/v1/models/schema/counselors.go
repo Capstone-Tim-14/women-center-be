@@ -15,7 +15,6 @@ type Counselors struct {
 	Profile_picture   string       `gorm:"varchar(255)"`
 	Phone_number      string       `gorm:"varchar(255)"`
 	Description       string
-	Address           string
 	Certification_url string         `gorm:"type:varchar(255)"`
 	Status            string         `gorm:"type:varchar(10);default:INACTIVE"`
 	CreatedAt         time.Time      `gorm:"autoCreateTime"`

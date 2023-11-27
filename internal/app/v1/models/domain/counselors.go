@@ -15,7 +15,6 @@ type Counselors struct {
 	Profile_picture   string
 	Phone_number      string
 	Description       string
-	Address           string
 	Certification_url string
 	Status            string
 	CreatedAt         time.Time
