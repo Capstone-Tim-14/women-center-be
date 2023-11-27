@@ -18,7 +18,6 @@ func UserCreateRequestToUserDomain(request requests.UserRequest) *domain.Users {
 		},
 		Profile_picture: request.Profile_picture,
 		Phone_number:    request.Phone_number,
-		Address:         request.Address,
 		Status:          "ACTIVE",
 	}
 }

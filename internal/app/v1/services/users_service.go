@@ -83,10 +83,10 @@ func (service *UserServiceImpl) UpdateUserProfile(ctx echo.Context, request requ
 	if err != nil {
 		return nil, nil, fmt.Errorf("Failed to find user: %s", err.Error())
 	}
+
 	request.Role_id = getUser.Credential.Role_id
 	updateProfile := conversion.UserUpdateRequestToUserDomain(request)
 
-	// Lakukan operasi update ke dalam database
 	updatedUser, err := service.UserRepo.UpdateUser(updateProfile, int(getUser.Id))
 	if err != nil {
 		return nil, nil, fmt.Errorf("Error when updating user: %s", err.Error())

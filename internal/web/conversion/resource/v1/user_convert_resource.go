@@ -15,7 +15,6 @@ func UserDomainToUserResource(user *domain.Users) resources.UserResource {
 		Username:        user.Credential.Username,
 		Profile_picture: user.Profile_picture,
 		Phone_number:    user.Phone_number,
-		Address:         user.Address,
 		Status:          user.Status,
 	}
 }

@@ -20,3 +20,14 @@ func ArticleCreateRequestToArticleDomain(request requests.ArticleRequest) *domai
 		Status:        "REVIEW",
 	}
 }
+func ArticleUpdateRequestToArticleDomain(request requests.ArticleRequest) *domain.Articles {
+	article := &domain.Articles{
+		Title:   request.Title,
+		Slug:    slug.Make(request.Title),
+		Content: request.Content,
+	}
+	if request.Thumbnail != nil {
+		article.Thumbnail = request.Thumbnail
+	}
+	return article
+}

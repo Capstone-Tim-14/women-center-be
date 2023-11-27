@@ -16,16 +16,37 @@ func HttpArticleRoute(group *echo.Group, db *gorm.DB, validate *validator.Valida
 	ArticleRepo := repositories.NewArticleRepository(db)
 	AdminRepo := repositories.NewAdminRepository(db)
 	CounselorRepo := repositories.NewCounselorRepository(db)
-	ArticleService := services.NewArticleService(ArticleRepo, validate, AdminRepo, CounselorRepo)
+	TagRepo := repositories.NewTagRepository(db)
+	ArticlehasTagRepo := repositories.NewArticlehasTagRepository(db)
+	ArticleService := services.NewArticleService(services.ArticleServiceImpl{
+		ArticleRepo:       ArticleRepo,
+		AdminRepo:         AdminRepo,
+		CounselorRepo:     CounselorRepo,
+		TagRepo:           TagRepo,
+		ArticlehasTagRepo: ArticlehasTagRepo,
+		Validator:         validate,
+	})
 	ArticleHandler := handlers.NewArticleHandler(ArticleService)
 
 	verifyTokenAdmin := group.Group("/admin", middlewares.VerifyTokenSignature("SECRET_KEY_ADMIN"))
-	varifyTokenCounselor := group.Group("/counselor", middlewares.VerifyTokenSignature("SECRET_KEY"))
+	verifyToken := group.Group("", middlewares.VerifyTokenSignature("SECRET_KEY"))
+
+	CounselorGroup := verifyToken.Group("/counselor")
 
 	articleAdmin := verifyTokenAdmin.Group("/articles")
 	articleAdmin.POST("", ArticleHandler.CreateArticle)
-	articleAdmin.GET("", ArticleHandler.FindAllArticle)
 
-	articleCounselor := varifyTokenCounselor.Group("/articles")
+	articleAdmin.GET("", ArticleHandler.FindAllArticle).Name = "admin.articles.get-all"
+	articleAdmin.DELETE("/:id", ArticleHandler.DeleteArticle)
+	articleAdmin.GET("/:slug", ArticleHandler.FindArticleBySlug)
+	articleAdmin.PUT("/approved-request/:slug", ArticleHandler.UpdatePublishedArticle)
+	articleAdmin.POST("/:id/add-category", ArticleHandler.AddTagArticle)
+	articleAdmin.PUT("/:id", ArticleHandler.UpdateArticle)
+
+	articleCounselor := CounselorGroup.Group("/articles")
 	articleCounselor.POST("", ArticleHandler.CreateArticle)
+
+	articleUser := verifyToken.Group("/articles")
+	articleUser.GET("", ArticleHandler.FindAllArticleUser)
+	verifyToken.GET("/article/latest", ArticleHandler.LatestArticleHandler)
 }

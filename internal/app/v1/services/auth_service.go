@@ -112,7 +112,6 @@ func (auth *AuthServiceImpl) GoogleCallbackService(ctx echo.Context) (*resources
 			Last_name:       UserGoogleResponse.FamilyName,
 			Email:           UserGoogleResponse.Email,
 			Profile_picture: UserGoogleResponse.Picture,
-			Address:         UserGoogleResponse.Locale,
 			Username:        strings.ToLower(UserGoogleResponse.Name),
 			Password:        helpers.StringWithCharset(10),
 			Phone_number:    "62123456789",
