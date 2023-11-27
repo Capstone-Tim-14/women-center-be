@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"woman-center-be/internal/app/v1/services"
-	url "woman-center-be/internal/web/conversion/resource/v1"
 	"woman-center-be/internal/web/requests/v1"
 	"woman-center-be/utils/exceptions"
 	"woman-center-be/utils/responses"
@@ -12,7 +11,6 @@ import (
 
 type CareerHandler interface {
 	CreateCareer(ctx echo.Context) error
-	FindAllCareer(ctx echo.Context) error
 }
 
 type CareerHandlerImpl struct {
@@ -55,16 +53,4 @@ func (handler *CareerHandlerImpl) CreateCareer(ctx echo.Context) error {
 	}
 
 	return responses.StatusOK(ctx, "Success create career", nil)
-}
-
-func (handler *CareerHandlerImpl) FindAllCareer(ctx echo.Context) error {
-	career, err := handler.CareerService.FindAllCareer(ctx)
-
-	if err != nil {
-		return exceptions.StatusInternalServerError(ctx, err)
-	}
-
-	careerResource := url.ConvertCareerRsource(career)
-
-	return responses.StatusOK(ctx, "Success get career", careerResource)
 }
