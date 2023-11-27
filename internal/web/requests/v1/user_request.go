@@ -10,7 +10,6 @@ type UserRequest struct {
 	Email           string `json:"email" validate:"required,email"`
 	Profile_picture string `json:"profile_picture"`
 	Phone_number    string `json:"phone_number" validate:"required"`
-	Address         string `json:"address" validate:"required"`
 	Username        string `json:"username" validate:"required"`
 	Password        string `json:"password" validate:"required"`
 	Role_id         uint

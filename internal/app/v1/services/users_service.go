@@ -104,7 +104,7 @@ func (service *UserServiceImpl) UpdateUserProfile(ctx echo.Context, request requ
 	existingUser.Last_name = request.Last_name
 	existingUser.Credential.Username = request.Username
 	existingUser.Credential.Email = request.Email
-	existingUser.Birthday = request.Birthday
+	existingUser.Birthday = &request.Birthday
 	existingUser.Profile_picture = request.Profile_picture
 	// Update nilai-nilai lain sesuai kebutuhan
 
