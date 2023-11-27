@@ -3,6 +3,7 @@ package conversion
 import (
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/web/requests/v1"
+	"woman-center-be/utils/helpers"
 )
 
 func UserCreateRequestToUserDomain(request requests.UserRequest) *domain.Users {
@@ -30,7 +31,7 @@ func UserUpdateRequestToUserDomain(request requests.UpdateUserProfileRequest) *d
 			Username: request.Username,
 			Role_id:  request.Role_id,
 		},
-		Birthday:        &request.Birthday,
+		Birthday:        helpers.ParseStringToTime(request.Birthday),
 		Profile_picture: request.Profile_picture,
 	}
 }

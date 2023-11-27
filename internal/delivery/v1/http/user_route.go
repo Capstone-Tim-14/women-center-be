@@ -25,5 +25,5 @@ func HttpUserRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate)
 	userVerify := user.Group("", middlewares.VerifyTokenSignature("SECRET_KEY"))
 
 	userVerify.GET("/profile", UserHandler.ProfileHandler)
-	userVerify.PUT("/profile/:id", UserHandler.UpdateProfileHandler)
+	userVerify.PUT("/profile", UserHandler.UpdateProfileHandler)
 }

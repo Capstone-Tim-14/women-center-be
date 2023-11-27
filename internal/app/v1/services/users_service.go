@@ -2,7 +2,6 @@ package services
 
 import (
 	"fmt"
-	"strconv"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/app/v1/repositories"
 	conversion "woman-center-be/internal/web/conversion/request/v1"
@@ -47,7 +46,7 @@ func (service *UserServiceImpl) RegisterUser(ctx echo.Context, request requests.
 
 	getRoleUser, _ := service.RoleRepo.FindByName("user")
 	if getRoleUser == nil {
-		return nil, nil, fmt.Errorf("role user not found")
+		return nil, nil, fmt.Errorf("Role user not found")
 	}
 
 	request.Role_id = uint(getRoleUser.Id)
@@ -80,48 +79,18 @@ func (service *UserServiceImpl) UpdateUserProfile(ctx echo.Context, request requ
 		return nil, helpers.ValidationError(ctx, err), nil
 	}
 
-	// Ambil ID dari URL menggunakan ctx.Param("id")
-	userID := ctx.Param("id")
-
-	// Lakukan konversi dari string ke tipe data yang sesuai (misalnya, uint)
-	parsedUserID, err := strconv.ParseUint(userID, 10, 64)
+	getUser, err := service.GetUserProfile(ctx)
 	if err != nil {
-		return nil, nil, fmt.Errorf("id user not falid")
+		return nil, nil, fmt.Errorf("Failed to find user: %s", err.Error())
 	}
 
-	existingUser, err := service.UserRepo.FindByID(int(parsedUserID))
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to find user: %s", err.Error())
-	}
+	request.Role_id = getUser.Credential.Role_id
+	updateProfile := conversion.UserUpdateRequestToUserDomain(request)
 
-	// Jika pengguna tidak ditemukan, Anda dapat memberikan tanggapan bahwa pengguna tidak ditemukan
-	if existingUser == nil {
-		return nil, nil, fmt.Errorf("user not found")
-	}
-
-	//Perbarui nilai-nilai pengguna yang ada dengan data baru dari request
-	existingUser.First_name = request.First_name
-	existingUser.Last_name = request.Last_name
-	existingUser.Credential.Username = request.Username
-	existingUser.Credential.Email = request.Email
-	existingUser.Birthday = &request.Birthday
-	existingUser.Profile_picture = request.Profile_picture
-	// Update nilai-nilai lain sesuai kebutuhan
-
-	// Lakukan operasi update ke dalam database
-	updatedUser, err := service.UserRepo.UpdateUser(existingUser)
+	updatedUser, err := service.UserRepo.UpdateUser(updateProfile, int(getUser.Id))
 	if err != nil {
 		return nil, nil, fmt.Errorf("Error when updating user: %s", err.Error())
 	}
 
 	return updatedUser, nil, nil
-
-	// user := conversion.UserUpdateRequestToUserDomain(request)
-
-	// updatedUser, err := service.UserRepo.UpdateUser(user)
-	// if err != nil {
-	// 	return nil, nil, fmt.Errorf("error when update user: %s", err.Error())
-	// }
-
-	// return updatedUser, nil, nil
 }

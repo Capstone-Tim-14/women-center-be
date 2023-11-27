@@ -72,7 +72,7 @@ func (handler *UserHandlerImpl) UpdateProfileHandler(ctx echo.Context) error {
 		return exceptions.StatusBadRequest(ctx, err)
 	}
 
-	response, validation, err := handler.UserService.UpdateUserProfile(ctx, userUpdateRequest)
+	_, validation, err := handler.UserService.UpdateUserProfile(ctx, userUpdateRequest)
 
 	if validation != nil {
 		return exceptions.ValidationException(ctx, "Error validation", validation)
@@ -86,8 +86,6 @@ func (handler *UserHandlerImpl) UpdateProfileHandler(ctx echo.Context) error {
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
-	userUpdateResponse := conversion.UserDomainToUserUpdateProfileResource(response)
-
-	return responses.StatusOK(ctx, "User updated successfully", userUpdateResponse)
+	return responses.StatusCreated(ctx, "User profile updated", nil)
 
 }
