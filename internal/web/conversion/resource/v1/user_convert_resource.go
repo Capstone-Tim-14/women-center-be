@@ -15,7 +15,6 @@ func UserDomainToUserResource(user *domain.Users) resources.UserResource {
 		Username:        user.Credential.Username,
 		Profile_picture: user.Profile_picture,
 		Phone_number:    user.Phone_number,
-		Address:         user.Address,
 		Status:          user.Status,
 	}
 }
@@ -45,6 +44,6 @@ func UserDomainToUserUpdateProfileResource(user *domain.Users) resources.UpdateU
 	}
 }
 
-func TimeToStringFormat(t time.Time) string {
+func TimeToStringFormat(t *time.Time) string {
 	return t.Format("2006-01-02") // Mengubah time.Time menjadi string dengan format "YYYY-MM-DD"
 }

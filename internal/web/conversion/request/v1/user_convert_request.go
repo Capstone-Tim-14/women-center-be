@@ -17,7 +17,6 @@ func UserCreateRequestToUserDomain(request requests.UserRequest) *domain.Users {
 		},
 		Profile_picture: request.Profile_picture,
 		Phone_number:    request.Phone_number,
-		Address:         request.Address,
 		Status:          "ACTIVE",
 	}
 }
@@ -31,7 +30,7 @@ func UserUpdateRequestToUserDomain(request requests.UpdateUserProfileRequest) *d
 			Username: request.Username,
 			Role_id:  request.Role_id,
 		},
-		Birthday:        request.Birthday,
+		Birthday:        &request.Birthday,
 		Profile_picture: request.Profile_picture,
 	}
 }

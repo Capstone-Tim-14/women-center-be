@@ -14,8 +14,7 @@ type Users struct {
 	Last_name       string       `gorm:"type:varchar(100)"`
 	Profile_picture string       `gorm:"varchar(255)"`
 	Phone_number    string       `gorm:"type:varchar(20)"`
-	Address         string
-	Birthday        time.Time
+	Birthday        *time.Time
 	Status          string         `gorm:"type:varchar(10);default:INACTIVE"`
 	CreatedAt       time.Time      `gorm:"autoCreateTime"`
 	UpdatedAt       time.Time      `gorm:"autoUpdateTime:mili"`
