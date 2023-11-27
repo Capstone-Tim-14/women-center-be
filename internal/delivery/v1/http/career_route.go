@@ -25,6 +25,5 @@ func HttpCareerRoute(group *echo.Group, db *gorm.DB, validate *validator.Validat
 	CareerGroup := verifyTokenAdmin.Group("/career")
 
 	CareerGroup.POST("", CareerHandler.CreateCareer)
-	CareerGroup.GET("", CareerHandler.FindAllCareer)
 
 }
