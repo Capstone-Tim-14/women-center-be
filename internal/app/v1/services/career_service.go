@@ -67,7 +67,7 @@ func (service *CareerServiceImpl) FindAllCareer(ctx echo.Context) ([]domain.Care
 	career, err := service.CareerRepo.GetAllCareer()
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error get all career: %w", err)
 	}
 
 	return career, nil
