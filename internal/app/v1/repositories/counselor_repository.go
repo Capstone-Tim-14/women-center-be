@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"fmt"
 	"woman-center-be/internal/app/v1/models/domain"
 
 	"gorm.io/gorm"
@@ -9,6 +10,7 @@ import (
 type CounselorRepository interface {
 	CreateCounselor(counselor *domain.Counselors) (*domain.Counselors, error)
 	FindyByEmail(email string) (*domain.Counselors, error)
+	FindById(id uint) (*domain.Counselors, error)
 }
 
 type CounselorRepositoryImpl struct {
@@ -38,5 +40,18 @@ func (repository *CounselorRepositoryImpl) FindyByEmail(email string) (*domain.C
 		return nil, result.Error
 	}
 
+	return &counselor, nil
+}
+
+func (repository *CounselorRepositoryImpl) FindById(id uint) (*domain.Counselors, error) {
+	counselor := domain.Counselors{}
+
+	result := repository.db.Where("id = ?", id).First(counselor)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return nil, fmt.Errorf("Counselor not found")
+	}
 	return &counselor, nil
 }

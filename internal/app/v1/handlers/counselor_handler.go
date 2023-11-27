@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"strconv"
 	"strings"
 	"woman-center-be/internal/app/v1/services"
 	conversion "woman-center-be/internal/web/conversion/resource/v1"
@@ -12,7 +13,8 @@ import (
 )
 
 type CounselorHandler interface {
-	RegisterHandler(echo.Context) error
+	RegisterHandler(ctx echo.Context) error
+	AddSpecialist(ctx echo.Context) error
 }
 
 type CounselorHandlerImpl struct {
@@ -49,5 +51,27 @@ func (handler *CounselorHandlerImpl) RegisterHandler(ctx echo.Context) error {
 	counselorCreateResponse := conversion.CounselorDomainToCounselorResponse(response)
 
 	return responses.StatusCreated(ctx, "Counselor created successfully", counselorCreateResponse)
+}
 
+func (handler *CounselorHandlerImpl) AddSpecialist(ctx echo.Context) error {
+	id := ctx.Param("id")
+	convertid, _ := strconv.Atoi(id)
+	var request requests.CounselorHasSpecialistRequest
+	errBinding := ctx.Bind(&request)
+
+	if errBinding != nil {
+		return exceptions.StatusBadRequest(ctx, errBinding)
+	}
+
+	validation, err := handler.CounselorService.AddSpecialist(ctx, uint(convertid), request)
+
+	if validation != nil {
+		return exceptions.ValidationException(ctx, "Error Validation", validation)
+	}
+
+	if err != nil {
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusCreated(ctx, "Success add specialist to counselor", nil)
 }

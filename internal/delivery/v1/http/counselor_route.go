@@ -20,5 +20,5 @@ func HttpCounselorRoute(group *echo.Group, db *gorm.DB, validate *validator.Vali
 	counselor := group.Group("/counselors")
 
 	counselor.POST("/register", CounselorHandler.RegisterHandler)
-
+	counselor.POST("/:id/add-specialist", CounselorHandler.AddSpecialist)
 }

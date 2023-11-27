@@ -17,6 +17,7 @@ type Counselors struct {
 	Description       string
 	Certification_url string
 	Status            string
+	Specialists       []Specialist `gorm:"many2many:counselor_has_specialists;foreignKey:Id;references:Id;"`
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
 	DeletedAt         gorm.DeletedAt

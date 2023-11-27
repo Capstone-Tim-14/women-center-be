@@ -17,6 +17,7 @@ type Counselors struct {
 	Description       string
 	Certification_url string         `gorm:"type:varchar(255)"`
 	Status            string         `gorm:"type:varchar(10);default:INACTIVE"`
+	Specialists       []Specialist   `gorm:"many2many:counselor_has_specialists;foreignKey:Id;references:Id;"`
 	CreatedAt         time.Time      `gorm:"autoCreateTime"`
 	UpdatedAt         time.Time      `gorm:"autoUpdateTime:mili"`
 	DeletedAt         gorm.DeletedAt `gorm:"index"`

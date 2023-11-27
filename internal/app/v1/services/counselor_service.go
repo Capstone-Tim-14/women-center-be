@@ -15,12 +15,15 @@ import (
 
 type CounselorService interface {
 	RegisterCounselor(ctx echo.Context, request requests.CounselorRequest) (*domain.Counselors, []exceptions.ValidationMessage, error)
+	AddSpecialist(ctx echo.Context, id uint, request requests.CounselorHasSpecialistRequest) ([]exceptions.ValidationMessage, error)
 }
 
 type CounselorServiceImpl struct {
-	CounselorRepo repositories.CounselorRepository
-	RoleRepo      repositories.RoleRepository
-	validator     *validator.Validate
+	CounselorRepo              repositories.CounselorRepository
+	RoleRepo                   repositories.RoleRepository
+	validator                  *validator.Validate
+	SpecialistRepo             repositories.SpecialistRepository
+	CounselorHasSpecialistRepo repositories.CounseloHasSpecialistRepository
 }
 
 func NewCounselorService(counselor repositories.CounselorRepository, validator *validator.Validate, role repositories.RoleRepository) CounselorService {
@@ -59,4 +62,28 @@ func (service *CounselorServiceImpl) RegisterCounselor(ctx echo.Context, request
 	}
 
 	return result, nil, nil
+}
+
+func (service *CounselorServiceImpl) AddSpecialist(ctx echo.Context, id uint, request requests.CounselorHasSpecialistRequest) ([]exceptions.ValidationMessage, error) {
+	err := service.validator.Struct(request)
+	if err != nil {
+		return helpers.ValidationError(ctx, err), nil
+	}
+
+	counselor, errCounselor := service.CounselorRepo.FindById(id)
+	if errCounselor != nil {
+		return nil, errCounselor
+	}
+
+	specialist, errSpecialist := service.SpecialistRepo.FindSpecialistByName(request.Name)
+	if errSpecialist != nil {
+		return nil, errSpecialist
+	}
+
+	errAdd := service.CounselorHasSpecialistRepo.AddSpecialist(*counselor, specialist)
+	if errAdd != nil {
+		return nil, errAdd
+	}
+
+	return nil, nil
 }
