@@ -30,6 +30,7 @@ func InitRoutes(e *echo.Echo, db *gorm.DB, validator *validator.Validate) {
 	routes.HttpTagRoute(v1, db, validator)
 	routes.HttpArticleRoute(v1, db, validator)
 	routes.HttpSpecialistRoute(v1, db, validator)
+	routes.HttpCareerRoute(v1, db, validator)
 
 	v1.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Welcome to woman center api")
