@@ -60,3 +60,4 @@ func (service *CareerServiceImpl) CreateCareer(ctx echo.Context, request request
 
 	return createCareer, nil, nil
 }
+
