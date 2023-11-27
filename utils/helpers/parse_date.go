@@ -11,3 +11,8 @@ func ParseDateFormat(date time.Time) string {
 
 	return convertCarbon.Format("d M Y H:i:s")
 }
+
+func ParseStringToTime(date string) time.Time {
+	convert := carbon.Parse(date).ToStdTime()
+	return convert
+}

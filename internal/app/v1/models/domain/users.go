@@ -15,7 +15,7 @@ type Users struct {
 	Profile_picture string
 	Phone_number    string
 	Address         string
-	Birthday        string
+	Birthday        time.Time
 	Status          string
 	CreatedAt       time.Time
 	UpdatedAt       time.Time

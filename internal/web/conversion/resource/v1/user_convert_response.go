@@ -3,6 +3,7 @@ package conversion
 import (
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/web/resources/v1"
+	"woman-center-be/utils/helpers"
 )
 
 func UserDomainToUserResource(user *domain.Users) resources.UserResource {
@@ -36,7 +37,7 @@ func UserDomainToUserUpdateProfileResource(user *domain.Users) resources.UpdateU
 		Last_name:       user.Last_name,
 		Username:        user.Credential.Username,
 		Email:           user.Credential.Email,
-		Birthday:        user.Birthday,
+		Birthday:        helpers.ParseDateFormat(user.Birthday),
 		Profile_picture: user.Profile_picture,
 	}
 }
