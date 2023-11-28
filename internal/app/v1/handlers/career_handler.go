@@ -16,6 +16,7 @@ type CareerHandler interface {
 	CreateCareer(ctx echo.Context) error
 	FindAllCareer(ctx echo.Context) error
 	FindDetailCareer(ctx echo.Context) error
+	AddJobType(ctx echo.Context) error
 }
 
 type CareerHandlerImpl struct {
@@ -88,4 +89,28 @@ func (handler *CareerHandlerImpl) FindDetailCareer(ctx echo.Context) error {
 	careerResource := conversion.ConvertCareerDetailResource(career)
 
 	return responses.StatusOK(ctx, "Success get career", careerResource)
+}
+
+func (handler *CareerHandlerImpl) AddJobType(ctx echo.Context) error {
+
+	id := ctx.Param("id")
+	convertid, _ := strconv.Atoi(id)
+	var request requests.CareerhasTypeRequest
+	errBinding := ctx.Bind(&request)
+
+	if errBinding != nil {
+		return exceptions.StatusBadRequest(ctx, errBinding)
+	}
+
+	validation, err := handler.CareerService.AddJobType(ctx, convertid, request)
+
+	if validation != nil {
+		return exceptions.ValidationException(ctx, "Error Validation", validation)
+	}
+
+	if err != nil {
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusCreated(ctx, "Success add job type to career", nil)
 }

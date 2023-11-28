@@ -14,9 +14,13 @@ import (
 func HttpCareerRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate) {
 
 	CareerRepo := repositories.NewCareerRepository(db)
+	JobTypeRepo := repositories.NewJobTypeRepository(db)
+	CareerhasTypeRepo := repositories.NewCareerhasTypeRepository(db)
 	CareerService := services.NewCareerService(services.CareerServiceImpl{
-		CareerRepo: CareerRepo,
-		Validator:  validate,
+		CareerRepo:        CareerRepo,
+		JobTypeRepo:       JobTypeRepo,
+		CareerhasTypeRepo: CareerhasTypeRepo,
+		Validator:         validate,
 	})
 	CareerHandler := handlers.NewCareerHandler(CareerService)
 
@@ -27,5 +31,6 @@ func HttpCareerRoute(group *echo.Group, db *gorm.DB, validate *validator.Validat
 	CareerGroup.POST("", CareerHandler.CreateCareer)
 	CareerGroup.GET("", CareerHandler.FindAllCareer)
 	CareerGroup.GET("/:id", CareerHandler.FindDetailCareer)
+	CareerGroup.POST("/:id/add-job-type", CareerHandler.AddJobType)
 
 }

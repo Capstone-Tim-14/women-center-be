@@ -19,11 +19,14 @@ type CareerService interface {
 	CreateCareer(ctx echo.Context, request requests.CareerRequest, logo *multipart.FileHeader, cover *multipart.FileHeader) (*domain.Career, []exceptions.ValidationMessage, error)
 	FindAllCareer(ctx echo.Context) ([]domain.Career, error)
 	FindCareerByid(ctx echo.Context, id int) (*domain.Career, error)
+	AddJobType(ctx echo.Context, id int, request requests.CareerhasTypeRequest) ([]exceptions.ValidationMessage, error)
 }
 
 type CareerServiceImpl struct {
-	CareerRepo repositories.CareerRepository
-	Validator  *validator.Validate
+	CareerRepo        repositories.CareerRepository
+	CareerhasTypeRepo repositories.CareerhasTypeRepository
+	JobTypeRepo       repositories.JobTypeRepository
+	Validator         *validator.Validate
 }
 
 func NewCareerService(careerServiceImpl CareerServiceImpl) CareerService {
@@ -83,4 +86,28 @@ func (service *CareerServiceImpl) FindCareerByid(ctx echo.Context, id int) (*dom
 	}
 
 	return careerDetail, nil
+}
+
+func (service *CareerServiceImpl) AddJobType(ctx echo.Context, id int, request requests.CareerhasTypeRequest) ([]exceptions.ValidationMessage, error) {
+	err := service.Validator.Struct(request)
+	if err != nil {
+		return helpers.ValidationError(ctx, err), nil
+	}
+
+	career, errCareer := service.CareerRepo.FindCareerByid(id)
+	if errCareer != nil {
+		return nil, errCareer
+	}
+
+	jobtype, errJobtype := service.JobTypeRepo.FindJobTypeByName(request.Name)
+	if errJobtype != nil {
+		return nil, errJobtype
+	}
+
+	errAddJobtype := service.CareerhasTypeRepo.AddJobType(*career, jobtype)
+	if errAddJobtype != nil {
+		return nil, errAddJobtype
+	}
+
+	return nil, nil
 }
