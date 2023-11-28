@@ -21,21 +21,18 @@ type CounselorService interface {
 type CounselorServiceImpl struct {
 	CounselorRepo              repositories.CounselorRepository
 	RoleRepo                   repositories.RoleRepository
-	validator                  *validator.Validate
+	Validator                  *validator.Validate
+	AdminRepo                  repositories.AdminRepository
 	SpecialistRepo             repositories.SpecialistRepository
 	CounselorHasSpecialistRepo repositories.CounseloHasSpecialistRepository
 }
 
-func NewCounselorService(counselor repositories.CounselorRepository, validator *validator.Validate, role repositories.RoleRepository) CounselorService {
-	return &CounselorServiceImpl{
-		CounselorRepo: counselor,
-		RoleRepo:      role,
-		validator:     validator,
-	}
+func NewCounselorService(counselorServiceImpl CounselorServiceImpl) CounselorService {
+	return &counselorServiceImpl
 }
 
 func (service *CounselorServiceImpl) RegisterCounselor(ctx echo.Context, request requests.CounselorRequest) (*domain.Counselors, []exceptions.ValidationMessage, error) {
-	err := service.validator.Struct(request)
+	err := service.Validator.Struct(request)
 	if err != nil {
 		return nil, helpers.ValidationError(ctx, err), nil
 	}
@@ -65,7 +62,7 @@ func (service *CounselorServiceImpl) RegisterCounselor(ctx echo.Context, request
 }
 
 func (service *CounselorServiceImpl) AddSpecialist(ctx echo.Context, id uint, request requests.CounselorHasSpecialistRequest) ([]exceptions.ValidationMessage, error) {
-	err := service.validator.Struct(request)
+	err := service.Validator.Struct(request)
 	if err != nil {
 		return helpers.ValidationError(ctx, err), nil
 	}

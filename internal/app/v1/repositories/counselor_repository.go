@@ -46,7 +46,7 @@ func (repository *CounselorRepositoryImpl) FindyByEmail(email string) (*domain.C
 func (repository *CounselorRepositoryImpl) FindById(id uint) (*domain.Counselors, error) {
 	counselor := domain.Counselors{}
 
-	result := repository.db.Where("id = ?", id).First(counselor)
+	result := repository.db.Where("id = ?", id).First(&counselor)
 	if result.Error != nil {
 		return nil, result.Error
 	}
