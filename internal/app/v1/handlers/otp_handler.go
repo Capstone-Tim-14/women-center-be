@@ -31,11 +31,11 @@ func (handler *OtpHandlerImpl) SendOtpHandler(ctx echo.Context) error {
 		return exceptions.BadRequestException(errBindingReq.Error(), ctx)
 	}
 
-	GetOTPCode, errGenerateCode := handler.OtpService.CreateAndSendingNewOtp(request)
+	_, errGenerateCode := handler.OtpService.CreateAndSendingNewOtp(request)
 
 	if errGenerateCode != nil {
 		return exceptions.StatusInternalServerError(ctx, errGenerateCode)
 	}
 
-	return responses.StatusOK(ctx, "Success generate otp", GetOTPCode)
+	return responses.StatusOK(ctx, "Success send otp to your email.", nil)
 }

@@ -1,17 +1,17 @@
 package services
 
 import (
+	"fmt"
 	"time"
 	"woman-center-be/internal/app/v1/repositories"
-	ResCon "woman-center-be/internal/web/conversion/resource/v1"
 	"woman-center-be/internal/web/requests/v1"
-	"woman-center-be/internal/web/resources/v1"
+	"woman-center-be/utils/helpers"
 
 	"github.com/pquerna/otp/totp"
 )
 
 type OtpService interface {
-	CreateAndSendingNewOtp(request requests.GenerateOTPRequest) (*resources.OtpResources, error)
+	CreateAndSendingNewOtp(request requests.GenerateOTPRequest) error
 }
 
 type OtpServiceImpl struct {
@@ -22,12 +22,12 @@ func NewOtpServiceImpl(newOtpService OtpServiceImpl) OtpService {
 	return &newOtpService
 }
 
-func (service *OtpServiceImpl) CreateAndSendingNewOtp(request requests.GenerateOTPRequest) (*resources.OtpResources, error) {
+func (service *OtpServiceImpl) CreateAndSendingNewOtp(request requests.GenerateOTPRequest) error {
 
 	GetUserExists, errExists := service.UserRepo.FindyByEmail(request.Email)
 
 	if errExists != nil {
-		return nil, errExists
+		return errExists
 	}
 
 	key, _ := totp.Generate(totp.GenerateOpts{
@@ -38,8 +38,25 @@ func (service *OtpServiceImpl) CreateAndSendingNewOtp(request requests.GenerateO
 
 	Code, _ := totp.GenerateCode(key.Secret(), time.Now())
 
-	OTPTransferData := ResCon.UserDomainToUserOTPGenerate(Code, key.Secret())
+	ErrUpdateOTP := service.UserRepo.UpdateOTP(GetUserExists, key.Secret())
 
-	return OTPTransferData, nil
+	if ErrUpdateOTP != nil {
+		return ErrUpdateOTP
+	}
+
+	SetEmailContent := helpers.EmailRequest{
+		Subject: "OTP Verification",
+		To:      GetUserExists.Credential.Email,
+		Content: "<p>Welcome to femina care, here your verification code : " + Code + " </p>",
+	}
+
+	errSendingEmail := helpers.SendingEmail(SetEmailContent)
+
+	if errSendingEmail != nil {
+		fmt.Errorf(errSendingEmail.Error())
+		return fmt.Errorf("Error sending otp to email")
+	}
+
+	return nil
 
 }
