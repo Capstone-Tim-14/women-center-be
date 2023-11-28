@@ -17,6 +17,7 @@ type CareerHandler interface {
 	FindAllCareer(ctx echo.Context) error
 	FindDetailCareer(ctx echo.Context) error
 	UpdateCareer(ctx echo.Context) error
+	DeleteCareer(ctx echo.Context) error
 }
 
 type CareerHandlerImpl struct {
@@ -126,4 +127,15 @@ func (handler *CareerHandlerImpl) UpdateCareer(ctx echo.Context) error {
 	}
 
 	return responses.StatusOK(ctx, "Success update career", nil)
+}
+
+func (handler *CareerHandlerImpl) DeleteCareer(ctx echo.Context) error {
+
+	err := handler.CareerService.DeleteCareer(ctx)
+
+	if err != nil {
+		return exceptions.ValidationException(ctx, "Error validation", nil)
+	}
+
+	return responses.StatusOK(ctx, "Success delete career", nil)
 }

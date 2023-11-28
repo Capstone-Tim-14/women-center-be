@@ -21,6 +21,7 @@ type CareerService interface {
 	FindAllCareer(ctx echo.Context) ([]domain.Career, error)
 	FindCareerByid(ctx echo.Context, id int) (*domain.Career, error)
 	UpdateCareer(ctx echo.Context, request requests.CareerRequest, logo *multipart.FileHeader, cover *multipart.FileHeader) ([]exceptions.ValidationMessage, error)
+	DeleteCareer(ctx echo.Context) error
 }
 
 type CareerServiceImpl struct {
@@ -128,4 +129,24 @@ func (service *CareerServiceImpl) UpdateCareer(ctx echo.Context, request request
 	}
 
 	return nil, nil
+}
+
+func (service *CareerServiceImpl) DeleteCareer(ctx echo.Context) error {
+
+	getId := ctx.Param("id")
+	deleteId, _ := strconv.Atoi(getId)
+
+	_, errCareer := service.CareerRepo.FindCareerByid(deleteId)
+
+	if errCareer != nil {
+		return fmt.Errorf("Error get detail career: %w", errCareer)
+	}
+
+	errDeleteCareer := service.CareerRepo.DeleteCareerById(deleteId)
+
+	if errDeleteCareer != nil {
+		return fmt.Errorf("Error delete career: %w", errDeleteCareer)
+	}
+
+	return nil
 }
