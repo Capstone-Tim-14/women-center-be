@@ -27,5 +27,6 @@ func HttpCareerRoute(group *echo.Group, db *gorm.DB, validate *validator.Validat
 	CareerGroup.POST("", CareerHandler.CreateCareer)
 	CareerGroup.GET("", CareerHandler.FindAllCareer)
 	CareerGroup.GET("/:id", CareerHandler.FindDetailCareer)
+	CareerGroup.PUT("/:id", CareerHandler.UpdateCareer)
 
 }
