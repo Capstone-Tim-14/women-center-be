@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"fmt"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/app/v1/repositories"
@@ -100,6 +101,29 @@ func (service *CounselorServiceImpl) DeleteSpecialist(ctx echo.Context, id uint,
 	specialist, errSpecialist := service.SpecialistRepo.FindSpecialistByName(request.Name)
 	if errSpecialist != nil {
 		return nil, errSpecialist
+	}
+
+	preload, errPreload := service.CounselorRepo.PreloadSpecialist(counselor.Id)
+	if errPreload != nil {
+		return nil, errPreload
+	}
+
+	fmt.Println(preload)
+	fmt.Println(specialist)
+
+	// Verifikasi bahwa Specialist terkait dengan Counselor
+	var isCategoryAssociated bool
+	for _, c := range preload.Specialists {
+		if c.Id == specialist.Id {
+			fmt.Print(c.Id, specialist.Id)
+			fmt.Println()
+			isCategoryAssociated = true
+			break
+		}
+	}
+
+	if !isCategoryAssociated {
+		return nil, errors.New("Specialist is not associated with the Counselor")
 	}
 
 	existingData := service.CounselorHasSpecialistRepo.DeleteSpecialistById(*counselor, specialist)
