@@ -12,6 +12,7 @@ import (
 
 type OtpService interface {
 	CreateAndSendingNewOtp(request requests.GenerateOTPRequest) error
+	VerifyOTP(request requests.VerifyOTPRequest) error
 }
 
 type OtpServiceImpl struct {
@@ -55,6 +56,31 @@ func (service *OtpServiceImpl) CreateAndSendingNewOtp(request requests.GenerateO
 	if errSendingEmail != nil {
 		fmt.Errorf(errSendingEmail.Error())
 		return fmt.Errorf("Error sending otp to email")
+	}
+
+	return nil
+
+}
+
+func (service *OtpServiceImpl) VerifyOTP(request requests.VerifyOTPRequest) error {
+
+	GetUserExists, errExists := service.UserRepo.FindyByEmail(request.Email)
+
+	if errExists != nil {
+		return fmt.Errorf("Invalid OTP or user dosen't exists")
+	}
+
+	ValidOTP := totp.Validate(request.Code, *GetUserExists.Secret_Otp)
+
+	if !ValidOTP {
+		fmt.Println(ValidOTP)
+		return fmt.Errorf("Invalid OTP or user dosen't exists")
+	}
+
+	ErrUpdateOTP := service.UserRepo.UpdateOTP(GetUserExists, "")
+
+	if ErrUpdateOTP != nil {
+		return fmt.Errorf("Error server")
 	}
 
 	return nil

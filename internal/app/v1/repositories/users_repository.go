@@ -27,9 +27,18 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 
 func (repository *UserRepositoryImpl) UpdateOTP(user *domain.Users, secret string) error {
 
-	UpdateUserColumn := map[string]interface{}{
-		"secret_otp": secret,
-		"otp_enable": true,
+	var UpdateUserColumn map[string]interface{}
+
+	if secret != "" {
+		UpdateUserColumn = map[string]interface{}{
+			"secret_otp": secret,
+			"otp_enable": true,
+		}
+	} else {
+		UpdateUserColumn = map[string]interface{}{
+			"secret_otp": nil,
+			"otp_enable": false,
+		}
 	}
 
 	ErrUpdateOTP := repository.db.Model(&user).Updates(UpdateUserColumn)

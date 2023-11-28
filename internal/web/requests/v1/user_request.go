@@ -24,3 +24,8 @@ type UpdateUserProfileRequest struct {
 type GenerateOTPRequest struct {
 	Email string `json:"email"`
 }
+
+type VerifyOTPRequest struct {
+	Email string `json:"email"`
+	Code  string `json:"code"`
+}

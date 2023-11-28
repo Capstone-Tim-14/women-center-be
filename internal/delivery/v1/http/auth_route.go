@@ -39,6 +39,7 @@ func HttpAuthRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate)
 	group.GET("/google-auth", AuthHandler.OauthGoogleHandler)
 	group.GET("/callback-google-auth", AuthHandler.OauthCallbackGoogleHandler)
 	group.POST("/auth/otp/generate", OTPHandler.SendOtpHandler)
+	group.POST("/auth/otp/verify", OTPHandler.VerifyTokenHandler)
 
 	Admin := group.Group("/admin")
 
