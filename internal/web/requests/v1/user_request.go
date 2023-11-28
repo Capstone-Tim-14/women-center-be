@@ -20,3 +20,12 @@ type UpdateUserProfileRequest struct {
 	Profile_picture string `json:"profile_picture" form:"profile_picture"`
 	Role_id         uint
 }
+
+type GenerateOTPRequest struct {
+	Email string `json:"email"`
+}
+
+type VerifyOTPRequest struct {
+	Email string `json:"email"`
+	Code  string `json:"code"`
+}
