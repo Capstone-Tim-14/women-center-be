@@ -10,6 +10,8 @@ type CareerRepository interface {
 	CreateCareer(career *domain.Career) (*domain.Career, error)
 	GetAllCareer() ([]domain.Career, error)
 	FindCareerByid(id int) (*domain.Career, error)
+	UpdateCareerById(id int, career *domain.Career) error
+	DeleteCareerById(id int) error
 }
 
 type CareerRepositoryImpl struct {
@@ -65,5 +67,31 @@ func (repository *CareerRepositoryImpl) FindCareerByid(id int) (*domain.Career, 
 	}
 
 	return &career, nil
+
+}
+
+func (repository *CareerRepositoryImpl) UpdateCareerById(id int, career *domain.Career) error {
+
+	result := repository.db.Model(&career).Where("id = ?", id).Updates(&career)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+
+}
+
+func (repository *CareerRepositoryImpl) DeleteCareerById(id int) error {
+
+	career := domain.Career{}
+
+	result := repository.db.Unscoped().Where("id = ?", id).Delete(&career)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
 
 }

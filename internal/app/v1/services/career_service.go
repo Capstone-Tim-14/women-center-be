@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"mime/multipart"
+	"strconv"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/app/v1/repositories"
 	conversion "woman-center-be/internal/web/conversion/request/v1"
@@ -19,11 +20,16 @@ type CareerService interface {
 	CreateCareer(ctx echo.Context, request requests.CareerRequest, logo *multipart.FileHeader, cover *multipart.FileHeader) (*domain.Career, []exceptions.ValidationMessage, error)
 	FindAllCareer(ctx echo.Context) ([]domain.Career, error)
 	FindCareerByid(ctx echo.Context, id int) (*domain.Career, error)
+	AddJobType(ctx echo.Context, id int, request requests.CareerhasTypeRequest) ([]exceptions.ValidationMessage, error)
+	UpdateCareer(ctx echo.Context, request requests.CareerRequest, logo *multipart.FileHeader, cover *multipart.FileHeader) ([]exceptions.ValidationMessage, error)
+	DeleteCareer(ctx echo.Context) error
 }
 
 type CareerServiceImpl struct {
-	CareerRepo repositories.CareerRepository
-	Validator  *validator.Validate
+	CareerRepo        repositories.CareerRepository
+	CareerhasTypeRepo repositories.CareerhasTypeRepository
+	JobTypeRepo       repositories.JobTypeRepository
+	Validator         *validator.Validate
 }
 
 func NewCareerService(careerServiceImpl CareerServiceImpl) CareerService {
@@ -83,4 +89,86 @@ func (service *CareerServiceImpl) FindCareerByid(ctx echo.Context, id int) (*dom
 	}
 
 	return careerDetail, nil
+}
+
+func (service *CareerServiceImpl) AddJobType(ctx echo.Context, id int, request requests.CareerhasTypeRequest) ([]exceptions.ValidationMessage, error) {
+
+	career, errCareer := service.CareerRepo.FindCareerByid(id)
+	if errCareer != nil {
+		return nil, errCareer
+	}
+
+	jobtype, errJobtype := service.JobTypeRepo.FindJobTypeByName(request.Name)
+	if errJobtype != nil {
+		return nil, errJobtype
+	}
+
+	errAddJobtype := service.CareerhasTypeRepo.AddJobType(*career, jobtype)
+	if errAddJobtype != nil {
+		return nil, errAddJobtype
+	}
+	return nil, nil
+}
+
+func (service *CareerServiceImpl) UpdateCareer(ctx echo.Context, request requests.CareerRequest, logo *multipart.FileHeader, cover *multipart.FileHeader) ([]exceptions.ValidationMessage, error) {
+
+	LogoCloudURL, errUploadLogo := storage.S3PutFile(logo, "career/logo")
+
+	if errUploadLogo != nil {
+		return nil, errUploadLogo
+	}
+
+	request.Logo = &LogoCloudURL
+
+	CoverCloudURL, errUploadCover := storage.S3PutFile(cover, "career/cover")
+
+	if errUploadCover != nil {
+		return nil, errUploadCover
+	}
+
+	request.Cover = &CoverCloudURL
+
+	err := service.Validator.Struct(request)
+	if err != nil {
+		return helpers.ValidationError(ctx, err), nil
+	}
+
+	getId := ctx.Param("id")
+	updateId, _ := strconv.Atoi(getId)
+
+	_, errCareer := service.CareerRepo.FindCareerByid(updateId)
+
+	if errCareer != nil {
+		return nil, fmt.Errorf("Error get detail career: %w", errCareer)
+	}
+
+	career := conversion.CareerCreateRequestToCareerDomain(request)
+
+	errUpdateCareer := service.CareerRepo.UpdateCareerById(updateId, career)
+
+	if errUpdateCareer != nil {
+		return nil, fmt.Errorf("Error update career: %w", errUpdateCareer)
+	}
+
+	return nil, nil
+}
+
+func (service *CareerServiceImpl) DeleteCareer(ctx echo.Context) error {
+
+	getId := ctx.Param("id")
+	deleteId, _ := strconv.Atoi(getId)
+
+	_, errCareer := service.CareerRepo.FindCareerByid(deleteId)
+
+	if errCareer != nil {
+		return fmt.Errorf("Error get detail career: %w", errCareer)
+	}
+
+	errDeleteCareer := service.CareerRepo.DeleteCareerById(deleteId)
+
+	if errDeleteCareer != nil {
+		return fmt.Errorf("Error delete career: %w", errDeleteCareer)
+	}
+
+	return nil
 }
