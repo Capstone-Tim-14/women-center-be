@@ -16,6 +16,8 @@ type Users struct {
 	Phone_number    string       `gorm:"type:varchar(20)"`
 	Birthday        *time.Time
 	Status          string         `gorm:"type:varchar(10);default:INACTIVE"`
+	Secret_Otp      *string        `gorm:"type:varchar(100)"`
+	Otp_enable      bool           `gorm:"default:false"`
 	CreatedAt       time.Time      `gorm:"autoCreateTime"`
 	UpdatedAt       time.Time      `gorm:"autoUpdateTime:mili"`
 	DeletedAt       gorm.DeletedAt `gorm:"index"`
