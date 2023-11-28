@@ -20,3 +20,19 @@ func ConvertCareerRsource(careers []domain.Career) []resources.CareerResource {
 
 	return careerResource
 }
+
+func ConvertCareerDetailResource(career *domain.Career) *resources.CareerResource {
+	careerDetailResource := &resources.CareerResource{
+		Title_job:             career.Title_job,
+		Company_name:          *&career.Company_name,
+		Logo:                  career.Logo,
+		Cover:                 career.Cover,
+		Required_skill:        career.Required_skill,
+		Size_company_employee: career.Size_company_employee,
+		About_job:             career.About_job,
+		About_company:         career.About_company,
+		PublishedAt:           helpers.ParseDateFormat(&career.PublishedAt),
+	}
+
+	return careerDetailResource
+}
