@@ -8,7 +8,7 @@ import (
 
 type CounseloHasSpecialistRepository interface {
 	AddSpecialist(counselor domain.Counselors, specialist *domain.Specialist) error
-	RemoveSpecialistById(counselor domain.Counselors, specialist *domain.Specialist) error
+	DeleteSpecialistById(counselor domain.Counselors, specialist *domain.Specialist) error
 }
 
 type CounselorHasSpecialistRepositoryImpl struct {
@@ -29,7 +29,7 @@ func (repository *CounselorHasSpecialistRepositoryImpl) AddSpecialist(counselor 
 	return nil
 }
 
-func (repository *CounselorHasSpecialistRepositoryImpl) RemoveSpecialistById(counselor domain.Counselors, specialist *domain.Specialist) error {
+func (repository *CounselorHasSpecialistRepositoryImpl) DeleteSpecialistById(counselor domain.Counselors, specialist *domain.Specialist) error {
 	result := repository.Db.Model(&counselor).Association("Specialists").Delete(specialist)
 	if result != nil {
 		return result

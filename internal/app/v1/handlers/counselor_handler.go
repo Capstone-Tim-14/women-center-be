@@ -15,6 +15,7 @@ import (
 type CounselorHandler interface {
 	RegisterHandler(ctx echo.Context) error
 	AddSpecialist(ctx echo.Context) error
+	DeleteSpecialist(ctx echo.Context) error
 }
 
 type CounselorHandlerImpl struct {
@@ -58,20 +59,37 @@ func (handler *CounselorHandlerImpl) AddSpecialist(ctx echo.Context) error {
 	convertid, _ := strconv.Atoi(id)
 	var request requests.CounselorHasSpecialistRequest
 	errBinding := ctx.Bind(&request)
-
 	if errBinding != nil {
 		return exceptions.StatusBadRequest(ctx, errBinding)
 	}
 
 	validation, err := handler.CounselorService.AddSpecialist(ctx, uint(convertid), request)
-
 	if validation != nil {
 		return exceptions.ValidationException(ctx, "Error Validation", validation)
 	}
-
 	if err != nil {
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
 	return responses.StatusCreated(ctx, "Success add specialist to counselor", nil)
+}
+
+func (handler *CounselorHandlerImpl) DeleteSpecialist(ctx echo.Context) error {
+	id := ctx.Param("id")
+	convertid, _ := strconv.Atoi(id)
+	var request requests.DeleteCounselorSpecialist
+	errBinding := ctx.Bind(&request)
+	if errBinding != nil {
+		return exceptions.StatusBadRequest(ctx, errBinding)
+	}
+
+	validation, err := handler.CounselorService.DeleteSpecialist(ctx, uint(convertid), request)
+	if validation != nil {
+		return exceptions.ValidationException(ctx, "Error Validation", validation)
+	}
+	if err != nil {
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusCreated(ctx, "Success delete specialist counselor", nil)
 }

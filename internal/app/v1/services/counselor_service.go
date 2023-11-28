@@ -16,6 +16,7 @@ import (
 type CounselorService interface {
 	RegisterCounselor(ctx echo.Context, request requests.CounselorRequest) (*domain.Counselors, []exceptions.ValidationMessage, error)
 	AddSpecialist(ctx echo.Context, id uint, request requests.CounselorHasSpecialistRequest) ([]exceptions.ValidationMessage, error)
+	DeleteSpecialist(ctx echo.Context, id uint, request requests.DeleteCounselorSpecialist) ([]exceptions.ValidationMessage, error)
 }
 
 type CounselorServiceImpl struct {
@@ -80,6 +81,30 @@ func (service *CounselorServiceImpl) AddSpecialist(ctx echo.Context, id uint, re
 	errAdd := service.CounselorHasSpecialistRepo.AddSpecialist(*counselor, specialist)
 	if errAdd != nil {
 		return nil, errAdd
+	}
+
+	return nil, nil
+}
+
+func (service *CounselorServiceImpl) DeleteSpecialist(ctx echo.Context, id uint, request requests.DeleteCounselorSpecialist) ([]exceptions.ValidationMessage, error) {
+	err := service.Validator.Struct(request)
+	if err != nil {
+		return helpers.ValidationError(ctx, err), nil
+	}
+
+	counselor, errCounselor := service.CounselorRepo.FindById(id)
+	if errCounselor != nil {
+		return nil, errCounselor
+	}
+
+	specialist, errSpecialist := service.SpecialistRepo.FindSpecialistByName(request.Name)
+	if errSpecialist != nil {
+		return nil, errSpecialist
+	}
+
+	existingData := service.CounselorHasSpecialistRepo.DeleteSpecialistById(*counselor, specialist)
+	if existingData != nil {
+		return nil, existingData
 	}
 
 	return nil, nil
