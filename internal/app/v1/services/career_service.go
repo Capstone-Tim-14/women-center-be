@@ -17,6 +17,8 @@ import (
 
 type CareerService interface {
 	CreateCareer(ctx echo.Context, request requests.CareerRequest, logo *multipart.FileHeader, cover *multipart.FileHeader) (*domain.Career, []exceptions.ValidationMessage, error)
+	FindAllCareer(ctx echo.Context) ([]domain.Career, error)
+	FindCareerByid(ctx echo.Context, id int) (*domain.Career, error)
 }
 
 type CareerServiceImpl struct {
@@ -55,9 +57,30 @@ func (service *CareerServiceImpl) CreateCareer(ctx echo.Context, request request
 	createCareer, err := service.CareerRepo.CreateCareer(career)
 
 	if err != nil {
-		return nil, nil, fmt.Errorf("error create career: %w", err)
+		return nil, nil, fmt.Errorf("Error create career: %w", err)
 	}
 
 	return createCareer, nil, nil
 }
 
+func (service *CareerServiceImpl) FindAllCareer(ctx echo.Context) ([]domain.Career, error) {
+
+	career, err := service.CareerRepo.GetAllCareer()
+
+	if err != nil {
+		return nil, fmt.Errorf("Error get all career: %w", err)
+	}
+
+	return career, nil
+}
+
+func (service *CareerServiceImpl) FindCareerByid(ctx echo.Context, id int) (*domain.Career, error) {
+
+	careerDetail, err := service.CareerRepo.FindCareerByid(id)
+
+	if err != nil {
+		return nil, fmt.Errorf("Error get detail career: %w", err)
+	}
+
+	return careerDetail, nil
+}

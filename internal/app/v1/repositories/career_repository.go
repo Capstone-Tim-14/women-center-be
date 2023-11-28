@@ -8,6 +8,8 @@ import (
 
 type CareerRepository interface {
 	CreateCareer(career *domain.Career) (*domain.Career, error)
+	GetAllCareer() ([]domain.Career, error)
+	FindCareerByid(id int) (*domain.Career, error)
 }
 
 type CareerRepositoryImpl struct {
@@ -27,5 +29,41 @@ func (repository *CareerRepositoryImpl) CreateCareer(career *domain.Career) (*do
 	}
 
 	return career, nil
+
+}
+
+func (repository *CareerRepositoryImpl) GetAllCareer() ([]domain.Career, error) {
+
+	career := []domain.Career{}
+
+	errTakeCareer := repository.db.Find(&career)
+
+	if errTakeCareer.Error != nil {
+		return nil, errTakeCareer.Error
+	}
+
+	if errTakeCareer.RowsAffected == 0 {
+		return nil, errTakeCareer.Error
+	}
+
+	return career, nil
+
+}
+
+func (repository *CareerRepositoryImpl) FindCareerByid(id int) (*domain.Career, error) {
+
+	career := domain.Career{}
+
+	errTakeCareer := repository.db.Where("id = ?", id).First(&career)
+
+	if errTakeCareer.Error != nil {
+		return nil, errTakeCareer.Error
+	}
+
+	if errTakeCareer.RowsAffected == 0 {
+		return nil, errTakeCareer.Error
+	}
+
+	return &career, nil
 
 }
