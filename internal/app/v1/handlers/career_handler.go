@@ -3,7 +3,9 @@ package handlers
 import (
 	"strconv"
 	"woman-center-be/internal/app/v1/services"
+	conversion "woman-center-be/internal/web/conversion/resource/v1"
 	"woman-center-be/internal/web/requests/v1"
+
 	"woman-center-be/utils/exceptions"
 	"woman-center-be/utils/responses"
 
@@ -65,7 +67,7 @@ func (handler *CareerHandlerImpl) FindAllCareer(ctx echo.Context) error {
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
-	careerResource := url.ConvertCareerRsource(career)
+	careerResource := conversion.ConvertCareerRsource(career)
 
 	return responses.StatusOK(ctx, "Success get career", careerResource)
 }
@@ -83,7 +85,7 @@ func (handler *CareerHandlerImpl) FindDetailCareer(ctx echo.Context) error {
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
-	careerResource := url.ConvertCareerDetailResource(career)
+	careerResource := conversion.ConvertCareerDetailResource(career)
 
 	return responses.StatusOK(ctx, "Success get career", careerResource)
 }
