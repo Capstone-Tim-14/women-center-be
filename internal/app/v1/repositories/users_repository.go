@@ -37,7 +37,7 @@ func (repository *UserRepositoryImpl) UpdateOTP(user *domain.Users, secret strin
 	} else {
 		UpdateUserColumn = map[string]interface{}{
 			"secret_otp": nil,
-			"otp_enable": false,
+			"otp_enable": true,
 		}
 	}
 
