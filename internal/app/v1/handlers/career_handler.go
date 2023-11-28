@@ -16,6 +16,7 @@ type CareerHandler interface {
 	CreateCareer(ctx echo.Context) error
 	FindAllCareer(ctx echo.Context) error
 	FindDetailCareer(ctx echo.Context) error
+	UpdateCareer(ctx echo.Context) error
 }
 
 type CareerHandlerImpl struct {
@@ -88,4 +89,41 @@ func (handler *CareerHandlerImpl) FindDetailCareer(ctx echo.Context) error {
 	careerResource := conversion.ConvertCareerDetailResource(career)
 
 	return responses.StatusOK(ctx, "Success get career", careerResource)
+}
+
+func (handler *CareerHandlerImpl) UpdateCareer(ctx echo.Context) error {
+	careerUpdateRequest := requests.CareerRequest{}
+	errBinding := ctx.Bind(&careerUpdateRequest)
+	logo, errLogo := ctx.FormFile("logo")
+	cover, errCover := ctx.FormFile("cover")
+
+	if errBinding != nil {
+		return exceptions.StatusBadRequest(ctx, errBinding)
+	}
+
+	if errLogo != nil {
+		return exceptions.StatusBadRequest(ctx, errLogo)
+	}
+
+	if errCover != nil {
+		return exceptions.StatusBadRequest(ctx, errCover)
+	}
+
+	err := ctx.Bind(&careerUpdateRequest)
+
+	if err != nil {
+		return exceptions.StatusBadRequest(ctx, err)
+	}
+
+	validation, err := handler.CareerService.UpdateCareer(ctx, careerUpdateRequest, logo, cover)
+
+	if validation != nil {
+		return exceptions.ValidationException(ctx, "Error validation", validation)
+	}
+
+	if err != nil {
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Success update career", nil)
 }
