@@ -108,15 +108,10 @@ func (service *CounselorServiceImpl) DeleteSpecialist(ctx echo.Context, id uint,
 		return nil, errPreload
 	}
 
-	fmt.Println(preload)
-	fmt.Println(specialist)
-
 	// Verifikasi bahwa Specialist terkait dengan Counselor
 	var isCategoryAssociated bool
 	for _, c := range preload.Specialists {
 		if c.Id == specialist.Id {
-			fmt.Print(c.Id, specialist.Id)
-			fmt.Println()
 			isCategoryAssociated = true
 			break
 		}
