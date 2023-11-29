@@ -15,6 +15,7 @@ type ArticleRepository interface {
 	GetLatestArticleForUser() (*domain.Articles, error)
 	GetListArticleForUser() ([]domain.Articles, error)
 	FindAllArticle(string, string, query.Pagination) ([]domain.Articles, *query.Pagination, error)
+	FindArticleCounselor(id int) ([]domain.Articles, *domain.ArticleStatusCount, error)
 	FindById(id int) (*domain.Articles, error)
 	DeleteArticleById(id int) error
 	UpdateStatusArticle(slug, status string) error
@@ -31,6 +32,32 @@ func NewArticleRepository(db *gorm.DB) ArticleRepository {
 	return &ArticleRepositoryImpl{
 		db: db,
 	}
+}
+
+func (repository *ArticleRepositoryImpl) FindArticleCounselor(id int) ([]domain.Articles, *domain.ArticleStatusCount, error) {
+
+	var articles []domain.Articles
+	var articles_count *domain.ArticleStatusCount
+
+	errListArticles := repository.db.InnerJoins("Counselors").InnerJoins("Counselors.Credential").InnerJoins("Counselors.Credential.Role").Find(&articles, "Articles.status = ? AND Counselors.id = ?", "PUBLISHED", id)
+
+	errGetCountArticles := repository.db.Raw("SELECT SUM(CASE WHEN articles.status = 'PUBLISHED' THEN 1 ELSE 0 END) AS PUBLISHED_COUNT, SUM(CASE WHEN articles.status = 'REVIEW' THEN 1 ELSE 0 END) AS REVIEW_COUNT, SUM(CASE WHEN articles.status = 'REJECTED' THEN 1 ELSE 0 END) AS REJECTED_COUNT FROM `articles` INNER JOIN `counselors` ON counselors.id = articles.counselors_id WHERE counselors.id = 5").Scan(&articles_count)
+
+	if errGetCountArticles.Error != nil {
+		return nil, nil, fmt.Errorf("Error to generate count article")
+	}
+
+	if errListArticles.Error != nil {
+		fmt.Errorf(errListArticles.Error.Error())
+		return nil, nil, fmt.Errorf("Error to find article")
+	}
+
+	if errListArticles.RowsAffected == 0 {
+		return nil, nil, fmt.Errorf("Article not found")
+	}
+
+	return articles, articles_count, nil
+
 }
 
 func (repository *ArticleRepositoryImpl) CreateArticle(article *domain.Articles) (*domain.Articles, error) {

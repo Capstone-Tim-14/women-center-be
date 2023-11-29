@@ -15,6 +15,13 @@ type ArticleResource struct {
 	TimeUpload  string            `json:"time_upload,omitempty"`
 }
 
+type ArticleCounseloResource struct {
+	Article_publish  int               `json:"article_publish"`
+	Article_review   int               `json:"Article_review"`
+	Article_rejected int               `json:"Article_rejected"`
+	ArticleList      []ArticleResource `json:"lists,omitempty"`
+}
+
 type Author struct {
 	Name string `json:"name,omitempty"`
 	Role string `json:"role,omitempty"`

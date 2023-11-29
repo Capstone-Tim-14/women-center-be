@@ -14,16 +14,17 @@ import (
 )
 
 type ArticleHandler interface {
-	LatestArticleHandler(ctx echo.Context) error
 	CreateArticle(ctx echo.Context) error
-	FindAllArticleUser(ctx echo.Context) error
 	FindAllArticle(ctx echo.Context) error
 	DeleteArticle(ctx echo.Context) error
-	FindArticleBySlug(ctx echo.Context) error
 	UpdatePublishedArticle(ctx echo.Context) error
+	UpdateArticle(ctx echo.Context) error
 	AddTagArticle(ctx echo.Context) error
 	RemoveTagArticle(ctx echo.Context) error
-	UpdateArticle(ctx echo.Context) error
+	LatestArticleHandler(ctx echo.Context) error
+	FindAllArticleUser(ctx echo.Context) error
+	FindArticleBySlug(ctx echo.Context) error
+	FindAllArticleCounselor(ctx echo.Context) error
 }
 
 type ArticleHandlerImpl struct {
@@ -34,6 +35,23 @@ func NewArticleHandler(article services.ArticleService) ArticleHandler {
 	return &ArticleHandlerImpl{
 		ArticleService: article,
 	}
+}
+
+func (handler *ArticleHandlerImpl) FindAllArticleCounselor(ctx echo.Context) error {
+
+	response, err := handler.ArticleService.FindAllArticleCounselor(ctx)
+
+	if err != nil {
+
+		if strings.Contains(err.Error(), "Articles is empty") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Success Get Article Counselor", response)
+
 }
 
 func (handler *ArticleHandlerImpl) RemoveTagArticle(ctx echo.Context) error {
@@ -211,7 +229,13 @@ func (handler *ArticleHandlerImpl) UpdatePublishedArticle(ctx echo.Context) erro
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
-	return responses.StatusOK(ctx, "Congratulations, the article is APPROVE", nil)
+	if request.Status == "APPROVED" {
+		return responses.StatusCreated(ctx, "Congratulations, the article is PUBLISH", nil)
+	} else if request.Status == "REJECTED" {
+		return responses.StatusCreated(ctx, "Sorry, the Article is REJECTED", nil)
+	}
+
+	return responses.StatusCreated(ctx, "The article status updated", nil)
 }
 
 func (handler *ArticleHandlerImpl) AddTagArticle(ctx echo.Context) error {
