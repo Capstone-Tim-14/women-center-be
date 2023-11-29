@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"woman-center-be/internal/app/v1/services"
@@ -21,6 +22,7 @@ type ArticleHandler interface {
 	FindArticleBySlug(ctx echo.Context) error
 	UpdatePublishedArticle(ctx echo.Context) error
 	AddTagArticle(ctx echo.Context) error
+	RemoveTagArticle(ctx echo.Context) error
 	UpdateArticle(ctx echo.Context) error
 }
 
@@ -32,6 +34,46 @@ func NewArticleHandler(article services.ArticleService) ArticleHandler {
 	return &ArticleHandlerImpl{
 		ArticleService: article,
 	}
+}
+
+func (handler *ArticleHandlerImpl) RemoveTagArticle(ctx echo.Context) error {
+
+	var request requests.ArticleHasManyRequest
+
+	GetId := ctx.Param("id")
+
+	ErrBinding := ctx.Bind(&request)
+
+	if ErrBinding != nil {
+		return exceptions.StatusBadRequest(ctx, ErrBinding)
+	}
+
+	ParseToId, errParsing := strconv.Atoi(GetId)
+
+	if errParsing != nil {
+		fmt.Errorf(errParsing.Error())
+		return exceptions.StatusBadRequest(ctx, fmt.Errorf("Invalid Format id"))
+	}
+
+	Validation, ErrGetArticle := handler.ArticleService.RemoveTagArticle(ctx, ParseToId, request)
+
+	if Validation != nil {
+		return exceptions.ValidationException(ctx, "Validation Error", Validation)
+	}
+
+	if ErrGetArticle != nil {
+		if strings.Contains(ErrGetArticle.Error(), "Article not found") {
+			return exceptions.StatusNotFound(ctx, ErrGetArticle)
+		}
+		if strings.Contains(ErrGetArticle.Error(), "One of article request is not found") {
+			return exceptions.StatusNotFound(ctx, ErrGetArticle)
+		}
+
+		return exceptions.StatusInternalServerError(ctx, ErrGetArticle)
+	}
+
+	return responses.StatusOK(ctx, "Article Remove Successfully", nil)
+
 }
 
 func (handler *ArticleHandlerImpl) LatestArticleHandler(ctx echo.Context) error {

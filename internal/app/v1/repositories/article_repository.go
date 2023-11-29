@@ -116,7 +116,7 @@ func (repository *ArticleRepositoryImpl) FindAllArticle(orderBy string, search s
 func (repository *ArticleRepositoryImpl) FindById(id int) (*domain.Articles, error) {
 	var article domain.Articles
 
-	result := repository.db.Where("id = ?", id).First(&article)
+	result := repository.db.Preload("Tags").Where("id = ?", id).First(&article)
 	if result.Error != nil {
 		return nil, result.Error
 	}
