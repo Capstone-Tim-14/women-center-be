@@ -16,6 +16,8 @@ type Users struct {
 	Phone_number    string
 	Birthday        *time.Time
 	Status          string
+	Secret_Otp      *string
+	Otp_enable      bool
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 	DeletedAt       gorm.DeletedAt
