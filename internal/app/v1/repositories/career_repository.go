@@ -56,7 +56,7 @@ func (repository *CareerRepositoryImpl) FindCareerByid(id int) (*domain.Career, 
 
 	career := domain.Career{}
 
-	errTakeCareer := repository.db.Where("id = ?", id).First(&career)
+	errTakeCareer := repository.db.Preload("Job_type").Where("id = ?", id).First(&career)
 
 	if errTakeCareer.Error != nil {
 		return nil, errTakeCareer.Error

@@ -23,17 +23,28 @@ func ConvertCareerRsource(careers []domain.Career) []resources.CareerResource {
 }
 
 func ConvertCareerDetailResource(career *domain.Career) *resources.CareerResource {
-	careerDetailResource := &resources.CareerResource{
-		Title_job:             career.Title_job,
-		Company_name:          career.Company_name,
-		Logo:                  career.Logo,
-		Cover:                 career.Cover,
-		Required_skill:        career.Required_skill,
-		Size_company_employee: career.Size_company_employee,
-		About_job:             career.About_job,
-		About_company:         career.About_company,
-		PublishedAt:           helpers.ParseDateFormat(&career.PublishedAt),
+	DetailJobType := []resources.JobType{}
+	careerDetailResource := resources.CareerResource{}
+	careerDetailResource.Title_job = career.Title_job
+	careerDetailResource.Company_name = career.Company_name
+	careerDetailResource.Logo = career.Logo
+	careerDetailResource.Location = career.Location
+	careerDetailResource.PublishedAt = helpers.ParseDateFormat(&career.PublishedAt)
+	careerDetailResource.Cover = career.Cover
+	careerDetailResource.Linkedin_url = career.Linkedin_url
+	careerDetailResource.About_job = career.About_job
+	careerDetailResource.About_company = career.About_company
+	careerDetailResource.Required_skill = career.Required_skill
+	careerDetailResource.Company_industry = career.Company_industry
+	careerDetailResource.Size_company_employee = career.Size_company_employee
+	for _, jobType := range career.Job_type {
+		DetailJobType = append(DetailJobType, resources.JobType{
+			Name: *&jobType.Name,
+		})
 	}
+	careerDetailResource.Job_type = DetailJobType
+	careerDetailResource.CreatedAt = helpers.ParseDateFormat(&career.CreatedAt)
+	careerDetailResource.UpdatedAt = helpers.ParseDateFormat(&career.UpdatedAt)
 
-	return careerDetailResource
+	return &careerDetailResource
 }
