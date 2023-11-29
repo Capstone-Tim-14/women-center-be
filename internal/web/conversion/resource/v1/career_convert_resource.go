@@ -10,10 +10,11 @@ func ConvertCareerRsource(careers []domain.Career) []resources.CareerResource {
 	careerResource := []resources.CareerResource{}
 	for _, career := range careers {
 		singleCareerResource := resources.CareerResource{}
+		singleCareerResource.Id = career.Id
 		singleCareerResource.Title_job = career.Title_job
-		singleCareerResource.Company_name = *&career.Company_name
+		singleCareerResource.Company_name = career.Company_name
 		singleCareerResource.Logo = career.Logo
-		singleCareerResource.Location = *&career.Location
+		singleCareerResource.Location = career.Location
 		singleCareerResource.PublishedAt = helpers.ParseDateFormat(&career.PublishedAt)
 		careerResource = append(careerResource, singleCareerResource)
 	}
