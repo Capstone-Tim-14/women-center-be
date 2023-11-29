@@ -15,6 +15,7 @@ type ArticleRepository interface {
 	GetLatestArticleForUser() (*domain.Articles, error)
 	GetListArticleForUser() ([]domain.Articles, error)
 	FindAllArticle(string, string, query.Pagination) ([]domain.Articles, *query.Pagination, error)
+	FindArticleCounselor(id int) ([]domain.Articles, error)
 	FindById(id int) (*domain.Articles, error)
 	DeleteArticleById(id int) error
 	UpdateStatusArticle(slug, status string) error
@@ -31,6 +32,25 @@ func NewArticleRepository(db *gorm.DB) ArticleRepository {
 	return &ArticleRepositoryImpl{
 		db: db,
 	}
+}
+
+func (repository *ArticleRepositoryImpl) FindArticleCounselor(id int) ([]domain.Articles, error) {
+
+	var articles []domain.Articles
+
+	errListArticles := repository.db.InnerJoins("Counselors").InnerJoins("Counselors.Credential").InnerJoins("Counselors.Credential.Role").Find(&articles, "Articles.status = ? AND Counselors.id = ?", "PUBLISHED", id)
+
+	if errListArticles.Error != nil {
+		fmt.Errorf(errListArticles.Error.Error())
+		return nil, fmt.Errorf("Error to find article")
+	}
+
+	if errListArticles.RowsAffected == 0 {
+		return nil, fmt.Errorf("Article not found")
+	}
+
+	return articles, nil
+
 }
 
 func (repository *ArticleRepositoryImpl) CreateArticle(article *domain.Articles) (*domain.Articles, error) {
