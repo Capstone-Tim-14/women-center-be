@@ -28,6 +28,7 @@ type ArticleService interface {
 	UpdatePublishedArticle(ctx echo.Context, request requests.PublishArticle) ([]exceptions.ValidationMessage, error)
 	FindArticleBySlug(ctx echo.Context, slug string) (*domain.Articles, error)
 	AddTagArticle(ctx echo.Context, id int, request requests.ArticlehasTagRequest) ([]exceptions.ValidationMessage, error)
+	RemoveTagArticle(ctx echo.Context, id int, request requests.ArticleHasManyRequest) ([]exceptions.ValidationMessage, error)
 	UpdateArticle(ctx echo.Context, request requests.ArticleRequest, thumbnail *multipart.FileHeader) ([]exceptions.ValidationMessage, error)
 }
 
@@ -42,6 +43,60 @@ type ArticleServiceImpl struct {
 
 func NewArticleService(articleServiceImpl ArticleServiceImpl) ArticleService {
 	return &articleServiceImpl
+}
+
+func (service *ArticleServiceImpl) RemoveTagArticle(ctx echo.Context, id int, request requests.ArticleHasManyRequest) ([]exceptions.ValidationMessage, error) {
+
+	ValidationMessage := service.Validator.Struct(request)
+	var TagList []domain.Tag_Article
+
+	if ValidationMessage != nil {
+		return helpers.ValidationError(ctx, ValidationMessage), nil
+	}
+
+	GetArticleData, errGetArticle := service.ArticleRepo.FindById(id)
+
+	if errGetArticle != nil {
+		fmt.Errorf(errGetArticle.Error())
+		return nil, fmt.Errorf("Article not found")
+	}
+
+	for _, val := range GetArticleData.Tags {
+
+		for index := range request.Name {
+
+			if request.Name[index] == val.Name {
+
+				GetTags, errGetTags := service.TagRepo.FindTagByName(val.Name)
+
+				if errGetTags != nil {
+					fmt.Println(errGetTags.Error())
+					return nil, fmt.Errorf("One of article request is not found")
+				}
+
+				TagList = append(TagList, *GetTags)
+
+			} else {
+				continue
+			}
+
+		}
+
+	}
+
+	if len(TagList) <= 0 {
+		return nil, fmt.Errorf("One of article request is not found")
+	}
+
+	ErrRemoveArticle := service.ArticlehasTagRepo.RemoveTag(*GetArticleData, TagList)
+
+	if ErrRemoveArticle != nil {
+		fmt.Errorf(ErrRemoveArticle.Error())
+		return nil, fmt.Errorf("Error when remove tag")
+	}
+
+	return nil, nil
+
 }
 
 func (service *ArticleServiceImpl) GetLatestArticle() (*resources.ArticleResource, error) {
