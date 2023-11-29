@@ -35,6 +35,7 @@ func ConvertArticleResource(articles []domain.Articles) []resources.ArticleResou
 	articleResource := []resources.ArticleResource{}
 	for _, article := range articles {
 		singleArticleResource := resources.ArticleResource{}
+		singleArticleResource.Id = article.Id
 		singleArticleResource.Title = article.Title
 		singleArticleResource.Thumbnail = *article.Thumbnail
 		singleArticleResource.Slug = article.Slug
