@@ -1,7 +1,6 @@
 package services
 
 import (
-	"errors"
 	"fmt"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/app/v1/repositories"
@@ -16,8 +15,8 @@ import (
 
 type CounselorService interface {
 	RegisterCounselor(ctx echo.Context, request requests.CounselorRequest) (*domain.Counselors, []exceptions.ValidationMessage, error)
-	AddSpecialist(ctx echo.Context, id uint, request requests.CounselorHasSpecialistRequest) ([]exceptions.ValidationMessage, error)
-	DeleteSpecialist(ctx echo.Context, id uint, request requests.DeleteCounselorSpecialist) ([]exceptions.ValidationMessage, error)
+	AddSpecialist(ctx echo.Context, id uint, request requests.CounselorHasManyRequest) ([]exceptions.ValidationMessage, error)
+	RemoveSpecialistCounselor(ctx echo.Context, id int, request requests.CounselorHasManyRequest) ([]exceptions.ValidationMessage, error)
 }
 
 type CounselorServiceImpl struct {
@@ -31,6 +30,55 @@ type CounselorServiceImpl struct {
 
 func NewCounselorService(counselorServiceImpl CounselorServiceImpl) CounselorService {
 	return &counselorServiceImpl
+}
+
+func (service *CounselorServiceImpl) RemoveSpecialistCounselor(ctx echo.Context, id int, request requests.CounselorHasManyRequest) ([]exceptions.ValidationMessage, error) {
+	ValidationMessage := service.Validator.Struct(request)
+	var Specialist []domain.Specialist
+
+	if ValidationMessage != nil || len(request.Name) == 0 {
+		return helpers.ValidationError(ctx, ValidationMessage), nil
+	}
+
+	GetCounselorData, errGetCounselor := service.CounselorRepo.FindById(uint(id))
+
+	if errGetCounselor != nil {
+		fmt.Errorf(errGetCounselor.Error())
+		return nil, fmt.Errorf("Counselor not found")
+	}
+
+	for _, val := range GetCounselorData.Specialists {
+
+		for index := range request.Name {
+
+			if request.Name[index] == val.Name {
+
+				GetSpecialists, errGetSpecialists := service.SpecialistRepo.FindSpecialistByName(val.Name)
+
+				if errGetSpecialists != nil {
+					fmt.Println(errGetSpecialists.Error())
+					return nil, fmt.Errorf("One of Counselor request is not found")
+				}
+
+				Specialist = append(Specialist, *GetSpecialists)
+
+			}
+		}
+
+	}
+
+	if len(Specialist) <= 0 {
+		return nil, fmt.Errorf("One of counselor request is not found")
+	}
+
+	ErrRemoveCounselor := service.CounselorHasSpecialistRepo.RemoveManySpecialist(*GetCounselorData, Specialist)
+
+	if ErrRemoveCounselor != nil {
+		fmt.Errorf(ErrRemoveCounselor.Error())
+		return nil, fmt.Errorf("Error when remove specialist")
+	}
+
+	return nil, nil
 }
 
 func (service *CounselorServiceImpl) RegisterCounselor(ctx echo.Context, request requests.CounselorRequest) (*domain.Counselors, []exceptions.ValidationMessage, error) {
@@ -63,9 +111,9 @@ func (service *CounselorServiceImpl) RegisterCounselor(ctx echo.Context, request
 	return result, nil, nil
 }
 
-func (service *CounselorServiceImpl) AddSpecialist(ctx echo.Context, id uint, request requests.CounselorHasSpecialistRequest) ([]exceptions.ValidationMessage, error) {
+func (service *CounselorServiceImpl) AddSpecialist(ctx echo.Context, id uint, request requests.CounselorHasManyRequest) ([]exceptions.ValidationMessage, error) {
 	err := service.Validator.Struct(request)
-	if err != nil {
+	if err != nil || len(request.Name) == 0 {
 		return helpers.ValidationError(ctx, err), nil
 	}
 
@@ -74,57 +122,18 @@ func (service *CounselorServiceImpl) AddSpecialist(ctx echo.Context, id uint, re
 		return nil, errCounselor
 	}
 
-	specialist, errSpecialist := service.SpecialistRepo.FindSpecialistByName(request.Name)
-	if errSpecialist != nil {
-		return nil, errSpecialist
-	}
+	for index := range request.Name {
+		GetSpecialists, errGetSpecialists := service.SpecialistRepo.FindSpecialistByName(request.Name[index])
 
-	errAdd := service.CounselorHasSpecialistRepo.AddSpecialist(*counselor, specialist)
-	if errAdd != nil {
-		return nil, errAdd
-	}
+		if errGetSpecialists != nil {
+			fmt.Println(errGetSpecialists.Error())
+			return nil, fmt.Errorf("One of Counselor request is not found")
+		}
 
-	return nil, nil
-}
-
-func (service *CounselorServiceImpl) DeleteSpecialist(ctx echo.Context, id uint, request requests.DeleteCounselorSpecialist) ([]exceptions.ValidationMessage, error) {
-	err := service.Validator.Struct(request)
-	if err != nil {
-		return helpers.ValidationError(ctx, err), nil
-	}
-
-	counselor, errCounselor := service.CounselorRepo.FindById(id)
-	if errCounselor != nil {
-		return nil, errCounselor
-	}
-
-	specialist, errSpecialist := service.SpecialistRepo.FindSpecialistByName(request.Name)
-	if errSpecialist != nil {
-		return nil, errSpecialist
-	}
-
-	preload, errPreload := service.CounselorRepo.PreloadSpecialist(counselor.Id)
-	if errPreload != nil {
-		return nil, errPreload
-	}
-
-	// Verifikasi bahwa Specialist terkait dengan Counselor
-	var isCategoryAssociated bool
-	for _, c := range preload.Specialists {
-		if c.Id == specialist.Id {
-			isCategoryAssociated = true
-			break
+		errAdd := service.CounselorHasSpecialistRepo.AddSpecialist(*counselor, GetSpecialists)
+		if errAdd != nil {
+			return nil, errAdd
 		}
 	}
-
-	if !isCategoryAssociated {
-		return nil, errors.New("Specialist is not associated with the Counselor")
-	}
-
-	existingData := service.CounselorHasSpecialistRepo.DeleteSpecialistById(*counselor, specialist)
-	if existingData != nil {
-		return nil, existingData
-	}
-
 	return nil, nil
 }

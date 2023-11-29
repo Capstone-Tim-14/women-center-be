@@ -34,5 +34,5 @@ func HttpCounselorRoute(group *echo.Group, db *gorm.DB, validate *validator.Vali
 	verifyTokenAdmin := group.Group("/admin", middlewares.VerifyTokenSignature("SECRET_KEY_ADMIN"))
 	makeCounselorHasSpecialist := verifyTokenAdmin.Group("/counselor")
 	makeCounselorHasSpecialist.POST("/:id/add-specialist", CounselorHandler.AddSpecialist)
-	makeCounselorHasSpecialist.DELETE("/:id/delete-specialist", CounselorHandler.DeleteSpecialist)
+	makeCounselorHasSpecialist.DELETE("/:id/remove-specialist", CounselorHandler.RemoveManySpecialist)
 }

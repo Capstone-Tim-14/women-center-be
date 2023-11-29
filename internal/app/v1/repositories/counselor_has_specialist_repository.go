@@ -9,6 +9,7 @@ import (
 type CounseloHasSpecialistRepository interface {
 	AddSpecialist(counselor domain.Counselors, specialist *domain.Specialist) error
 	DeleteSpecialistById(counselor domain.Counselors, specialist *domain.Specialist) error
+	RemoveManySpecialist(counselor domain.Counselors, specialist []domain.Specialist) error
 }
 
 type CounselorHasSpecialistRepositoryImpl struct {
@@ -19,6 +20,21 @@ func NewCounselorHasSpecialistRepository(db *gorm.DB) CounseloHasSpecialistRepos
 	return &CounselorHasSpecialistRepositoryImpl{
 		Db: db,
 	}
+}
+
+func (repository *CounselorHasSpecialistRepositoryImpl) RemoveManySpecialist(counselor domain.Counselors, specialist []domain.Specialist) error {
+
+	Transaction := repository.Db.Begin()
+
+	result := Transaction.Model(&counselor).Association("Specialists").Delete(specialist)
+	if result != nil {
+		Transaction.Rollback()
+		return result
+	}
+
+	Transaction.Commit()
+
+	return nil
 }
 
 func (repository *CounselorHasSpecialistRepositoryImpl) AddSpecialist(counselor domain.Counselors, specialist *domain.Specialist) error {
