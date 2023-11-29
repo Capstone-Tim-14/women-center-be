@@ -23,7 +23,7 @@ type ArticleService interface {
 	CreateArticle(ctx echo.Context, request requests.ArticleRequest, thumbnail *multipart.FileHeader) (*domain.Articles, []exceptions.ValidationMessage, error)
 	GetLatestArticle() (*resources.ArticleResource, error)
 	FindAllArticleUser() ([]resources.ArticleResource, error)
-	FindAllArticleCounselor(ctx echo.Context) ([]resources.ArticleResource, error)
+	FindAllArticleCounselor(ctx echo.Context) (*resources.ArticleCounseloResource, error)
 	FindAllArticle(ctx echo.Context) ([]domain.Articles, *query.Pagination, error)
 	DeleteArticle(ctx echo.Context) error
 	UpdatePublishedArticle(ctx echo.Context, request requests.PublishArticle) ([]exceptions.ValidationMessage, error)
@@ -46,11 +46,9 @@ func NewArticleService(articleServiceImpl ArticleServiceImpl) ArticleService {
 	return &articleServiceImpl
 }
 
-func (service *ArticleServiceImpl) FindAllArticleCounselor(ctx echo.Context) ([]resources.ArticleResource, error) {
+func (service *ArticleServiceImpl) FindAllArticleCounselor(ctx echo.Context) (*resources.ArticleCounseloResource, error) {
 
 	authClaims := helpers.GetAuthClaims(ctx)
-
-	fmt.Println(authClaims)
 
 	getCounselorRepo, errCounselor := service.CounselorRepo.FindById(int(authClaims.Id))
 
@@ -58,15 +56,15 @@ func (service *ArticleServiceImpl) FindAllArticleCounselor(ctx echo.Context) ([]
 		return nil, errCounselor
 	}
 
-	getArticlesList, errListArticle := service.ArticleRepo.FindArticleCounselor(int(getCounselorRepo.Id))
+	getArticlesList, getArticleCount, errListArticle := service.ArticleRepo.FindArticleCounselor(int(getCounselorRepo.Id))
 
 	if errListArticle != nil {
 		return nil, errCounselor
 	}
 
-	getResources := conResources.ConvertArticleResource(getArticlesList)
+	getResources := conResources.ConvertArticleCounselorResource(getArticlesList, *getArticleCount)
 
-	return getResources, nil
+	return &getResources, nil
 
 }
 

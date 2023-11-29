@@ -50,7 +50,7 @@ func (handler *ArticleHandlerImpl) FindAllArticleCounselor(ctx echo.Context) err
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
-	return responses.StatusOK(ctx, "Success Get All Article", response)
+	return responses.StatusOK(ctx, "Success Get Article Counselor", response)
 
 }
 
@@ -229,7 +229,13 @@ func (handler *ArticleHandlerImpl) UpdatePublishedArticle(ctx echo.Context) erro
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
-	return responses.StatusOK(ctx, "Congratulations, the article is APPROVE", nil)
+	if request.Status == "APPROVED" {
+		return responses.StatusCreated(ctx, "Congratulations, the article is PUBLISH", nil)
+	} else if request.Status == "REJECTED" {
+		return responses.StatusCreated(ctx, "Sorry, the Article is REJECTED", nil)
+	}
+
+	return responses.StatusCreated(ctx, "The article status updated", nil)
 }
 
 func (handler *ArticleHandlerImpl) AddTagArticle(ctx echo.Context) error {
