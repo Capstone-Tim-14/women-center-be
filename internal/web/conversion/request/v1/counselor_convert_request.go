@@ -22,17 +22,15 @@ func CounselorCreateRequestToCounselorDomain(request requests.CounselorRequest) 
 	}
 }
 
-func CounselorUpdateRequestToCounselorDomain(request requests.CounselorRequest) *domain.Counselors {
-	return &domain.Counselors{
-		First_name: request.First_name,
-		Last_name:  request.Last_name,
-		Credential: &domain.Credentials{
-			Username: request.Username,
-			Password: helpers.HashPassword(request.Password),
-			Email:    request.Email,
-			Role_id:  request.Role_id,
-		},
-		Profile_picture: request.Profile_picture,
-		Description:     request.Description,
-	}
+func CounselorUpdateRequestToCounselorDomain(request requests.CounselorRequest, counselor *domain.Counselors) *domain.Counselors {
+	counselor.First_name = request.First_name
+	counselor.Last_name = request.Last_name
+	counselor.Credential.Username = request.Username
+	counselor.Credential.Password = helpers.HashPassword(request.Password)
+	counselor.Credential.Role_id = request.Role_id
+	counselor.Credential.Email = request.Email
+	counselor.Profile_picture = request.Profile_picture
+	counselor.Description = request.Description
+
+	return counselor
 }

@@ -187,9 +187,9 @@ func (service *CounselorServiceImpl) UpdateCounselor(ctx echo.Context, request r
 		return nil, nil, fmt.Errorf("Counselor not found")
 	}
 	request.Role_id = getUser.Credential.Role_id
-	counselor := conversion.CounselorUpdateRequestToCounselorDomain(request)
+	counselor := conversion.CounselorUpdateRequestToCounselorDomain(request, getUser)
 
-	errUpdate := service.CounselorRepo.UpdateCounselor(getcounselorId, counselor)
+	errUpdate := service.CounselorRepo.UpdateCounselor(counselor)
 	if errUpdate != nil {
 		return nil, nil, fmt.Errorf("Error when update counselor: %s", errUpdate.Error())
 	}
@@ -219,9 +219,9 @@ func (service *CounselorServiceImpl) UpdateCounselorForMobile(ctx echo.Context, 
 	}
 
 	request.Role_id = getUser.Credential.Role_id
-	counselor := conversion.CounselorUpdateRequestToCounselorDomain(request)
+	counselor := conversion.CounselorUpdateRequestToCounselorDomain(request, getUser)
 
-	errUpdate := service.CounselorRepo.UpdateCounselor(int(getUser.Id), counselor)
+	errUpdate := service.CounselorRepo.UpdateCounselor(counselor)
 
 	if errUpdate != nil {
 		return nil, nil, fmt.Errorf("Error when update counselor: %s", errUpdate.Error())

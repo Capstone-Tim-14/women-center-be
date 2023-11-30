@@ -12,7 +12,7 @@ type CounselorRepository interface {
 	FindById(id int) (*domain.Counselors, error)
 	FindyByEmail(email string) (*domain.Counselors, error)
 	FindAllCounselors() ([]domain.Counselors, error)
-	UpdateCounselor(id int, counselor *domain.Counselors) error
+	UpdateCounselor(counselor *domain.Counselors) error
 }
 
 type CounselorRepositoryImpl struct {
@@ -70,11 +70,20 @@ func (repository *CounselorRepositoryImpl) FindAllCounselors() ([]domain.Counsel
 	return counselor, nil
 }
 
-func (repository *CounselorRepositoryImpl) UpdateCounselor(id int, counselor *domain.Counselors) error {
-	result := repository.db.Model(&counselor).Where("id = ?", id).Updates(counselor)
+func (repository *CounselorRepositoryImpl) UpdateCounselor(counselor *domain.Counselors) error {
+	transection := repository.db.Begin()
+
+	result := transection.Model(&counselor).Updates(counselor)
 	if result.Error != nil {
+		transection.Rollback()
 		return result.Error
 	}
 
+	result = transection.Model(&counselor.Credential).Updates(counselor.Credential)
+	if result.Error != nil {
+		transection.Rollback()
+		return result.Error
+	}
+	transection.Commit()
 	return nil
 }

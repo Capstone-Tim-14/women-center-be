@@ -161,7 +161,7 @@ func (handler *CounselorHandlerImpl) UpdateCounselorForMobile(ctx echo.Context) 
 		return exceptions.StatusBadRequest(ctx, err)
 	}
 
-	_, validation, err := handler.CounselorService.UpdateCounselor(ctx, counselorUpdateRequest, picture)
+	_, validation, err := handler.CounselorService.UpdateCounselorForMobile(ctx, counselorUpdateRequest, picture)
 
 	if validation != nil {
 		return exceptions.ValidationException(ctx, "Error validation", validation)
