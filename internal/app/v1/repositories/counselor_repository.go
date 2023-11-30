@@ -8,10 +8,11 @@ import (
 )
 
 type CounselorRepository interface {
-	CreateCounselor(counselor *domain.Counselors) (*domain.Counselors, error)  
+	CreateCounselor(counselor *domain.Counselors) (*domain.Counselors, error)
 	FindById(id int) (*domain.Counselors, error)
 	FindyByEmail(email string) (*domain.Counselors, error)
 	FindAllCounselors() ([]domain.Counselors, error)
+	UpdateCounselor(id int, counselor *domain.Counselors) error
 }
 
 type CounselorRepositoryImpl struct {
@@ -28,7 +29,7 @@ func (repository *CounselorRepositoryImpl) FindById(id int) (*domain.Counselors,
 
 	var Counselor domain.Counselors
 
-	ErrGetCounselor := repository.db.First(&Counselor, "id = ?", id)
+	ErrGetCounselor := repository.db.Preload("Credential").Preload("Credential.Role").Where("id = ?", id).First(&Counselor)
 
 	if ErrGetCounselor.Error != nil {
 		return nil, fmt.Errorf("Counselor not found")
@@ -67,4 +68,13 @@ func (repository *CounselorRepositoryImpl) FindAllCounselors() ([]domain.Counsel
 	}
 
 	return counselor, nil
+}
+
+func (repository *CounselorRepositoryImpl) UpdateCounselor(id int, counselor *domain.Counselors) error {
+	result := repository.db.Model(&counselor).Where("id = ?", id).Updates(counselor)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
 }

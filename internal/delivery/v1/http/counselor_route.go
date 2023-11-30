@@ -24,5 +24,6 @@ func HttpCounselorRoute(group *echo.Group, db *gorm.DB, validate *validator.Vali
 
 	userVerify.POST("/register", CounselorHandler.RegisterHandler)
 	userVerify.GET("/all", CounselorHandler.GetAllCounselorsHandler)
+	userVerify.PUT("/:id", CounselorHandler.UpdateCounselorHandler)
 
 }

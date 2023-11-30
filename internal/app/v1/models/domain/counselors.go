@@ -12,7 +12,7 @@ type Counselors struct {
 	Credential      *Credentials
 	First_name      string
 	Last_name       string
-	Profile_picture string
+	Profile_picture string `gorm:"default:https://pub-86c5755f32914550adb162dd2b8850d0.r2.dev/default-profile.jpg"`
 	Description     string
 	Status          string
 	CreatedAt       time.Time
