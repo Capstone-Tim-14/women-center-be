@@ -12,9 +12,10 @@ type Counselors struct {
 	Credential      *Credentials
 	First_name      string
 	Last_name       string
-	Profile_picture string
+	Profile_picture string `gorm:"default:https://pub-86c5755f32914550adb162dd2b8850d0.r2.dev/default-profile.jpg"`
 	Description     string
 	Status          string
+	Specialists     []Specialist `gorm:"many2many:counselor_has_specialists;foreignKey:Id;references:Id;"`
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 	DeletedAt       gorm.DeletedAt

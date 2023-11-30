@@ -2,10 +2,13 @@ package services
 
 import (
 	"fmt"
+	"mime/multipart"
+	"strconv"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/app/v1/repositories"
 	conversion "woman-center-be/internal/web/conversion/request/v1"
 	"woman-center-be/internal/web/requests/v1"
+	"woman-center-be/pkg/storage"
 	"woman-center-be/utils/exceptions"
 	"woman-center-be/utils/helpers"
 
@@ -15,25 +18,86 @@ import (
 
 type CounselorService interface {
 	RegisterCounselor(ctx echo.Context, request requests.CounselorRequest) (*domain.Counselors, []exceptions.ValidationMessage, error)
+	AddSpecialist(ctx echo.Context, id uint, request requests.CounselorHasManyRequest) ([]exceptions.ValidationMessage, error)
+	RemoveSpecialistCounselor(ctx echo.Context, id int, request requests.CounselorHasManyRequest) ([]exceptions.ValidationMessage, error)
 	GetAllCounselors(ctx echo.Context) ([]domain.Counselors, error)
+	GetCounselorProfile(ctx echo.Context) (*domain.Counselors, error)
+	UpdateCounselor(ctx echo.Context, request requests.CounselorRequest, picture *multipart.FileHeader) (*domain.Counselors, []exceptions.ValidationMessage, error)
 }
 
 type CounselorServiceImpl struct {
-	CounselorRepo repositories.CounselorRepository
-	RoleRepo      repositories.RoleRepository
-	validator     *validator.Validate
+	CounselorRepo              repositories.CounselorRepository
+	RoleRepo                   repositories.RoleRepository
+	Validator                  *validator.Validate
+	AdminRepo                  repositories.AdminRepository
+	SpecialistRepo             repositories.SpecialistRepository
+	CounselorHasSpecialistRepo repositories.CounseloHasSpecialistRepository
 }
 
-func NewCounselorService(counselor repositories.CounselorRepository, validator *validator.Validate, role repositories.RoleRepository) CounselorService {
-	return &CounselorServiceImpl{
-		CounselorRepo: counselor,
-		RoleRepo:      role,
-		validator:     validator,
+func NewCounselorService(counselorServiceImpl CounselorServiceImpl) CounselorService {
+	return &counselorServiceImpl
+}
+
+func (service *CounselorServiceImpl) GetAllCounselors(ctx echo.Context) ([]domain.Counselors, error) {
+	counselors, err := service.CounselorRepo.FindAllCounselors()
+	if err != nil {
+		return nil, fmt.Errorf("Error when get all counselors: %s", err.Error())
 	}
+
+	return counselors, nil
+}
+
+func (service *CounselorServiceImpl) RemoveSpecialistCounselor(ctx echo.Context, id int, request requests.CounselorHasManyRequest) ([]exceptions.ValidationMessage, error) {
+	ValidationMessage := service.Validator.Struct(request)
+	var Specialist []domain.Specialist
+
+	if ValidationMessage != nil || len(request.Name) == 0 {
+		return helpers.ValidationError(ctx, ValidationMessage), nil
+	}
+
+	GetCounselorData, errGetCounselor := service.CounselorRepo.FindById(id)
+
+	if errGetCounselor != nil {
+		fmt.Errorf(errGetCounselor.Error())
+		return nil, fmt.Errorf("Counselor not found")
+	}
+
+	for _, val := range GetCounselorData.Specialists {
+
+		for index := range request.Name {
+
+			if request.Name[index] == val.Name {
+
+				GetSpecialists, errGetSpecialists := service.SpecialistRepo.FindSpecialistByName(val.Name)
+
+				if errGetSpecialists != nil {
+					fmt.Println(errGetSpecialists.Error())
+					return nil, fmt.Errorf("One of Counselor request is not found")
+				}
+
+				Specialist = append(Specialist, *GetSpecialists)
+
+			}
+		}
+
+	}
+
+	if len(Specialist) <= 0 {
+		return nil, fmt.Errorf("One of counselor request is not found")
+	}
+
+	ErrRemoveCounselor := service.CounselorHasSpecialistRepo.RemoveManySpecialist(*GetCounselorData, Specialist)
+
+	if ErrRemoveCounselor != nil {
+		fmt.Errorf(ErrRemoveCounselor.Error())
+		return nil, fmt.Errorf("Error when remove specialist")
+	}
+
+	return nil, nil
 }
 
 func (service *CounselorServiceImpl) RegisterCounselor(ctx echo.Context, request requests.CounselorRequest) (*domain.Counselors, []exceptions.ValidationMessage, error) {
-	err := service.validator.Struct(request)
+	err := service.Validator.Struct(request)
 	if err != nil {
 		return nil, helpers.ValidationError(ctx, err), nil
 	}
@@ -62,11 +126,72 @@ func (service *CounselorServiceImpl) RegisterCounselor(ctx echo.Context, request
 	return result, nil, nil
 }
 
-func (service *CounselorServiceImpl) GetAllCounselors(ctx echo.Context) ([]domain.Counselors, error) {
-	counselors, err := service.CounselorRepo.FindAllCounselors()
-	if err != nil {
-		return nil, fmt.Errorf("Error when get all counselors: %s", err.Error())
+func (service *CounselorServiceImpl) AddSpecialist(ctx echo.Context, id uint, request requests.CounselorHasManyRequest) ([]exceptions.ValidationMessage, error) {
+	err := service.Validator.Struct(request)
+	if err != nil || len(request.Name) == 0 {
+		return helpers.ValidationError(ctx, err), nil
 	}
 
-	return counselors, nil
+	counselor, errCounselor := service.CounselorRepo.FindById(int(id))
+	if errCounselor != nil {
+		return nil, errCounselor
+	}
+
+	for index := range request.Name {
+		GetSpecialists, errGetSpecialists := service.SpecialistRepo.FindSpecialistByName(request.Name[index])
+		if errGetSpecialists == nil {
+			errAdd := service.CounselorHasSpecialistRepo.AddSpecialist(*counselor, GetSpecialists)
+			if errAdd != nil {
+				return nil, errAdd
+			}
+		} else {
+			fmt.Println(errGetSpecialists.Error())
+			return nil, fmt.Errorf("One of Counselor request is not found")
+		}
+	}
+	return nil, nil
+}
+
+func (service *CounselorServiceImpl) GetCounselorProfile(ctx echo.Context) (*domain.Counselors, error) {
+	getUserClaim := helpers.GetAuthClaims(ctx)
+
+	counselor, err := service.CounselorRepo.FindById(int(getUserClaim.Id))
+	if err != nil {
+		return nil, err
+	}
+	return counselor, nil
+}
+
+func (service *CounselorServiceImpl) UpdateCounselor(ctx echo.Context, request requests.CounselorRequest, picture *multipart.FileHeader) (*domain.Counselors, []exceptions.ValidationMessage, error) {
+	if picture != nil {
+		cloudURL, errUpload := storage.S3PutFile(picture, "counselor/picture")
+
+		if errUpload != nil {
+			return nil, nil, fmt.Errorf("Error when upload picture: %s", errUpload.Error())
+		}
+
+		request.Profile_picture = cloudURL
+	}
+
+	err := service.Validator.Struct(request)
+	if err != nil {
+		return nil, helpers.ValidationError(ctx, err), nil
+	}
+
+	getId := ctx.Param("id")
+	getcounselorId, _ := strconv.Atoi(getId)
+
+	getUser, _ := service.CounselorRepo.FindById(getcounselorId)
+	if getUser == nil {
+		return nil, nil, fmt.Errorf("Counselor not found")
+	}
+	request.Role_id = getUser.Credential.Role_id
+	counselor := conversion.CounselorUpdateRequestToCounselorDomain(request)
+
+	errUpdate := service.CounselorRepo.UpdateCounselor(getcounselorId, counselor)
+	if errUpdate != nil {
+		return nil, nil, fmt.Errorf("Error when update counselor: %s", errUpdate.Error())
+	}
+
+	return nil, nil, nil
 }

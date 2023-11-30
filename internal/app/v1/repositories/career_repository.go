@@ -14,6 +14,7 @@ type CareerRepository interface {
 	FindCareerByid(id int) (*domain.Career, error)
 	UpdateCareerById(id int, career *domain.Career) error
 	DeleteCareerById(id int) error
+	PreloadJobType(id uint) (*domain.Career, error)
 }
 
 type CareerRepositoryImpl struct {
@@ -102,4 +103,14 @@ func (repository *CareerRepositoryImpl) DeleteCareerById(id int) error {
 
 	return nil
 
+}
+
+func (repository *CareerRepositoryImpl) PreloadJobType(id uint) (*domain.Career, error) {
+
+	career := domain.Career{}
+	if err := repository.db.Preload("Job_type").First(&career, id).Error; err != nil {
+		return nil, err
+	}
+
+	return &career, nil
 }

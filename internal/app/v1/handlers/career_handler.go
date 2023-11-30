@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"woman-center-be/internal/app/v1/services"
@@ -18,6 +19,7 @@ type CareerHandler interface {
 	FindAllCareer(ctx echo.Context) error
 	FindDetailCareer(ctx echo.Context) error
 	AddJobType(ctx echo.Context) error
+	RemoveJobType(ctx echo.Context) error
 	UpdateCareer(ctx echo.Context) error
 	DeleteCareer(ctx echo.Context) error
 }
@@ -118,6 +120,43 @@ func (handler *CareerHandlerImpl) AddJobType(ctx echo.Context) error {
 	}
 
 	return responses.StatusCreated(ctx, "Success add job type to career", nil)
+}
+
+func (handler *CareerHandlerImpl) RemoveJobType(ctx echo.Context) error {
+
+	id := ctx.Param("id")
+	var request requests.CareerhasManyRequest
+	errBinding := ctx.Bind(&request)
+
+	if errBinding != nil {
+		return exceptions.StatusBadRequest(ctx, errBinding)
+	}
+
+	ParseToId, errParsing := strconv.Atoi(id)
+
+	if errParsing != nil {
+		fmt.Errorf(errParsing.Error())
+		return exceptions.StatusBadRequest(ctx, fmt.Errorf("Invalid format id"))
+	}
+
+	validation, err := handler.CareerService.RemoveJobType(ctx, ParseToId, request)
+
+	if validation != nil {
+		return exceptions.ValidationException(ctx, "Validation Error", validation)
+	}
+
+	if err != nil {
+		if strings.Contains(err.Error(), "Career not found") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+		if strings.Contains(err.Error(), "One of article request is not found") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusCreated(ctx, "Job Type Removed Successfylly", nil)
 }
 
 func (handler *CareerHandlerImpl) UpdateCareer(ctx echo.Context) error {

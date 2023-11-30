@@ -1,9 +1,9 @@
 package requests
 
-type CareerhasTypeRequest struct {
+type CounselorHasSpecialistRequest struct {
 	Name string `json:"name" validate:"required"`
 }
 
-type CareerhasManyRequest struct {
+type CounselorHasManyRequest struct {
 	Name []string `json:"name" validate:"required"`
 }
