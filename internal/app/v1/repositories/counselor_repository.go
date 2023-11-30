@@ -9,9 +9,10 @@ import (
 
 type CounselorRepository interface {
 	CreateCounselor(counselor *domain.Counselors) (*domain.Counselors, error)
+	FindById(id int) (*domain.Counselors, error)
 	FindyByEmail(email string) (*domain.Counselors, error)
-	FindById(id uint) (*domain.Counselors, error)
 	FindAllCounselors() ([]domain.Counselors, error)
+	UpdateCounselor(id int, counselor *domain.Counselors) error
 }
 
 type CounselorRepositoryImpl struct {
@@ -22,6 +23,20 @@ func NewCounselorRepository(db *gorm.DB) CounselorRepository {
 	return &CounselorRepositoryImpl{
 		db: db,
 	}
+}
+
+func (repository *CounselorRepositoryImpl) FindById(id int) (*domain.Counselors, error) {
+
+	var Counselor domain.Counselors
+
+	ErrGetCounselor := repository.db.Preload("Credential").Preload("Credential.Role").Preload("Specialists").Where("id = ?", id).First(&Counselor)
+
+	if ErrGetCounselor.Error != nil {
+		return nil, fmt.Errorf("Counselor not found")
+	}
+
+	return &Counselor, nil
+
 }
 
 func (repository *CounselorRepositoryImpl) CreateCounselor(counselor *domain.Counselors) (*domain.Counselors, error) {
@@ -44,18 +59,6 @@ func (repository *CounselorRepositoryImpl) FindyByEmail(email string) (*domain.C
 	return &counselor, nil
 }
 
-func (repository *CounselorRepositoryImpl) FindById(id uint) (*domain.Counselors, error) {
-	counselor := domain.Counselors{}
-
-	result := repository.db.Preload("Specialists").Where("id = ?", id).First(&counselor)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	if result.RowsAffected == 0 {
-		return nil, fmt.Errorf("Counselor not found")
-	}
-	return &counselor, nil
-}
 func (repository *CounselorRepositoryImpl) FindAllCounselors() ([]domain.Counselors, error) {
 	counselor := []domain.Counselors{}
 
@@ -65,4 +68,13 @@ func (repository *CounselorRepositoryImpl) FindAllCounselors() ([]domain.Counsel
 	}
 
 	return counselor, nil
+}
+
+func (repository *CounselorRepositoryImpl) UpdateCounselor(id int, counselor *domain.Counselors) error {
+	result := repository.db.Model(&counselor).Where("id = ?", id).Updates(counselor)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
 }

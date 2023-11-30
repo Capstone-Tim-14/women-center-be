@@ -2,10 +2,13 @@ package services
 
 import (
 	"fmt"
+	"mime/multipart"
+	"strconv"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/app/v1/repositories"
 	conversion "woman-center-be/internal/web/conversion/request/v1"
 	"woman-center-be/internal/web/requests/v1"
+	"woman-center-be/pkg/storage"
 	"woman-center-be/utils/exceptions"
 	"woman-center-be/utils/helpers"
 
@@ -18,6 +21,8 @@ type CounselorService interface {
 	AddSpecialist(ctx echo.Context, id uint, request requests.CounselorHasManyRequest) ([]exceptions.ValidationMessage, error)
 	RemoveSpecialistCounselor(ctx echo.Context, id int, request requests.CounselorHasManyRequest) ([]exceptions.ValidationMessage, error)
 	GetAllCounselors(ctx echo.Context) ([]domain.Counselors, error)
+	GetCounselorProfile(ctx echo.Context) (*domain.Counselors, error)
+	UpdateCounselor(ctx echo.Context, request requests.CounselorRequest, picture *multipart.FileHeader) (*domain.Counselors, []exceptions.ValidationMessage, error)
 }
 
 type CounselorServiceImpl struct {
@@ -145,4 +150,48 @@ func (service *CounselorServiceImpl) AddSpecialist(ctx echo.Context, id uint, re
 		}
 	}
 	return nil, nil
+}
+
+func (service *CounselorServiceImpl) GetCounselorProfile(ctx echo.Context) (*domain.Counselors, error) {
+	getUserClaim := helpers.GetAuthClaims(ctx)
+
+	counselor, err := service.CounselorRepo.FindById(int(getUserClaim.Id))
+	if err != nil {
+		return nil, err
+	}
+	return counselor, nil
+}
+
+func (service *CounselorServiceImpl) UpdateCounselor(ctx echo.Context, request requests.CounselorRequest, picture *multipart.FileHeader) (*domain.Counselors, []exceptions.ValidationMessage, error) {
+	if picture != nil {
+		cloudURL, errUpload := storage.S3PutFile(picture, "counselor/picture")
+
+		if errUpload != nil {
+			return nil, nil, fmt.Errorf("Error when upload picture: %s", errUpload.Error())
+		}
+
+		request.Profile_picture = cloudURL
+	}
+
+	err := service.validator.Struct(request)
+	if err != nil {
+		return nil, helpers.ValidationError(ctx, err), nil
+	}
+
+	getId := ctx.Param("id")
+	getcounselorId, _ := strconv.Atoi(getId)
+
+	getUser, _ := service.CounselorRepo.FindById(getcounselorId)
+	if getUser == nil {
+		return nil, nil, fmt.Errorf("Counselor not found")
+	}
+	request.Role_id = getUser.Credential.Role_id
+	counselor := conversion.CounselorUpdateRequestToCounselorDomain(request)
+
+	errUpdate := service.CounselorRepo.UpdateCounselor(getcounselorId, counselor)
+	if errUpdate != nil {
+		return nil, nil, fmt.Errorf("Error when update counselor: %s", errUpdate.Error())
+	}
+
+	return nil, nil, nil
 }
