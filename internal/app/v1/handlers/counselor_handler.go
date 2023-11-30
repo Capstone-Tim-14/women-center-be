@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"fmt"
+	"strconv"
 	"strings"
 	"woman-center-be/internal/app/v1/services"
 	conversion "woman-center-be/internal/web/conversion/resource/v1"
@@ -12,7 +14,9 @@ import (
 )
 
 type CounselorHandler interface {
-	RegisterHandler(echo.Context) error
+	RegisterHandler(ctx echo.Context) error
+	AddSpecialist(ctx echo.Context) error
+	RemoveManySpecialist(ctx echo.Context) error
 	GetAllCounselorsHandler(echo.Context) error
 	UpdateCounselorHandler(echo.Context) error
 }
@@ -25,6 +29,44 @@ func NewCounselorHandler(counselor services.CounselorService) CounselorHandler {
 	return &CounselorHandlerImpl{
 		CounselorService: counselor,
 	}
+}
+
+func (handler *CounselorHandlerImpl) RemoveManySpecialist(ctx echo.Context) error {
+	var request requests.CounselorHasManyRequest
+
+	GetId := ctx.Param("id")
+
+	ErrBinding := ctx.Bind(&request)
+
+	if ErrBinding != nil {
+		return exceptions.StatusBadRequest(ctx, ErrBinding)
+	}
+
+	ParseToId, errParsing := strconv.Atoi(GetId)
+
+	if errParsing != nil {
+		fmt.Errorf(errParsing.Error())
+		return exceptions.StatusBadRequest(ctx, fmt.Errorf("Invalid Format id"))
+	}
+
+	Validation, ErrGetSpecialist := handler.CounselorService.RemoveSpecialistCounselor(ctx, ParseToId, request)
+
+	if Validation != nil || len(request.Name) == 0 {
+		return exceptions.ValidationException(ctx, "Validation Error", Validation)
+	}
+
+	if ErrGetSpecialist != nil {
+		if strings.Contains(ErrGetSpecialist.Error(), "Counselor not found") {
+			return exceptions.StatusNotFound(ctx, ErrGetSpecialist)
+		}
+		if strings.Contains(ErrGetSpecialist.Error(), "One of counselor request is not found") {
+			return exceptions.StatusNotFound(ctx, ErrGetSpecialist)
+		}
+
+		return exceptions.StatusInternalServerError(ctx, ErrGetSpecialist)
+	}
+
+	return responses.StatusOK(ctx, "Counselor Remove Successfully", nil)
 }
 
 func (handler *CounselorHandlerImpl) RegisterHandler(ctx echo.Context) error {
@@ -51,7 +93,26 @@ func (handler *CounselorHandlerImpl) RegisterHandler(ctx echo.Context) error {
 	counselorCreateResponse := conversion.CounselorDomainToCounselorResponse(response)
 
 	return responses.StatusCreated(ctx, "Counselor created successfully", counselorCreateResponse)
+}
 
+func (handler *CounselorHandlerImpl) AddSpecialist(ctx echo.Context) error {
+	id := ctx.Param("id")
+	convertid, _ := strconv.Atoi(id)
+	var request requests.CounselorHasManyRequest
+	errBinding := ctx.Bind(&request)
+	if errBinding != nil {
+		return exceptions.StatusBadRequest(ctx, errBinding)
+	}
+
+	validation, err := handler.CounselorService.AddSpecialist(ctx, uint(convertid), request)
+	if validation != nil || len(request.Name) == 0 {
+		return exceptions.ValidationException(ctx, "Error Validation", validation)
+	}
+	if err != nil {
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusCreated(ctx, "Success add specialist to counselor", nil)
 }
 
 func (handler *CounselorHandlerImpl) GetAllCounselorsHandler(ctx echo.Context) error {
