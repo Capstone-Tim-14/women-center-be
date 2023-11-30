@@ -8,9 +8,10 @@ import (
 )
 
 type CounselorRepository interface {
-	CreateCounselor(counselor *domain.Counselors) (*domain.Counselors, error)
+	CreateCounselor(counselor *domain.Counselors) (*domain.Counselors, error)  
 	FindById(id int) (*domain.Counselors, error)
 	FindyByEmail(email string) (*domain.Counselors, error)
+	FindAllCounselors() ([]domain.Counselors, error)
 }
 
 type CounselorRepositoryImpl struct {
@@ -55,4 +56,15 @@ func (repository *CounselorRepositoryImpl) FindyByEmail(email string) (*domain.C
 	}
 
 	return &counselor, nil
+}
+
+func (repository *CounselorRepositoryImpl) FindAllCounselors() ([]domain.Counselors, error) {
+	counselor := []domain.Counselors{}
+
+	result := repository.db.Preload("Credential").Preload("Credential.Role").Find(&counselor)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return counselor, nil
 }

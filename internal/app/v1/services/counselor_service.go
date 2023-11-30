@@ -15,6 +15,7 @@ import (
 
 type CounselorService interface {
 	RegisterCounselor(ctx echo.Context, request requests.CounselorRequest) (*domain.Counselors, []exceptions.ValidationMessage, error)
+	GetAllCounselors(ctx echo.Context) ([]domain.Counselors, error)
 }
 
 type CounselorServiceImpl struct {
@@ -59,4 +60,13 @@ func (service *CounselorServiceImpl) RegisterCounselor(ctx echo.Context, request
 	}
 
 	return result, nil, nil
+}
+
+func (service *CounselorServiceImpl) GetAllCounselors(ctx echo.Context) ([]domain.Counselors, error) {
+	counselors, err := service.CounselorRepo.FindAllCounselors()
+	if err != nil {
+		return nil, fmt.Errorf("Error when get all counselors: %s", err.Error())
+	}
+
+	return counselors, nil
 }
