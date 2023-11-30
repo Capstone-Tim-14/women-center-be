@@ -8,7 +8,7 @@ import (
 
 type CareerhasTypeRepository interface {
 	AddJobType(career domain.Career, jobtype *domain.Job_Type) error
-	RemoveJobTypeById(career domain.Career, jobtype *domain.Job_Type) error
+	RemoveJobTypeById(career domain.Career, jobtype []domain.Job_Type) error
 }
 
 type CareerhasTypeRepositoryImpl struct {
@@ -29,10 +29,17 @@ func (repository *CareerhasTypeRepositoryImpl) AddJobType(career domain.Career, 
 	return nil
 }
 
-func (repository *CareerhasTypeRepositoryImpl) RemoveJobTypeById(career domain.Career, jobtype *domain.Job_Type) error {
-	result := repository.Db.Model(&career).Association("Job_type").Delete(jobtype)
+func (repository *CareerhasTypeRepositoryImpl) RemoveJobTypeById(career domain.Career, jobtype []domain.Job_Type) error {
+
+	Transaction := repository.Db.Begin()
+
+	result := Transaction.Model(&career).Association("Job_type").Delete(jobtype)
 	if result != nil {
+		Transaction.Rollback()
 		return result
 	}
+
+	Transaction.Commit()
+
 	return nil
 }

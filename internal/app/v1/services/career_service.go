@@ -21,6 +21,7 @@ type CareerService interface {
 	FindAllCareer(ctx echo.Context) ([]domain.Career, error)
 	FindCareerByid(ctx echo.Context, id int) (*domain.Career, error)
 	AddJobType(ctx echo.Context, id int, request requests.CareerhasTypeRequest) ([]exceptions.ValidationMessage, error)
+	RemoveJobType(ctx echo.Context, id int, request requests.CareerhasManyRequest) ([]exceptions.ValidationMessage, error)
 	UpdateCareer(ctx echo.Context, request requests.CareerRequest, logo *multipart.FileHeader, cover *multipart.FileHeader) ([]exceptions.ValidationMessage, error)
 	DeleteCareer(ctx echo.Context) error
 }
@@ -93,6 +94,11 @@ func (service *CareerServiceImpl) FindCareerByid(ctx echo.Context, id int) (*dom
 
 func (service *CareerServiceImpl) AddJobType(ctx echo.Context, id int, request requests.CareerhasTypeRequest) ([]exceptions.ValidationMessage, error) {
 
+	err := service.Validator.Struct(request)
+	if err != nil {
+		return helpers.ValidationError(ctx, err), nil
+	}
+
 	career, errCareer := service.CareerRepo.FindCareerByid(id)
 	if errCareer != nil {
 		return nil, errCareer
@@ -108,6 +114,59 @@ func (service *CareerServiceImpl) AddJobType(ctx echo.Context, id int, request r
 		return nil, errAddJobtype
 	}
 	return nil, nil
+}
+
+func (service *CareerServiceImpl) RemoveJobType(ctx echo.Context, id int, request requests.CareerhasManyRequest) ([]exceptions.ValidationMessage, error) {
+
+	ValidationMessage := service.Validator.Struct(request)
+	var JobTypeList []domain.Job_Type
+
+	if ValidationMessage != nil {
+		return helpers.ValidationError(ctx, ValidationMessage), nil
+	}
+
+	GetCareer, errGetCareer := service.CareerRepo.FindCareerByid(id)
+
+	if errGetCareer != nil {
+		fmt.Errorf(errGetCareer.Error())
+		return nil, fmt.Errorf("Career not found")
+	}
+
+	for _, val := range GetCareer.Job_type {
+
+		for index := range request.Name {
+
+			if request.Name[index] == val.Name {
+
+				GetJobType, errGetJobType := service.JobTypeRepo.FindJobTypeByName(val.Name)
+
+				if errGetJobType != nil {
+					fmt.Println(errGetJobType.Error())
+					return nil, fmt.Errorf("One of career request is not found")
+
+				}
+
+				JobTypeList = append(JobTypeList, *GetJobType)
+
+			} else {
+				continue
+			}
+		}
+	}
+
+	if len(JobTypeList) <= 0 {
+		return nil, fmt.Errorf("One of career request is not found")
+	}
+
+	ErrRemoveCareer := service.CareerhasTypeRepo.RemoveJobTypeById(*GetCareer, JobTypeList)
+
+	if ErrRemoveCareer != nil {
+		fmt.Errorf(ErrRemoveCareer.Error())
+		return nil, fmt.Errorf("Error when remove job type")
+	}
+
+	return nil, nil
+
 }
 
 func (service *CareerServiceImpl) UpdateCareer(ctx echo.Context, request requests.CareerRequest, logo *multipart.FileHeader, cover *multipart.FileHeader) ([]exceptions.ValidationMessage, error) {
