@@ -15,7 +15,17 @@ func HttpCounselorRoute(group *echo.Group, db *gorm.DB, validate *validator.Vali
 
 	RoleRepo := repositories.NewRoleRepository(db)
 	CounselorRepo := repositories.NewCounselorRepository(db)
-	CounselorService := services.NewCounselorService(CounselorRepo, validate, RoleRepo)
+	SpecialistRepo := repositories.NewSpecialistRepository(db)
+	AdminRepo := repositories.NewAdminRepository(db)
+	CounselorHasSpecialistRepo := repositories.NewCounselorHasSpecialistRepository(db)
+	CounselorService := services.NewCounselorService(services.CounselorServiceImpl{
+		CounselorRepo:              CounselorRepo,
+		RoleRepo:                   RoleRepo,
+		Validator:                  validate,
+		AdminRepo:                  AdminRepo,
+		SpecialistRepo:             SpecialistRepo,
+		CounselorHasSpecialistRepo: CounselorHasSpecialistRepo,
+	})
 	CounselorHandler := handlers.NewCounselorHandler(CounselorService)
 
 	counselor := group.Group("/counselors")
@@ -25,4 +35,8 @@ func HttpCounselorRoute(group *echo.Group, db *gorm.DB, validate *validator.Vali
 	userVerify.POST("/register", CounselorHandler.RegisterHandler)
 	userVerify.GET("/all", CounselorHandler.GetAllCounselorsHandler)
 
+	verifyTokenAdmin := group.Group("/admin", middlewares.VerifyTokenSignature("SECRET_KEY_ADMIN"))
+	makeCounselorHasSpecialist := verifyTokenAdmin.Group("/counselor")
+	makeCounselorHasSpecialist.POST("/:id/add-specialist", CounselorHandler.AddSpecialist)
+	makeCounselorHasSpecialist.DELETE("/:id/remove-specialist", CounselorHandler.RemoveManySpecialist)
 }

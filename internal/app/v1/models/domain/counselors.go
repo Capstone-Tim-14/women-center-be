@@ -15,6 +15,7 @@ type Counselors struct {
 	Profile_picture string
 	Description     string
 	Status          string
+	Specialists     []Specialist `gorm:"many2many:counselor_has_specialists;foreignKey:Id;references:Id;"`
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 	DeletedAt       gorm.DeletedAt

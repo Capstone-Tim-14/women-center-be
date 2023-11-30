@@ -15,6 +15,7 @@ type Counselors struct {
 	Profile_picture string       `gorm:"varchar(255)"`
 	Description     string
 	Status          string         `gorm:"type:varchar(10);default:INACTIVE"`
+	Specialists     []Specialist   `gorm:"many2many:counselor_has_specialists;foreignKey:Id;references:Id;"`
 	CreatedAt       time.Time      `gorm:"autoCreateTime"`
 	UpdatedAt       time.Time      `gorm:"autoUpdateTime:mili"`
 	DeletedAt       gorm.DeletedAt `gorm:"index"`
