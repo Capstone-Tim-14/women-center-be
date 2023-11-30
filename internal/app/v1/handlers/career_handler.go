@@ -75,7 +75,7 @@ func (handler *CareerHandlerImpl) FindAllCareer(ctx echo.Context) error {
 
 	careerResource := conversion.ConvertCareerRsource(career)
 
-	return responses.StatusOK(ctx, "Success get career", careerResource)
+	return responses.StatusOK(ctx, "Success Get All Career", careerResource)
 }
 
 func (handler *CareerHandlerImpl) FindDetailCareer(ctx echo.Context) error {
@@ -93,7 +93,7 @@ func (handler *CareerHandlerImpl) FindDetailCareer(ctx echo.Context) error {
 
 	careerResource := conversion.ConvertCareerDetailResource(career)
 
-	return responses.StatusOK(ctx, "Success get career", careerResource)
+	return responses.StatusOK(ctx, "Success Get Detail Career", careerResource)
 }
 
 func (handler *CareerHandlerImpl) AddJobType(ctx echo.Context) error {

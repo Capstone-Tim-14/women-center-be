@@ -18,7 +18,9 @@ func HttpJobTypeRoute(group *echo.Group, db *gorm.DB, validate *validator.Valida
 	JobTypeHandler := handlers.NewJobTypeHandler(JobTypeService)
 
 	tag := group.Group("/admin/career/job-type", middlewares.VerifyTokenSignature("SECRET_KEY_ADMIN"))
+	VerifyAuthUser := group.Group("", middlewares.VerifyTokenSignature("SECRET_KEY"))
 
 	tag.POST("", JobTypeHandler.CreateJobType)
 	tag.GET("", JobTypeHandler.ShowAllJobType)
+	VerifyAuthUser.GET("/filter-job-types", JobTypeHandler.ShowAllJobType)
 }

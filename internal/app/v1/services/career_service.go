@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"mime/multipart"
 	"strconv"
+	"strings"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/app/v1/repositories"
 	conversion "woman-center-be/internal/web/conversion/request/v1"
@@ -71,7 +72,15 @@ func (service *CareerServiceImpl) CreateCareer(ctx echo.Context, request request
 
 func (service *CareerServiceImpl) FindAllCareer(ctx echo.Context) ([]domain.Career, error) {
 
-	career, err := service.CareerRepo.GetAllCareer()
+	var FilterCareer requests.CareerFilterRequest
+
+	JobType := ctx.QueryParam("job_type")
+
+	if JobType != "" {
+		FilterCareer.JobType = strings.Split(JobType, ",")
+	}
+
+	career, err := service.CareerRepo.GetAllCareer(FilterCareer)
 
 	if err != nil {
 		fmt.Errorf(err.Error())

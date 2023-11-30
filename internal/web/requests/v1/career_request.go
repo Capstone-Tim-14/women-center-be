@@ -13,3 +13,7 @@ type CareerRequest struct {
 	Company_industry      string  `json:"company_industry" validate:"required" form:"company_industry"`
 	Size_company_employee uint    `json:"size_company_employee" validate:"required" form:"size_company_employee"`
 }
+
+type CareerFilterRequest struct {
+	JobType []string
+}
