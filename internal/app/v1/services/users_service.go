@@ -2,10 +2,12 @@ package services
 
 import (
 	"fmt"
+	"mime/multipart"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/app/v1/repositories"
 	conversion "woman-center-be/internal/web/conversion/request/v1"
 	"woman-center-be/internal/web/requests/v1"
+	"woman-center-be/pkg/storage"
 	"woman-center-be/utils/exceptions"
 	"woman-center-be/utils/helpers"
 
@@ -16,7 +18,7 @@ import (
 type UserService interface {
 	RegisterUser(ctx echo.Context, request requests.UserRequest) (*domain.Users, []exceptions.ValidationMessage, error)
 	GetUserProfile(ctx echo.Context) (*domain.Users, error)
-	UpdateUserProfile(ctx echo.Context, request requests.UpdateUserProfileRequest) (*domain.Users, []exceptions.ValidationMessage, error)
+	UpdateUserProfile(ctx echo.Context, request requests.UpdateUserProfileRequest, picture *multipart.FileHeader) (*domain.Users, []exceptions.ValidationMessage, error)
 }
 
 type UserServiceImpl struct {
@@ -73,7 +75,16 @@ func (s *UserServiceImpl) GetUserProfile(ctx echo.Context) (*domain.Users, error
 	return user, nil
 }
 
-func (service *UserServiceImpl) UpdateUserProfile(ctx echo.Context, request requests.UpdateUserProfileRequest) (*domain.Users, []exceptions.ValidationMessage, error) {
+func (service *UserServiceImpl) UpdateUserProfile(ctx echo.Context, request requests.UpdateUserProfileRequest, picture *multipart.FileHeader) (*domain.Users, []exceptions.ValidationMessage, error) {
+
+	cloudURL, errUpload := storage.S3PutFile(picture, "user/picture")
+
+	if errUpload != nil {
+		return nil, nil, errUpload
+	}
+
+	request.Profile_picture = cloudURL
+
 	err := service.validator.Struct(request)
 	if err != nil {
 		return nil, helpers.ValidationError(ctx, err), nil

@@ -66,7 +66,7 @@ func S3PutFile(file *multipart.FileHeader, directory string) (string, error) {
 		return "", errObject
 	}
 
-	publicURL := fmt.Sprintf("https://pub-31b2a1a1e015474f97220ee42fe1d856.r2.dev/%s", generateKey)
+	publicURL := fmt.Sprintf("https://pub-86c5755f32914550adb162dd2b8850d0.r2.dev/%s", generateKey)
 
 	return publicURL, nil
 
