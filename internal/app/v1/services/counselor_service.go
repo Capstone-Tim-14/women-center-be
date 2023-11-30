@@ -125,14 +125,14 @@ func (service *CounselorServiceImpl) AddSpecialist(ctx echo.Context, id uint, re
 	for index := range request.Name {
 		GetSpecialists, errGetSpecialists := service.SpecialistRepo.FindSpecialistByName(request.Name[index])
 
-		if errGetSpecialists != nil {
+		if errGetSpecialists == nil {
+			errAdd := service.CounselorHasSpecialistRepo.AddSpecialist(*counselor, GetSpecialists)
+			if errAdd != nil {
+				return nil, errAdd
+			}
+		} else {
 			fmt.Println(errGetSpecialists.Error())
 			return nil, fmt.Errorf("One of Counselor request is not found")
-		}
-
-		errAdd := service.CounselorHasSpecialistRepo.AddSpecialist(*counselor, GetSpecialists)
-		if errAdd != nil {
-			return nil, errAdd
 		}
 	}
 	return nil, nil
