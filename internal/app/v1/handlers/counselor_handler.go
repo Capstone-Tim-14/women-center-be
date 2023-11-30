@@ -13,6 +13,7 @@ import (
 
 type CounselorHandler interface {
 	RegisterHandler(echo.Context) error
+	GetAllCounselorsHandler(echo.Context) error
 }
 
 type CounselorHandlerImpl struct {
@@ -50,4 +51,16 @@ func (handler *CounselorHandlerImpl) RegisterHandler(ctx echo.Context) error {
 
 	return responses.StatusCreated(ctx, "Counselor created successfully", counselorCreateResponse)
 
+}
+
+func (handler *CounselorHandlerImpl) GetAllCounselorsHandler(ctx echo.Context) error {
+	response, err := handler.CounselorService.GetAllCounselors(ctx)
+
+	if err != nil {
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	counselorResponse := conversion.ConvertCounselorDomainToCounselorResponse(response)
+
+	return responses.StatusOK(ctx, "Get all counselors successfully", counselorResponse)
 }

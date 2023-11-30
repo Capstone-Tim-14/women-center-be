@@ -4,6 +4,7 @@ import (
 	"woman-center-be/internal/app/v1/handlers"
 	"woman-center-be/internal/app/v1/repositories"
 	"woman-center-be/internal/app/v1/services"
+	"woman-center-be/internal/delivery/v1/middlewares"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -19,6 +20,9 @@ func HttpCounselorRoute(group *echo.Group, db *gorm.DB, validate *validator.Vali
 
 	counselor := group.Group("/counselors")
 
-	counselor.POST("/register", CounselorHandler.RegisterHandler)
+	userVerify := counselor.Group("", middlewares.VerifyTokenSignature("SECRET_KEY_ADMIN"))
+
+	userVerify.POST("/register", CounselorHandler.RegisterHandler)
+	userVerify.GET("/all", CounselorHandler.GetAllCounselorsHandler)
 
 }
