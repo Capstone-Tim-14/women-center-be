@@ -17,6 +17,7 @@ type CounselorHandler interface {
 	RegisterHandler(ctx echo.Context) error
 	AddSpecialist(ctx echo.Context) error
 	RemoveManySpecialist(ctx echo.Context) error
+	GetAllCounselorsHandler(echo.Context) error
 }
 
 type CounselorHandlerImpl struct {
@@ -111,4 +112,16 @@ func (handler *CounselorHandlerImpl) AddSpecialist(ctx echo.Context) error {
 	}
 
 	return responses.StatusCreated(ctx, "Success add specialist to counselor", nil)
+}
+
+func (handler *CounselorHandlerImpl) GetAllCounselorsHandler(ctx echo.Context) error {
+	response, err := handler.CounselorService.GetAllCounselors(ctx)
+
+	if err != nil {
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	counselorResponse := conversion.ConvertCounselorDomainToCounselorResponse(response)
+
+	return responses.StatusOK(ctx, "Get all counselors successfully", counselorResponse)
 }

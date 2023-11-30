@@ -16,7 +16,6 @@ func CounselorCreateRequestToCounselorDomain(request requests.CounselorRequest) 
 			Email:    request.Email,
 		},
 		Profile_picture: request.Profile_picture,
-		Phone_number:    request.Phone_number,
 		Description:     request.Description,
 		Status:          "ACTIVE",
 	}

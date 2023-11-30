@@ -11,6 +11,7 @@ type CounselorRepository interface {
 	CreateCounselor(counselor *domain.Counselors) (*domain.Counselors, error)
 	FindyByEmail(email string) (*domain.Counselors, error)
 	FindById(id uint) (*domain.Counselors, error)
+	FindAllCounselors() ([]domain.Counselors, error)
 }
 
 type CounselorRepositoryImpl struct {
@@ -55,11 +56,13 @@ func (repository *CounselorRepositoryImpl) FindById(id uint) (*domain.Counselors
 	}
 	return &counselor, nil
 }
+func (repository *CounselorRepositoryImpl) FindAllCounselors() ([]domain.Counselors, error) {
+	counselor := []domain.Counselors{}
 
-// func (repository *CounselorRepositoryImpl) PreloadSpecialist(id uint) (*domain.Counselors, error) {
-// 	counselor := domain.Counselors{}
-// 	if err := repository.db.Preload("Specialists").First(&counselor, id).Error; err != nil {
-// 		return nil, err
-// 	}
-// 	return &counselor, nil
-// }
+	result := repository.db.Preload("Credential").Preload("Credential.Role").Find(&counselor)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return counselor, nil
+}

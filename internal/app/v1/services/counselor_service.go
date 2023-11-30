@@ -17,6 +17,7 @@ type CounselorService interface {
 	RegisterCounselor(ctx echo.Context, request requests.CounselorRequest) (*domain.Counselors, []exceptions.ValidationMessage, error)
 	AddSpecialist(ctx echo.Context, id uint, request requests.CounselorHasManyRequest) ([]exceptions.ValidationMessage, error)
 	RemoveSpecialistCounselor(ctx echo.Context, id int, request requests.CounselorHasManyRequest) ([]exceptions.ValidationMessage, error)
+	GetAllCounselors(ctx echo.Context) ([]domain.Counselors, error)
 }
 
 type CounselorServiceImpl struct {
@@ -30,6 +31,15 @@ type CounselorServiceImpl struct {
 
 func NewCounselorService(counselorServiceImpl CounselorServiceImpl) CounselorService {
 	return &counselorServiceImpl
+}
+
+func (service *CounselorServiceImpl) GetAllCounselors(ctx echo.Context) ([]domain.Counselors, error) {
+	counselors, err := service.CounselorRepo.FindAllCounselors()
+	if err != nil {
+		return nil, fmt.Errorf("Error when get all counselors: %s", err.Error())
+	}
+
+	return counselors, nil
 }
 
 func (service *CounselorServiceImpl) RemoveSpecialistCounselor(ctx echo.Context, id int, request requests.CounselorHasManyRequest) ([]exceptions.ValidationMessage, error) {
@@ -124,7 +134,6 @@ func (service *CounselorServiceImpl) AddSpecialist(ctx echo.Context, id uint, re
 
 	for index := range request.Name {
 		GetSpecialists, errGetSpecialists := service.SpecialistRepo.FindSpecialistByName(request.Name[index])
-
 		if errGetSpecialists == nil {
 			errAdd := service.CounselorHasSpecialistRepo.AddSpecialist(*counselor, GetSpecialists)
 			if errAdd != nil {
