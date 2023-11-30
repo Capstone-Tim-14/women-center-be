@@ -19,6 +19,7 @@ type CounselorHandler interface {
 	RemoveManySpecialist(ctx echo.Context) error
 	GetAllCounselorsHandler(echo.Context) error
 	UpdateCounselorHandler(echo.Context) error
+	UpdateCounselorForMobile(echo.Context) error
 }
 
 type CounselorHandlerImpl struct {
@@ -128,6 +129,31 @@ func (handler *CounselorHandlerImpl) GetAllCounselorsHandler(ctx echo.Context) e
 }
 
 func (handler *CounselorHandlerImpl) UpdateCounselorHandler(ctx echo.Context) error {
+	counselorUpdateRequest := requests.CounselorRequest{}
+	picture, _ := ctx.FormFile("picture")
+	err := ctx.Bind(&counselorUpdateRequest)
+	if err != nil {
+		return exceptions.StatusBadRequest(ctx, err)
+	}
+
+	_, validation, err := handler.CounselorService.UpdateCounselor(ctx, counselorUpdateRequest, picture)
+
+	if validation != nil {
+		return exceptions.ValidationException(ctx, "Error validation", validation)
+	}
+
+	if err != nil {
+		if strings.Contains(err.Error(), "Counselor not found") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Counselor updated successfully", nil)
+}
+
+func (handler *CounselorHandlerImpl) UpdateCounselorForMobile(ctx echo.Context) error {
 	counselorUpdateRequest := requests.CounselorRequest{}
 	picture, _ := ctx.FormFile("picture")
 	err := ctx.Bind(&counselorUpdateRequest)

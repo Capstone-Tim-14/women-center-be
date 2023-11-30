@@ -23,6 +23,7 @@ type CounselorService interface {
 	GetAllCounselors(ctx echo.Context) ([]domain.Counselors, error)
 	GetCounselorProfile(ctx echo.Context) (*domain.Counselors, error)
 	UpdateCounselor(ctx echo.Context, request requests.CounselorRequest, picture *multipart.FileHeader) (*domain.Counselors, []exceptions.ValidationMessage, error)
+	UpdateCounselorForMobile(ctx echo.Context, request requests.CounselorRequest, picture *multipart.FileHeader) (*domain.Counselors, []exceptions.ValidationMessage, error)
 }
 
 type CounselorServiceImpl struct {
@@ -189,6 +190,39 @@ func (service *CounselorServiceImpl) UpdateCounselor(ctx echo.Context, request r
 	counselor := conversion.CounselorUpdateRequestToCounselorDomain(request)
 
 	errUpdate := service.CounselorRepo.UpdateCounselor(getcounselorId, counselor)
+	if errUpdate != nil {
+		return nil, nil, fmt.Errorf("Error when update counselor: %s", errUpdate.Error())
+	}
+
+	return nil, nil, nil
+}
+
+func (service *CounselorServiceImpl) UpdateCounselorForMobile(ctx echo.Context, request requests.CounselorRequest, picture *multipart.FileHeader) (*domain.Counselors, []exceptions.ValidationMessage, error) {
+	if picture != nil {
+		cloudURL, errUpload := storage.S3PutFile(picture, "counselor/picture")
+
+		if errUpload != nil {
+			return nil, nil, fmt.Errorf("Error when upload picture: %s", errUpload.Error())
+		}
+
+		request.Profile_picture = cloudURL
+	}
+
+	err := service.Validator.Struct(request)
+	if err != nil {
+		return nil, helpers.ValidationError(ctx, err), nil
+	}
+
+	getUser, err := service.GetCounselorProfile(ctx)
+	if err != nil {
+		return nil, nil, fmt.Errorf("Failed to find counselor: %s", err.Error())
+	}
+
+	request.Role_id = getUser.Credential.Role_id
+	counselor := conversion.CounselorUpdateRequestToCounselorDomain(request)
+
+	errUpdate := service.CounselorRepo.UpdateCounselor(int(getUser.Id), counselor)
+
 	if errUpdate != nil {
 		return nil, nil, fmt.Errorf("Error when update counselor: %s", errUpdate.Error())
 	}

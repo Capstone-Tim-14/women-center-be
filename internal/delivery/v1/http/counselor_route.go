@@ -28,16 +28,15 @@ func HttpCounselorRoute(group *echo.Group, db *gorm.DB, validate *validator.Vali
 	})
 	CounselorHandler := handlers.NewCounselorHandler(CounselorService)
 
-	counselor := group.Group("/counselors")
+	userVerify := group.Group("/counselors", middlewares.VerifyTokenSignature("SECRET_KEY"))
 
-	userVerify := counselor.Group("", middlewares.VerifyTokenSignature("SECRET_KEY_ADMIN"))
-
-	userVerify.POST("/register", CounselorHandler.RegisterHandler)
-	userVerify.GET("/all", CounselorHandler.GetAllCounselorsHandler)
-	userVerify.PUT("/:id", CounselorHandler.UpdateCounselorHandler)
+	userVerify.GET("", CounselorHandler.GetAllCounselorsHandler)
+	userVerify.PUT("/", CounselorHandler.UpdateCounselorForMobile)
 
 	verifyTokenAdmin := group.Group("/admin", middlewares.VerifyTokenSignature("SECRET_KEY_ADMIN"))
-	makeCounselorHasSpecialist := verifyTokenAdmin.Group("/counselor")
-	makeCounselorHasSpecialist.POST("/:id/add-specialist", CounselorHandler.AddSpecialist)
-	makeCounselorHasSpecialist.DELETE("/:id/remove-specialist", CounselorHandler.RemoveManySpecialist)
+	verifyTokenAdmin.POST("/:id/add-specialist", CounselorHandler.AddSpecialist)
+	verifyTokenAdmin.DELETE("/:id/remove-specialist", CounselorHandler.RemoveManySpecialist)
+	verifyTokenAdmin.POST("/register", CounselorHandler.RegisterHandler)
+	verifyTokenAdmin.GET("", CounselorHandler.GetAllCounselorsHandler)
+	verifyTokenAdmin.PUT("/:id", CounselorHandler.UpdateCounselorHandler)
 }
