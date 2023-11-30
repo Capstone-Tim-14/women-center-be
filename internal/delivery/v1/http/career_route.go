@@ -25,6 +25,7 @@ func HttpCareerRoute(group *echo.Group, db *gorm.DB, validate *validator.Validat
 	CareerHandler := handlers.NewCareerHandler(CareerService)
 
 	verifyTokenAdmin := group.Group("/admin", middlewares.VerifyTokenSignature("SECRET_KEY_ADMIN"))
+	verifyTokenUser := group.Group("", middlewares.VerifyTokenSignature("SECRET_KEY"))
 
 	CareerGroup := verifyTokenAdmin.Group("/career")
 
@@ -34,4 +35,7 @@ func HttpCareerRoute(group *echo.Group, db *gorm.DB, validate *validator.Validat
 	CareerGroup.POST("/:id/add-job-type", CareerHandler.AddJobType)
 	CareerGroup.DELETE("/:id/remove-job-type", CareerHandler.RemoveJobType)
 	CareerGroup.PUT("/:id", CareerHandler.UpdateCareer)
+
+	verifyTokenUser.GET("/careers", CareerHandler.FindAllCareer)
+	verifyTokenUser.GET("/career/:id", CareerHandler.FindDetailCareer)
 }

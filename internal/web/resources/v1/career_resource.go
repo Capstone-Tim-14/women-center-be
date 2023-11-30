@@ -7,7 +7,6 @@ type CareerResource struct {
 	Company_name          string    `json:"company_name,omitempty"`
 	PublishedAt           string    `json:"published_at,omitempty"`
 	Cover                 string    `json:"cover,omitempty"`
-	Job_type              []JobType `json:"job_type,omitempty"`
 	Linkedin_url          string    `json:"linkedin_url,omitempty"`
 	Location              string    `json:"location,omitempty"`
 	About_job             string    `json:"about_job,omitempty"`
@@ -15,11 +14,12 @@ type CareerResource struct {
 	Required_skill        string    `json:"required_skill,omitempty"`
 	Company_industry      string    `json:"company_industry,omitempty"`
 	Size_company_employee uint      `json:"size_company_employee,omitempty"`
+	Job_type              []JobType `json:"job_type,omitempty"`
 	CreatedAt             string    `json:"created_at,omitempty"`
 	UpdatedAt             string    `json:"updated_at,omitempty"`
 }
 
 type JobType struct {
-	Id   uint   `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Description string `json:"description,omitempty"`
 }

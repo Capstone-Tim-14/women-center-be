@@ -1,14 +1,16 @@
 package repositories
 
 import (
+	"fmt"
 	"woman-center-be/internal/app/v1/models/domain"
+	"woman-center-be/internal/web/requests/v1"
 
 	"gorm.io/gorm"
 )
 
 type CareerRepository interface {
 	CreateCareer(career *domain.Career) (*domain.Career, error)
-	GetAllCareer() ([]domain.Career, error)
+	GetAllCareer(job requests.CareerFilterRequest) ([]domain.Career, error)
 	FindCareerByid(id int) (*domain.Career, error)
 	UpdateCareerById(id int, career *domain.Career) error
 	DeleteCareerById(id int) error
@@ -35,18 +37,24 @@ func (repository *CareerRepositoryImpl) CreateCareer(career *domain.Career) (*do
 
 }
 
-func (repository *CareerRepositoryImpl) GetAllCareer() ([]domain.Career, error) {
+func (repository *CareerRepositoryImpl) GetAllCareer(job requests.CareerFilterRequest) ([]domain.Career, error) {
 
-	career := []domain.Career{}
+	var career []domain.Career
 
-	errTakeCareer := repository.db.Find(&career)
+	var errTakeCareer *gorm.DB
+
+	if len(job.JobType) > 0 {
+		errTakeCareer = repository.db.Joins("INNER JOIN career_has_types ON careers.id = career_has_types.career_id").Joins("INNER JOIN job_types ON career_has_types.job_type_id = job_types.id").Where("job_types.name IN (?)", job.JobType).Distinct().Find(&career)
+	} else {
+		errTakeCareer = repository.db.Find(&career)
+	}
 
 	if errTakeCareer.Error != nil {
 		return nil, errTakeCareer.Error
 	}
 
 	if errTakeCareer.RowsAffected == 0 {
-		return nil, errTakeCareer.Error
+		return nil, fmt.Errorf("Career is empty")
 	}
 
 	return career, nil
