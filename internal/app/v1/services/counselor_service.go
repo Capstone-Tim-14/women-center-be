@@ -55,7 +55,7 @@ func (service *CounselorServiceImpl) RemoveSpecialistCounselor(ctx echo.Context,
 		return helpers.ValidationError(ctx, ValidationMessage), nil
 	}
 
-	GetCounselorData, errGetCounselor := service.CounselorRepo.FindById(uint(id))
+	GetCounselorData, errGetCounselor := service.CounselorRepo.FindById(id)
 
 	if errGetCounselor != nil {
 		fmt.Errorf(errGetCounselor.Error())
@@ -132,7 +132,7 @@ func (service *CounselorServiceImpl) AddSpecialist(ctx echo.Context, id uint, re
 		return helpers.ValidationError(ctx, err), nil
 	}
 
-	counselor, errCounselor := service.CounselorRepo.FindById(id)
+	counselor, errCounselor := service.CounselorRepo.FindById(int(id))
 	if errCounselor != nil {
 		return nil, errCounselor
 	}
@@ -173,7 +173,7 @@ func (service *CounselorServiceImpl) UpdateCounselor(ctx echo.Context, request r
 		request.Profile_picture = cloudURL
 	}
 
-	err := service.validator.Struct(request)
+	err := service.Validator.Struct(request)
 	if err != nil {
 		return nil, helpers.ValidationError(ctx, err), nil
 	}
