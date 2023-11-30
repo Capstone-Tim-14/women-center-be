@@ -74,7 +74,8 @@ func (service *CareerServiceImpl) FindAllCareer(ctx echo.Context) ([]domain.Care
 	career, err := service.CareerRepo.GetAllCareer()
 
 	if err != nil {
-		return nil, fmt.Errorf("Error get all career: %w", err)
+		fmt.Errorf(err.Error())
+		return nil, fmt.Errorf("Career is empty")
 	}
 
 	return career, nil
@@ -112,21 +113,25 @@ func (service *CareerServiceImpl) AddJobType(ctx echo.Context, id int, request r
 
 func (service *CareerServiceImpl) UpdateCareer(ctx echo.Context, request requests.CareerRequest, logo *multipart.FileHeader, cover *multipart.FileHeader) ([]exceptions.ValidationMessage, error) {
 
-	LogoCloudURL, errUploadLogo := storage.S3PutFile(logo, "career/logo")
+	if logo != nil {
+		LogoCloudURL, errUploadLogo := storage.S3PutFile(logo, "career/logo")
 
-	if errUploadLogo != nil {
-		return nil, errUploadLogo
+		if errUploadLogo != nil {
+			return nil, errUploadLogo
+		}
+
+		request.Logo = &LogoCloudURL
 	}
 
-	request.Logo = &LogoCloudURL
+	if cover != nil {
+		CoverCloudURL, errUploadCover := storage.S3PutFile(cover, "career/cover")
 
-	CoverCloudURL, errUploadCover := storage.S3PutFile(cover, "career/cover")
+		if errUploadCover != nil {
+			return nil, errUploadCover
+		}
 
-	if errUploadCover != nil {
-		return nil, errUploadCover
+		request.Cover = &CoverCloudURL
 	}
-
-	request.Cover = &CoverCloudURL
 
 	err := service.Validator.Struct(request)
 	if err != nil {

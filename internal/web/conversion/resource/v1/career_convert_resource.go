@@ -39,7 +39,8 @@ func ConvertCareerDetailResource(career *domain.Career) *resources.CareerResourc
 	careerDetailResource.Size_company_employee = career.Size_company_employee
 	for _, jobType := range career.Job_type {
 		DetailJobType = append(DetailJobType, resources.JobType{
-			Name: *&jobType.Name,
+			Name:        *&jobType.Name,
+			Description: jobType.Description,
 		})
 	}
 	careerDetailResource.Job_type = DetailJobType

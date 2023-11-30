@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"strconv"
+	"strings"
 	"woman-center-be/internal/app/v1/services"
 	conversion "woman-center-be/internal/web/conversion/resource/v1"
 	"woman-center-be/internal/web/requests/v1"
@@ -67,7 +68,9 @@ func (handler *CareerHandlerImpl) FindAllCareer(ctx echo.Context) error {
 	career, err := handler.CareerService.FindAllCareer(ctx)
 
 	if err != nil {
-		return exceptions.StatusInternalServerError(ctx, err)
+		if strings.Contains(err.Error(), "Career is empty") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
 	}
 
 	careerResource := conversion.ConvertCareerRsource(career)
@@ -120,19 +123,11 @@ func (handler *CareerHandlerImpl) AddJobType(ctx echo.Context) error {
 func (handler *CareerHandlerImpl) UpdateCareer(ctx echo.Context) error {
 	careerUpdateRequest := requests.CareerRequest{}
 	errBinding := ctx.Bind(&careerUpdateRequest)
-	logo, errLogo := ctx.FormFile("logo")
-	cover, errCover := ctx.FormFile("cover")
+	logo, _ := ctx.FormFile("logo")
+	cover, _ := ctx.FormFile("cover")
 
 	if errBinding != nil {
 		return exceptions.StatusBadRequest(ctx, errBinding)
-	}
-
-	if errLogo != nil {
-		return exceptions.StatusBadRequest(ctx, errLogo)
-	}
-
-	if errCover != nil {
-		return exceptions.StatusBadRequest(ctx, errCover)
 	}
 
 	err := ctx.Bind(&careerUpdateRequest)

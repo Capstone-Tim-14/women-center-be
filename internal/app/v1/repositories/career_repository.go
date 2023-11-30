@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"fmt"
 	"woman-center-be/internal/app/v1/models/domain"
 
 	"gorm.io/gorm"
@@ -36,7 +37,7 @@ func (repository *CareerRepositoryImpl) CreateCareer(career *domain.Career) (*do
 
 func (repository *CareerRepositoryImpl) GetAllCareer() ([]domain.Career, error) {
 
-	career := []domain.Career{}
+	var career []domain.Career
 
 	errTakeCareer := repository.db.Find(&career)
 
@@ -45,7 +46,7 @@ func (repository *CareerRepositoryImpl) GetAllCareer() ([]domain.Career, error) 
 	}
 
 	if errTakeCareer.RowsAffected == 0 {
-		return nil, errTakeCareer.Error
+		return nil, fmt.Errorf("Career is empty")
 	}
 
 	return career, nil
