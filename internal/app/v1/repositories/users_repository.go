@@ -11,7 +11,7 @@ type UserRepository interface {
 	CreateUser(user *domain.Users) (*domain.Users, error)
 	FindyByEmail(email string) (*domain.Users, error)
 	FindByID(id int) (*domain.Users, error)
-	UpdateUser(user *domain.Users, id int) (*domain.Users, error)
+	UpdateUser(user *domain.Users) (*domain.Users, error)
 	UpdateOTP(user *domain.Users, secret string) error
 }
 
@@ -84,11 +84,25 @@ func (repository *UserRepositoryImpl) FindByID(id int) (*domain.Users, error) {
 	return &user, nil
 }
 
-func (repository *UserRepositoryImpl) UpdateUser(user *domain.Users, id int) (*domain.Users, error) {
-	result := repository.db.Model(&user).Where("id = ?", id).Updates(user)
+func (repository *UserRepositoryImpl) UpdateUser(user *domain.Users) (*domain.Users, error) {
+
+	Transaction := repository.db.Begin()
+
+	result := Transaction.Model(&user).Updates(&user)
+
 	if result.Error != nil {
+		Transaction.Rollback()
 		return nil, result.Error
 	}
+
+	result = Transaction.Model(&user.Credential).Updates(&user.Credential)
+
+	if result.Error != nil {
+		Transaction.Rollback()
+		return nil, result.Error
+	}
+
+	Transaction.Commit()
 
 	return user, nil
 }
