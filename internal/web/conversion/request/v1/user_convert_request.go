@@ -22,16 +22,14 @@ func UserCreateRequestToUserDomain(request requests.UserRequest) *domain.Users {
 	}
 }
 
-func UserUpdateRequestToUserDomain(request requests.UpdateUserProfileRequest) *domain.Users {
-	return &domain.Users{
-		First_name: request.First_name,
-		Last_name:  request.Last_name,
-		Credential: &domain.Credentials{
-			Email:    request.Email,
-			Username: request.Username,
-			Role_id:  request.Role_id,
-		},
-		Birthday:        helpers.ParseStringToTime(request.Birthday),
-		Profile_picture: request.Profile_picture,
-	}
+func UserUpdateRequestToUserDomain(request requests.UpdateUserProfileRequest, users *domain.Users) *domain.Users {
+
+	users.First_name = request.First_name
+	users.Last_name = request.Last_name
+	users.Credential.Email = request.Email
+	users.Credential.Username = request.Username
+	users.Birthday = helpers.ParseStringToTime(request.Birthday)
+	users.Profile_picture = request.Profile_picture
+
+	return users
 }
