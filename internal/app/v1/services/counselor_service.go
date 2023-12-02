@@ -21,6 +21,7 @@ type CounselorService interface {
 	AddSpecialist(ctx echo.Context, id uint, request requests.CounselorHasManyRequest) ([]exceptions.ValidationMessage, error)
 	RemoveSpecialistCounselor(ctx echo.Context, id int, request requests.CounselorHasManyRequest) ([]exceptions.ValidationMessage, error)
 	GetAllCounselors(ctx echo.Context) ([]domain.Counselors, error)
+	GetCounselorsForMobile(ctx echo.Context) ([]domain.Counselors, error)
 	GetCounselorProfile(ctx echo.Context) (*domain.Counselors, error)
 	UpdateCounselor(ctx echo.Context, request requests.CounselorRequest, picture *multipart.FileHeader) (*domain.Counselors, []exceptions.ValidationMessage, error)
 	UpdateCounselorForMobile(ctx echo.Context, request requests.CounselorRequest, picture *multipart.FileHeader) (*domain.Counselors, []exceptions.ValidationMessage, error)
@@ -228,4 +229,13 @@ func (service *CounselorServiceImpl) UpdateCounselorForMobile(ctx echo.Context, 
 	}
 
 	return nil, nil, nil
+}
+
+func (service *CounselorServiceImpl) GetCounselorsForMobile(ctx echo.Context) ([]domain.Counselors, error) {
+	counselors, err := service.CounselorRepo.FindAllCounselors()
+	if err != nil {
+		return nil, fmt.Errorf("Error when get all counselors: %s", err.Error())
+	}
+
+	return counselors, nil
 }

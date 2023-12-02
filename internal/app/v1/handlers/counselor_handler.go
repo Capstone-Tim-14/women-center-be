@@ -18,6 +18,7 @@ type CounselorHandler interface {
 	AddSpecialist(ctx echo.Context) error
 	RemoveManySpecialist(ctx echo.Context) error
 	GetAllCounselorsHandler(echo.Context) error
+	GetCounselorsForMobile(echo.Context) error
 	UpdateCounselorHandler(echo.Context) error
 	UpdateCounselorForMobile(echo.Context) error
 }
@@ -176,4 +177,16 @@ func (handler *CounselorHandlerImpl) UpdateCounselorForMobile(ctx echo.Context) 
 	}
 
 	return responses.StatusOK(ctx, "Counselor updated successfully", nil)
+}
+
+func (handler *CounselorHandlerImpl) GetCounselorsForMobile(ctx echo.Context) error {
+	response, err := handler.CounselorService.GetCounselorsForMobile(ctx)
+
+	if err != nil {
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	counselorResponse := conversion.ConvertCounselorDomainToCounselorResponse(response)
+
+	return responses.StatusOK(ctx, "Get all counselors successfully", counselorResponse)
 }
