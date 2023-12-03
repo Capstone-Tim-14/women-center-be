@@ -1,9 +1,9 @@
 package requests
 
-type ArticlehasTagRequest struct {
+type CounselorHasSpecialistRequest struct {
 	Name string `json:"name" validate:"required"`
 }
 
-type ArticleHasManyRequest struct {
+type CounselorHasManyRequest struct {
 	Name []string `json:"name" validate:"required"`
 }

@@ -46,3 +46,10 @@ func UserDomainToUserUpdateProfileResource(user *domain.Users) resources.UpdateU
 		Profile_picture: user.Profile_picture,
 	}
 }
+
+func UserDomainToUserOTPGenerate(code string, secret string) *resources.OtpResources {
+	return &resources.OtpResources{
+		Code:   code,
+		Secret: secret,
+	}
+}

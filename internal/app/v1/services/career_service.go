@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"mime/multipart"
 	"strconv"
+	"strings"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/app/v1/repositories"
 	conversion "woman-center-be/internal/web/conversion/request/v1"
@@ -21,6 +22,7 @@ type CareerService interface {
 	FindAllCareer(ctx echo.Context) ([]domain.Career, error)
 	FindCareerByid(ctx echo.Context, id int) (*domain.Career, error)
 	AddJobType(ctx echo.Context, id int, request requests.CareerhasTypeRequest) ([]exceptions.ValidationMessage, error)
+	RemoveJobType(ctx echo.Context, id int, request requests.CareerhasManyRequest) ([]exceptions.ValidationMessage, error)
 	UpdateCareer(ctx echo.Context, request requests.CareerRequest, logo *multipart.FileHeader, cover *multipart.FileHeader) ([]exceptions.ValidationMessage, error)
 	DeleteCareer(ctx echo.Context) error
 }
@@ -71,10 +73,19 @@ func (service *CareerServiceImpl) CreateCareer(ctx echo.Context, request request
 
 func (service *CareerServiceImpl) FindAllCareer(ctx echo.Context) ([]domain.Career, error) {
 
-	career, err := service.CareerRepo.GetAllCareer()
+	var FilterCareer requests.CareerFilterRequest
+
+	JobType := ctx.QueryParam("job_type")
+
+	if JobType != "" {
+		FilterCareer.JobType = strings.Split(JobType, ",")
+	}
+
+	career, err := service.CareerRepo.GetAllCareer(FilterCareer)
 
 	if err != nil {
-		return nil, fmt.Errorf("Error get all career: %w", err)
+		fmt.Errorf(err.Error())
+		return nil, fmt.Errorf("Career is empty")
 	}
 
 	return career, nil
@@ -93,6 +104,11 @@ func (service *CareerServiceImpl) FindCareerByid(ctx echo.Context, id int) (*dom
 
 func (service *CareerServiceImpl) AddJobType(ctx echo.Context, id int, request requests.CareerhasTypeRequest) ([]exceptions.ValidationMessage, error) {
 
+	err := service.Validator.Struct(request)
+	if err != nil {
+		return helpers.ValidationError(ctx, err), nil
+	}
+
 	career, errCareer := service.CareerRepo.FindCareerByid(id)
 	if errCareer != nil {
 		return nil, errCareer
@@ -110,23 +126,80 @@ func (service *CareerServiceImpl) AddJobType(ctx echo.Context, id int, request r
 	return nil, nil
 }
 
+func (service *CareerServiceImpl) RemoveJobType(ctx echo.Context, id int, request requests.CareerhasManyRequest) ([]exceptions.ValidationMessage, error) {
+
+	ValidationMessage := service.Validator.Struct(request)
+	var JobTypeList []domain.Job_Type
+
+	if ValidationMessage != nil {
+		return helpers.ValidationError(ctx, ValidationMessage), nil
+	}
+
+	GetCareer, errGetCareer := service.CareerRepo.FindCareerByid(id)
+
+	if errGetCareer != nil {
+		fmt.Errorf(errGetCareer.Error())
+		return nil, fmt.Errorf("Career not found")
+	}
+
+	for _, val := range GetCareer.Job_type {
+
+		for index := range request.Name {
+
+			if request.Name[index] == val.Name {
+
+				GetJobType, errGetJobType := service.JobTypeRepo.FindJobTypeByName(val.Name)
+
+				if errGetJobType != nil {
+					fmt.Println(errGetJobType.Error())
+					return nil, fmt.Errorf("One of career request is not found")
+
+				}
+
+				JobTypeList = append(JobTypeList, *GetJobType)
+
+			} else {
+				continue
+			}
+		}
+	}
+
+	if len(JobTypeList) <= 0 {
+		return nil, fmt.Errorf("One of career request is not found")
+	}
+
+	ErrRemoveCareer := service.CareerhasTypeRepo.RemoveJobTypeById(*GetCareer, JobTypeList)
+
+	if ErrRemoveCareer != nil {
+		fmt.Errorf(ErrRemoveCareer.Error())
+		return nil, fmt.Errorf("Error when remove job type")
+	}
+
+	return nil, nil
+
+}
+
 func (service *CareerServiceImpl) UpdateCareer(ctx echo.Context, request requests.CareerRequest, logo *multipart.FileHeader, cover *multipart.FileHeader) ([]exceptions.ValidationMessage, error) {
 
-	LogoCloudURL, errUploadLogo := storage.S3PutFile(logo, "career/logo")
+	if logo != nil {
+		LogoCloudURL, errUploadLogo := storage.S3PutFile(logo, "career/logo")
 
-	if errUploadLogo != nil {
-		return nil, errUploadLogo
+		if errUploadLogo != nil {
+			return nil, errUploadLogo
+		}
+
+		request.Logo = &LogoCloudURL
 	}
 
-	request.Logo = &LogoCloudURL
+	if cover != nil {
+		CoverCloudURL, errUploadCover := storage.S3PutFile(cover, "career/cover")
 
-	CoverCloudURL, errUploadCover := storage.S3PutFile(cover, "career/cover")
+		if errUploadCover != nil {
+			return nil, errUploadCover
+		}
 
-	if errUploadCover != nil {
-		return nil, errUploadCover
+		request.Cover = &CoverCloudURL
 	}
-
-	request.Cover = &CoverCloudURL
 
 	err := service.Validator.Struct(request)
 	if err != nil {

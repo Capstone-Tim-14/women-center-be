@@ -23,3 +23,9 @@ type Articles struct {
 	UpdatedAt     time.Time
 	DeletedAt     gorm.DeletedAt
 }
+
+type ArticleStatusCount struct {
+	PUBLISHED_COUNT int
+	REVIEW_COUNT    int
+	REJECTED_COUNT  int
+}
