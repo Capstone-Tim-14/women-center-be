@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"mime/multipart"
 	"strconv"
+	"strings"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/app/v1/repositories"
 	conversion "woman-center-be/internal/web/conversion/request/v1"
@@ -41,9 +42,16 @@ func NewCounselorService(counselorServiceImpl CounselorServiceImpl) CounselorSer
 }
 
 func (service *CounselorServiceImpl) GetAllCounselors(ctx echo.Context) ([]domain.Counselors, error) {
+	FilterSpecialist := requests.FilterCounselorsSpecialist{}
+
+	Specialist := ctx.QueryParam("specialist")
 	Search := ctx.QueryParam("search")
 
-	counselors, err := service.CounselorRepo.FindAllCounselors(Search)
+	if Specialist != "" {
+		FilterSpecialist.Specialist = strings.Split(Specialist, ",")
+	}
+
+	counselors, err := service.CounselorRepo.FindAllCounselors(Search, FilterSpecialist.Specialist)
 	if err != nil {
 		return nil, fmt.Errorf("Counselor not found")
 	}
@@ -234,9 +242,16 @@ func (service *CounselorServiceImpl) UpdateCounselorForMobile(ctx echo.Context, 
 }
 
 func (service *CounselorServiceImpl) GetCounselorsForMobile(ctx echo.Context) ([]domain.Counselors, error) {
+	FilterSpecialist := requests.FilterCounselorsSpecialist{}
+
+	Specialist := ctx.QueryParam("specialist")
 	Search := ctx.QueryParam("search")
 
-	counselors, err := service.CounselorRepo.FindAllCounselors(Search)
+	if Specialist != "" {
+		FilterSpecialist.Specialist = strings.Split(Specialist, ",")
+	}
+
+	counselors, err := service.CounselorRepo.FindAllCounselors(Search, FilterSpecialist.Specialist)
 	if err != nil {
 		return nil, fmt.Errorf("Counselor not found")
 	}
