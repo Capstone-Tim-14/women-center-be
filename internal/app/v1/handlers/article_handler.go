@@ -23,6 +23,7 @@ type ArticleHandler interface {
 	RemoveTagArticle(ctx echo.Context) error
 	LatestArticleHandler(ctx echo.Context) error
 	FindAllArticleUser(ctx echo.Context) error
+	FindArticleBySlugForUser(ctx echo.Context) error
 	FindArticleBySlug(ctx echo.Context) error
 	FindAllArticleCounselor(ctx echo.Context) error
 }
@@ -35,6 +36,20 @@ func NewArticleHandler(article services.ArticleService) ArticleHandler {
 	return &ArticleHandlerImpl{
 		ArticleService: article,
 	}
+}
+
+func (handler *ArticleHandlerImpl) FindArticleBySlugForUser(ctx echo.Context) error {
+
+	slug := ctx.Param("slug")
+	response, err := handler.ArticleService.FindArticleForUserBySlug(ctx, slug)
+	if err != nil {
+		return exceptions.StatusNotFound(ctx, err)
+	}
+
+	articleResponse := conversion.ConvertSingleArticleResource(response)
+
+	return responses.StatusOK(ctx, "Success Get Article", articleResponse)
+
 }
 
 func (handler *ArticleHandlerImpl) FindAllArticleCounselor(ctx echo.Context) error {

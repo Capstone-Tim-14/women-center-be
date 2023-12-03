@@ -28,6 +28,7 @@ type ArticleService interface {
 	DeleteArticle(ctx echo.Context) error
 	UpdatePublishedArticle(ctx echo.Context, request requests.PublishArticle) ([]exceptions.ValidationMessage, error)
 	FindArticleBySlug(ctx echo.Context, slug string) (*domain.Articles, error)
+	FindArticleForUserBySlug(ctx echo.Context, slug string) (*domain.Articles, error)
 	AddTagArticle(ctx echo.Context, id int, request requests.ArticlehasTagRequest) ([]exceptions.ValidationMessage, error)
 	RemoveTagArticle(ctx echo.Context, id int, request requests.ArticleHasManyRequest) ([]exceptions.ValidationMessage, error)
 	UpdateArticle(ctx echo.Context, request requests.ArticleRequest, thumbnail *multipart.FileHeader) ([]exceptions.ValidationMessage, error)
@@ -44,6 +45,15 @@ type ArticleServiceImpl struct {
 
 func NewArticleService(articleServiceImpl ArticleServiceImpl) ArticleService {
 	return &articleServiceImpl
+}
+
+func (service *ArticleServiceImpl) FindArticleForUserBySlug(ctx echo.Context, slug string) (*domain.Articles, error) {
+	result, err := service.ArticleRepo.FindActiveArticleBySlug(slug)
+	if err != nil {
+		return nil, fmt.Errorf("Article not found")
+	}
+
+	return result, nil
 }
 
 func (service *ArticleServiceImpl) FindAllArticleCounselor(ctx echo.Context) (*resources.ArticleCounseloResource, error) {
