@@ -41,9 +41,11 @@ func NewCounselorService(counselorServiceImpl CounselorServiceImpl) CounselorSer
 }
 
 func (service *CounselorServiceImpl) GetAllCounselors(ctx echo.Context) ([]domain.Counselors, error) {
-	counselors, err := service.CounselorRepo.FindAllCounselors()
+	Search := ctx.QueryParam("search")
+
+	counselors, err := service.CounselorRepo.FindAllCounselors(Search)
 	if err != nil {
-		return nil, fmt.Errorf("Error when get all counselors: %s", err.Error())
+		return nil, fmt.Errorf("Counselor not found")
 	}
 
 	return counselors, nil
@@ -232,9 +234,11 @@ func (service *CounselorServiceImpl) UpdateCounselorForMobile(ctx echo.Context, 
 }
 
 func (service *CounselorServiceImpl) GetCounselorsForMobile(ctx echo.Context) ([]domain.Counselors, error) {
-	counselors, err := service.CounselorRepo.FindAllCounselors()
+	Search := ctx.QueryParam("search")
+
+	counselors, err := service.CounselorRepo.FindAllCounselors(Search)
 	if err != nil {
-		return nil, fmt.Errorf("Error when get all counselors: %s", err.Error())
+		return nil, fmt.Errorf("Counselor not found")
 	}
 
 	return counselors, nil
