@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"woman-center-be/internal/app/v1/services"
@@ -13,15 +14,18 @@ import (
 )
 
 type ArticleHandler interface {
-	LatestArticleHandler(ctx echo.Context) error
 	CreateArticle(ctx echo.Context) error
-	FindAllArticleUser(ctx echo.Context) error
 	FindAllArticle(ctx echo.Context) error
 	DeleteArticle(ctx echo.Context) error
-	FindArticleBySlug(ctx echo.Context) error
 	UpdatePublishedArticle(ctx echo.Context) error
-	AddTagArticle(ctx echo.Context) error
 	UpdateArticle(ctx echo.Context) error
+	AddTagArticle(ctx echo.Context) error
+	RemoveTagArticle(ctx echo.Context) error
+	LatestArticleHandler(ctx echo.Context) error
+	FindAllArticleUser(ctx echo.Context) error
+	FindArticleBySlugForUser(ctx echo.Context) error
+	FindArticleBySlug(ctx echo.Context) error
+	FindAllArticleCounselor(ctx echo.Context) error
 }
 
 type ArticleHandlerImpl struct {
@@ -32,6 +36,77 @@ func NewArticleHandler(article services.ArticleService) ArticleHandler {
 	return &ArticleHandlerImpl{
 		ArticleService: article,
 	}
+}
+
+func (handler *ArticleHandlerImpl) FindArticleBySlugForUser(ctx echo.Context) error {
+
+	slug := ctx.Param("slug")
+	response, err := handler.ArticleService.FindArticleForUserBySlug(ctx, slug)
+	if err != nil {
+		return exceptions.StatusNotFound(ctx, err)
+	}
+
+	articleResponse := conversion.ConvertSingleArticleResource(response)
+
+	return responses.StatusOK(ctx, "Success Get Article", articleResponse)
+
+}
+
+func (handler *ArticleHandlerImpl) FindAllArticleCounselor(ctx echo.Context) error {
+
+	response, err := handler.ArticleService.FindAllArticleCounselor(ctx)
+
+	if err != nil {
+
+		if strings.Contains(err.Error(), "Articles is empty") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Success Get Article Counselor", response)
+
+}
+
+func (handler *ArticleHandlerImpl) RemoveTagArticle(ctx echo.Context) error {
+
+	var request requests.ArticleHasManyRequest
+
+	GetId := ctx.Param("id")
+
+	ErrBinding := ctx.Bind(&request)
+
+	if ErrBinding != nil {
+		return exceptions.StatusBadRequest(ctx, ErrBinding)
+	}
+
+	ParseToId, errParsing := strconv.Atoi(GetId)
+
+	if errParsing != nil {
+		fmt.Errorf(errParsing.Error())
+		return exceptions.StatusBadRequest(ctx, fmt.Errorf("Invalid Format id"))
+	}
+
+	Validation, ErrGetArticle := handler.ArticleService.RemoveTagArticle(ctx, ParseToId, request)
+
+	if Validation != nil {
+		return exceptions.ValidationException(ctx, "Validation Error", Validation)
+	}
+
+	if ErrGetArticle != nil {
+		if strings.Contains(ErrGetArticle.Error(), "Article not found") {
+			return exceptions.StatusNotFound(ctx, ErrGetArticle)
+		}
+		if strings.Contains(ErrGetArticle.Error(), "One of article request is not found") {
+			return exceptions.StatusNotFound(ctx, ErrGetArticle)
+		}
+
+		return exceptions.StatusInternalServerError(ctx, ErrGetArticle)
+	}
+
+	return responses.StatusOK(ctx, "Article Remove Successfully", nil)
+
 }
 
 func (handler *ArticleHandlerImpl) LatestArticleHandler(ctx echo.Context) error {
@@ -169,7 +244,13 @@ func (handler *ArticleHandlerImpl) UpdatePublishedArticle(ctx echo.Context) erro
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
-	return responses.StatusOK(ctx, "Congratulations, the article is APPROVE", nil)
+	if request.Status == "APPROVED" {
+		return responses.StatusCreated(ctx, "Congratulations, the article is PUBLISH", nil)
+	} else if request.Status == "REJECTED" {
+		return responses.StatusCreated(ctx, "Sorry, the Article is REJECTED", nil)
+	}
+
+	return responses.StatusCreated(ctx, "The article status updated", nil)
 }
 
 func (handler *ArticleHandlerImpl) AddTagArticle(ctx echo.Context) error {

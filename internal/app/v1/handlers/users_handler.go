@@ -41,6 +41,7 @@ func (h *UserHandlerImpl) ProfileHandler(ctx echo.Context) error {
 func (handler *UserHandlerImpl) RegisterHandler(ctx echo.Context) error {
 	userCreateRequest := requests.UserRequest{}
 	err := ctx.Bind(&userCreateRequest)
+
 	if err != nil {
 		return exceptions.StatusBadRequest(ctx, err)
 	}
@@ -67,12 +68,15 @@ func (handler *UserHandlerImpl) RegisterHandler(ctx echo.Context) error {
 
 func (handler *UserHandlerImpl) UpdateProfileHandler(ctx echo.Context) error {
 	userUpdateRequest := requests.UpdateUserProfileRequest{}
+	pictureProfile, _ := ctx.FormFile("picture_profile")
+
 	err := ctx.Bind(&userUpdateRequest)
+
 	if err != nil {
 		return exceptions.StatusBadRequest(ctx, err)
 	}
 
-	_, validation, err := handler.UserService.UpdateUserProfile(ctx, userUpdateRequest)
+	_, validation, err := handler.UserService.UpdateUserProfile(ctx, userUpdateRequest, pictureProfile)
 
 	if validation != nil {
 		return exceptions.ValidationException(ctx, "Error validation", validation)

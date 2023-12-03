@@ -18,6 +18,14 @@ func HttpAuthRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate)
 	AdminRepo := repositories.NewAdminRepository(db)
 	CredentialRepo := repositories.NewCredentialRepository(db)
 
+	OTPService := services.NewOtpServiceImpl(services.OtpServiceImpl{
+		UserRepo: UserRepo,
+	})
+
+	OTPHandler := handlers.NewOtpHandlerImpl(handlers.OtpHandlerImpl{
+		OtpService: OTPService,
+	})
+
 	AuthService := services.NewAuthService(services.AuthServiceImpl{
 		AdminRepo:      AdminRepo,
 		RoleRepo:       RoleRepo,
@@ -30,6 +38,8 @@ func HttpAuthRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate)
 
 	group.GET("/google-auth", AuthHandler.OauthGoogleHandler)
 	group.GET("/callback-google-auth", AuthHandler.OauthCallbackGoogleHandler)
+	group.POST("/auth/otp/generate", OTPHandler.SendOtpHandler)
+	group.POST("/auth/otp/verify", OTPHandler.VerifyTokenHandler)
 
 	Admin := group.Group("/admin")
 

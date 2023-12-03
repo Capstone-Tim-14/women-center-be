@@ -35,6 +35,7 @@ func ConvertArticleResource(articles []domain.Articles) []resources.ArticleResou
 	articleResource := []resources.ArticleResource{}
 	for _, article := range articles {
 		singleArticleResource := resources.ArticleResource{}
+		singleArticleResource.Id = article.Id
 		singleArticleResource.Title = article.Title
 		singleArticleResource.Thumbnail = *article.Thumbnail
 		singleArticleResource.Slug = article.Slug
@@ -90,4 +91,40 @@ func ConvertSingleArticleResource(article *domain.Articles) resources.ArticleRes
 	singleArticleResource.UpdatedAt = helpers.ParseDateFormat(&article.UpdatedAt)
 
 	return singleArticleResource
+}
+
+func ConvertArticleCounselorResource(articles []domain.Articles, articlesCount domain.ArticleStatusCount) resources.ArticleCounseloResource {
+
+	var CounselorArticleRes resources.ArticleCounseloResource
+
+	articleResource := []resources.ArticleResource{}
+	for _, article := range articles {
+		singleArticleResource := resources.ArticleResource{}
+		singleArticleResource.Id = article.Id
+		singleArticleResource.Title = article.Title
+		singleArticleResource.Thumbnail = *article.Thumbnail
+		singleArticleResource.Slug = article.Slug
+		if article.Admin != nil {
+			singleArticleResource.Author = resources.Author{
+				Name: article.Admin.First_name + " " + article.Admin.Last_name,
+				Role: article.Admin.Credential.Role.Name,
+			}
+		} else if article.Counselors != nil {
+			singleArticleResource.Author = resources.Author{
+				Name: article.Counselors.First_name + " " + article.Counselors.Last_name,
+				Role: article.Counselors.Credential.Role.Name,
+			}
+		}
+		singleArticleResource.Status = article.Status
+		singleArticleResource.PublishedAt = helpers.ParseDateFormat(&article.PublishedAt)
+
+		articleResource = append(articleResource, singleArticleResource)
+	}
+
+	CounselorArticleRes.Article_publish = articlesCount.PUBLISHED_COUNT
+	CounselorArticleRes.Article_review = articlesCount.REVIEW_COUNT
+	CounselorArticleRes.Article_rejected = articlesCount.REJECTED_COUNT
+	CounselorArticleRes.ArticleList = articleResource
+
+	return CounselorArticleRes
 }

@@ -35,6 +35,10 @@ jobs:
               -e 's!example-google-redirect-url!${{ secrets.GOOGLE_REDIRECT_URL }}!g' \
               -e 's!example-google-state-string!${{ secrets.GOOGLE_STATE_STRING }}!g' \
               -e 's!example-secret-key!${{ secrets.AUTH_SECRET_KEY }}!g' \
+              -e 's!example-email-host!${{ secrets.EMAIL_HOST }}!g' \
+              -e 's!example-email-port!${{ secrets.EMAIL_PORT }}!g' \
+              -e 's!example-email-user!${{ secrets.EMAIL_USER }}!g' \
+              -e 's!example-email-pass!${{ secrets.EMAIL_PASS }}!g' \
               -e 's!example-secret-key-admin!${{ secrets.AUTH_ADMIN_SECRET_KEY }}!' \
             env.example.yaml > env.yaml
           echo "success create enviroment"
