@@ -15,7 +15,7 @@ func InitRoutes(e *echo.Echo, db *gorm.DB, validator *validator.Validate) {
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
 	}))
 
 	v1 := e.Group("/api/v1", middlewares.Logger())
