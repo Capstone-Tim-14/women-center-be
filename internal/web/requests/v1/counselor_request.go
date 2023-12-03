@@ -11,3 +11,7 @@ type CounselorRequest struct {
 	Password        string `json:"password" validate:"required" form:"password"`
 	Role_id         uint
 }
+
+type FilterCounselorsSpecialist struct {
+	Specialist []string `json:"specialist" form:"specialist"`
+}
