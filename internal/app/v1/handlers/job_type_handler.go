@@ -57,7 +57,7 @@ func (handler *JobTypeHandlerImpl) ShowAllJobType(ctx echo.Context) error {
 	response, err := handler.JobTypeService.GetJobType(ctx)
 	if err != nil {
 
-		if strings.Contains(err.Error(), "Job type is empty") {
+		if strings.Contains(err.Error(), "Job types is empty") {
 			return exceptions.StatusNotFound(ctx, err)
 		}
 
