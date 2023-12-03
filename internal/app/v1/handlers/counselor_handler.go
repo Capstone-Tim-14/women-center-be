@@ -121,6 +121,9 @@ func (handler *CounselorHandlerImpl) GetAllCounselorsHandler(ctx echo.Context) e
 	response, err := handler.CounselorService.GetAllCounselors(ctx)
 
 	if err != nil {
+		if strings.Contains(err.Error(), "Counselor is empty") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
@@ -183,6 +186,9 @@ func (handler *CounselorHandlerImpl) GetCounselorsForMobile(ctx echo.Context) er
 	response, err := handler.CounselorService.GetCounselorsForMobile(ctx)
 
 	if err != nil {
+		if strings.Contains(err.Error(), "Counselor is empty") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
