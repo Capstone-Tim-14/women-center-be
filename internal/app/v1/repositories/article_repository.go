@@ -19,6 +19,7 @@ type ArticleRepository interface {
 	FindById(id int) (*domain.Articles, error)
 	DeleteArticleById(id int) error
 	UpdateStatusArticle(slug, status string) error
+	FindActiveArticleBySlug(slug string) (*domain.Articles, error)
 	FindBySlug(slug string) (*domain.Articles, error)
 	FindByTitle(title string) (*domain.Articles, error)
 	UpdateArticle(id int, article *domain.Articles) error
@@ -32,6 +33,16 @@ func NewArticleRepository(db *gorm.DB) ArticleRepository {
 	return &ArticleRepositoryImpl{
 		db: db,
 	}
+}
+
+func (repository *ArticleRepositoryImpl) FindActiveArticleBySlug(slug string) (*domain.Articles, error) {
+	article := domain.Articles{}
+	result := repository.db.Preload("Admin").Preload("Admin.Credential").Preload("Admin.Credential.Role").Preload("Counselors").Preload("Counselors.Credential").Preload("Counselors.Credential.Role").Preload("Tags").Where("slug = ? AND status = ?", slug, "PUBLISHED").First(&article)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &article, nil
 }
 
 func (repository *ArticleRepositoryImpl) FindArticleCounselor(id int) ([]domain.Articles, *domain.ArticleStatusCount, error) {
