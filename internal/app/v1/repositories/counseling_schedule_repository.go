@@ -7,7 +7,7 @@ import (
 )
 
 type ScheduleRepository interface {
-	CreateSchedule(schedule *domain.Counseling_Schedule) (*domain.Counseling_Schedule, error)
+	CreateSchedule(counselor *domain.Counselors, scheduling []domain.Counseling_Schedule) error
 	FindFreeSchedule(day, start, finish string) (*domain.Counseling_Schedule, error)
 }
 
@@ -21,13 +21,21 @@ func NewScheduleRepository(db *gorm.DB) ScheduleRepository {
 	}
 }
 
-func (repository *ScheduleRepositoryImpl) CreateSchedule(schedule *domain.Counseling_Schedule) (*domain.Counseling_Schedule, error) {
-	result := repository.Db.Create(&schedule)
-	if result.Error != nil {
-		return nil, result.Error
+func (repository *ScheduleRepositoryImpl) CreateSchedule(counselor *domain.Counselors, scheduling []domain.Counseling_Schedule) error {
+
+	transaction := repository.Db.Begin()
+
+	err := transaction.Model(&counselor).Association("Schedules").Append(scheduling)
+
+	if err != nil {
+		transaction.Rollback()
+		return err
 	}
 
-	return schedule, nil
+	transaction.Commit()
+
+	return nil
+
 }
 
 func (repository *ScheduleRepositoryImpl) FindFreeSchedule(day, start, finish string) (*domain.Counseling_Schedule, error) {
