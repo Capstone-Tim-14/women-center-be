@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/shopspring/decimal"
+	"gorm.io/gorm"
 )
 
 type CounselingPackage struct {
@@ -15,5 +16,5 @@ type CounselingPackage struct {
 	Description      string
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
-	DeletedAt        time.Time
+	DeletedAt        gorm.DeletedAt
 }
