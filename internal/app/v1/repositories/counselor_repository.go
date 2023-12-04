@@ -11,7 +11,7 @@ type CounselorRepository interface {
 	CreateCounselor(counselor *domain.Counselors) (*domain.Counselors, error)
 	FindById(id int) (*domain.Counselors, error)
 	FindyByEmail(email string) (*domain.Counselors, error)
-	FindAllCounselors() ([]domain.Counselors, error)
+	FindAllCounselors(search string, filter []string) ([]domain.Counselors, error)
 	UpdateCounselor(counselor *domain.Counselors) error
 }
 
@@ -59,15 +59,26 @@ func (repository *CounselorRepositoryImpl) FindyByEmail(email string) (*domain.C
 	return &counselor, nil
 }
 
-func (repository *CounselorRepositoryImpl) FindAllCounselors() ([]domain.Counselors, error) {
+func (repository *CounselorRepositoryImpl) FindAllCounselors(search string, filter []string) ([]domain.Counselors, error) {
 	counselor := []domain.Counselors{}
+	result := repository.db.Preload("Credential").Preload("Credential.Role")
 
-	result := repository.db.Preload("Credential").Preload("Credential.Role").Find(&counselor)
+	if len(filter) > 0 {
+		result = result.Joins("INNER JOIN counselor_has_specialists ON counselors.id = counselor_has_specialists.counselors_id").Joins("INNER JOIN specialists ON specialists.id = counselor_has_specialists.specialist_id").Where("CONCAT(counselors.first_name, ' ',counselors.last_name) LIKE ? AND specialists.name IN (?)", "%"+search+"%", filter).Distinct().Find(&counselor)
+	} else {
+		result = result.Where("CONCAT(counselors.first_name, ' ',counselors.last_name) LIKE ?", "%"+search+"%").Find(&counselor)
+	}
+
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
+	if result.RowsAffected == 0 {
+		return nil, fmt.Errorf("Counselor not found")
+	}
+
 	return counselor, nil
+
 }
 
 func (repository *CounselorRepositoryImpl) UpdateCounselor(counselor *domain.Counselors) error {

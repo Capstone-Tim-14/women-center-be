@@ -68,13 +68,9 @@ func (handler *UserHandlerImpl) RegisterHandler(ctx echo.Context) error {
 
 func (handler *UserHandlerImpl) UpdateProfileHandler(ctx echo.Context) error {
 	userUpdateRequest := requests.UpdateUserProfileRequest{}
-	pictureProfile, errPictureProfile := ctx.FormFile("picture_profile")
+	pictureProfile, _ := ctx.FormFile("picture_profile")
 
 	err := ctx.Bind(&userUpdateRequest)
-
-	if errPictureProfile != nil {
-		return exceptions.StatusBadRequest(ctx, errPictureProfile)
-	}
 
 	if err != nil {
 		return exceptions.StatusBadRequest(ctx, err)

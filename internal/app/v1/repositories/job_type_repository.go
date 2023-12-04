@@ -53,7 +53,7 @@ func (repository *JobTypeRepositoryImpl) ShowAllJobType() ([]domain.Job_Type, er
 	}
 
 	if result.RowsAffected == 0 {
-		return nil, fmt.Errorf("Job Types is empty")
+		return nil, fmt.Errorf("Job types is empty")
 	}
 
 	return types, nil
