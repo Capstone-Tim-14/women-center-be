@@ -9,7 +9,7 @@ import (
 
 type CounselingPackageRepository interface {
 	CreatePackage(pack *domain.CounselingPackage) (*domain.CounselingPackage, error)
-	FindByName(name string) (*domain.CounselingPackage, error)
+	FindByTitle(title string) ([]domain.CounselingPackage, error)
 	GetAllPackage() ([]domain.CounselingPackage, error)
 }
 
@@ -33,14 +33,14 @@ func (repository *CounselingPackageRepositoryImpl) CreatePackage(pack *domain.Co
 
 }
 
-func (repository *CounselingPackageRepositoryImpl) FindByName(name string) (*domain.CounselingPackage, error) {
-	counselingpackage := domain.CounselingPackage{}
-	result := repository.db.Where("package_name = ?", name).First(&counselingpackage)
+func (repository *CounselingPackageRepositoryImpl) FindByTitle(title string) ([]domain.CounselingPackage, error) {
+	var counselingpackage []domain.CounselingPackage
+	result := repository.db.Where("title = ?", title).First(&counselingpackage)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
-	return &counselingpackage, nil
+	return counselingpackage, nil
 }
 
 func (repository *CounselingPackageRepositoryImpl) GetAllPackage() ([]domain.CounselingPackage, error) {

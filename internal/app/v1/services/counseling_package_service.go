@@ -17,6 +17,7 @@ import (
 
 type CounselingPackageService interface {
 	CreatePackage(ctx echo.Context, request requests.CounselingPackageRequest, thumbnail *multipart.FileHeader) (*domain.CounselingPackage, []exceptions.ValidationMessage, error)
+	FindByTitle(ctx echo.Context, title string) ([]domain.CounselingPackage, error)
 	GetAllPackage(ctx echo.Context) ([]domain.CounselingPackage, error)
 }
 
@@ -36,7 +37,7 @@ func (service *CounselingPackageServiceImpl) CreatePackage(ctx echo.Context, req
 		return nil, helpers.ValidationError(ctx, err), nil
 	}
 
-	existingName, _ := service.CounselingPackageRepo.FindByName(request.Package_name)
+	existingName, _ := service.CounselingPackageRepo.FindByTitle(request.Title)
 	if existingName != nil {
 		return nil, nil, fmt.Errorf("Package name already exists")
 	}
@@ -57,6 +58,15 @@ func (service *CounselingPackageServiceImpl) CreatePackage(ctx echo.Context, req
 	}
 
 	return result, nil, nil
+}
+
+func (service *CounselingPackageServiceImpl) FindByTitle(ctx echo.Context, title string) ([]domain.CounselingPackage, error) {
+	result, err := service.CounselingPackageRepo.FindByTitle(title)
+	if err != nil {
+		return nil, fmt.Errorf("Package not found")
+	}
+
+	return result, nil
 }
 
 func (service *CounselingPackageServiceImpl) GetAllPackage(ctx echo.Context) ([]domain.CounselingPackage, error) {

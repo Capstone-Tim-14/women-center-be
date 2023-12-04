@@ -22,6 +22,8 @@ func HttpCounselingPackageRoute(group *echo.Group, db *gorm.DB, validate *valida
 	CounselingHandler := handlers.NewCounselingPackageHandler(CounselingService)
 
 	verifyTokenAdmin := group.Group("/admin", middlewares.VerifyTokenSignature("SECRET_KEY_ADMIN"))
+	verifyTokenAdmin.POST("/counseling-packages", CounselingHandler.CreatePackage)
+	verifyTokenAdmin.GET("/counseling-packages/:title", CounselingHandler.FindByTitle)
 	verifyTokenAdmin.GET("/counseling-packages", CounselingHandler.GetAllPackage)
 	//verifyTokenAdmin.POST()
 }
