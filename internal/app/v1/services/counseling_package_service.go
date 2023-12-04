@@ -17,11 +17,13 @@ import (
 
 type CounselingPackageService interface {
 	CreatePackage(ctx echo.Context, request requests.CounselingPackageRequest, thumbnail *multipart.FileHeader) (*domain.CounselingPackage, []exceptions.ValidationMessage, error)
+	GetAllPackage(ctx echo.Context) ([]domain.CounselingPackage, error)
 }
 
 type CounselingPackageServiceImpl struct {
 	CounselingPackageRepo repositories.CounselingPackageRepository
 	Validator             *validator.Validate
+	AdminRepo             repositories.AdminRepository
 }
 
 func NewCounselingPackageService(counselingpackageServiceImpl CounselingPackageServiceImpl) CounselingPackageService {
@@ -55,4 +57,12 @@ func (service *CounselingPackageServiceImpl) CreatePackage(ctx echo.Context, req
 	}
 
 	return result, nil, nil
+}
+
+func (service *CounselingPackageServiceImpl) GetAllPackage(ctx echo.Context) ([]domain.CounselingPackage, error) {
+	result, err := service.CounselingPackageRepo.GetAllPackage()
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
