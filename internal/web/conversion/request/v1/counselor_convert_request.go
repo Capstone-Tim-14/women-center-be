@@ -34,3 +34,22 @@ func CounselorUpdateRequestToCounselorDomain(request requests.CounselorRequest, 
 
 	return counselor
 }
+
+func CounselorScheduleToCounselorDomain(requests []requests.CounselingScheduleRequest) []domain.Counseling_Schedule {
+
+	var CounselorScheduling []domain.Counseling_Schedule
+
+	for _, val := range requests {
+
+		Scheduling := domain.Counseling_Schedule{
+			Day_schedule: val.Day_schedule,
+			Time_start:   helpers.ParseClockToTime(val.Time_start),
+			Time_finish:  helpers.ParseClockToTime(val.Time_finish),
+		}
+
+		CounselorScheduling = append(CounselorScheduling, Scheduling)
+	}
+
+	return CounselorScheduling
+
+}
