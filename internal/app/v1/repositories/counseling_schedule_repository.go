@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"fmt"
 	"woman-center-be/internal/app/v1/models/domain"
 
 	"gorm.io/gorm"
@@ -8,6 +9,7 @@ import (
 
 type ScheduleRepository interface {
 	CreateSchedule(counselor *domain.Counselors, scheduling []domain.Counseling_Schedule) error
+	CheckDayCounselingScheduleExists(id int, day string) (*domain.Counseling_Schedule, error)
 	FindFreeSchedule(day, start, finish string) (*domain.Counseling_Schedule, error)
 }
 
@@ -19,6 +21,25 @@ func NewScheduleRepository(db *gorm.DB) ScheduleRepository {
 	return &ScheduleRepositoryImpl{
 		Db: db,
 	}
+}
+
+func (repository *ScheduleRepositoryImpl) CheckDayCounselingScheduleExists(id int, day string) (*domain.Counseling_Schedule, error) {
+
+	var counselorSchedule domain.Counseling_Schedule
+
+	errGetDaySchedule := repository.Db.Where("counselor_id = ? AND day_schedule = ?", id, day).First(&counselorSchedule)
+
+	if errGetDaySchedule.Error != nil {
+		fmt.Errorf(errGetDaySchedule.Error.Error())
+		return nil, fmt.Errorf("Schedule not found")
+	}
+
+	if errGetDaySchedule.RowsAffected == 0 {
+		return nil, fmt.Errorf("Schedule not found")
+	}
+
+	return &counselorSchedule, nil
+
 }
 
 func (repository *ScheduleRepositoryImpl) CreateSchedule(counselor *domain.Counselors, scheduling []domain.Counseling_Schedule) error {
