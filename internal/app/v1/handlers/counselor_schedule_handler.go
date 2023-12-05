@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"strings"
 	"woman-center-be/internal/app/v1/services"
 	"woman-center-be/internal/web/requests/v1"
 	"woman-center-be/utils/exceptions"
@@ -40,6 +41,9 @@ func (handler *ScheduleHandlerImpl) CreateScheduleHandler(ctx echo.Context) erro
 	}
 
 	if errCreate != nil {
+		if strings.Contains(errCreate.Error(), "One of schedule is already exists") {
+			return exceptions.StatusAlreadyExist(ctx, errCreate)
+		}
 		return exceptions.StatusInternalServerError(ctx, errCreate)
 	}
 

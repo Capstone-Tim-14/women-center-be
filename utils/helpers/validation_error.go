@@ -9,6 +9,7 @@ import (
 )
 
 func ValidationError(ctx echo.Context, err error) []exceptions.ValidationMessage {
+
 	validationError, ok := err.(validator.ValidationErrors)
 	if ok {
 

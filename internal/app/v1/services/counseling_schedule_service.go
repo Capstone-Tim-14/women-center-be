@@ -58,6 +58,16 @@ func (service *ScheduleServiceImpl) CreateSchedule(ctx echo.Context, requests []
 
 	SchedulingConvert := reqConversion.CounselorScheduleToCounselorDomain(requests)
 
+	for _, val := range SchedulingConvert {
+
+		CheckSchedulingExists, _ := service.ScheduleRepo.CheckDayCounselingScheduleExists(int(GetCounselorData.Id), val.Day_schedule)
+
+		if CheckSchedulingExists != nil {
+			return nil, fmt.Errorf("One of schedule is already exists")
+		}
+
+	}
+
 	errCreate := service.ScheduleRepo.CreateSchedule(GetCounselorData, SchedulingConvert)
 
 	if errCreate != nil {
