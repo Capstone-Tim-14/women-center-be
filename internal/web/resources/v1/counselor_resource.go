@@ -35,8 +35,7 @@ type CounselingSchedule struct {
 }
 
 type DetailCounselor struct {
-	First_name      string                `json:"first_name,omitempty"`
-	Last_name       string                `json:"last_name,omitempty"`
+	Full_name       string                `json:"full_name,omitempty"`
 	Email           string                `json:"email,omitempty"`
 	Usernam         string                `json:"username,omitempty"`
 	Profile_picture string                `json:"profile_picture,omitempty"`
