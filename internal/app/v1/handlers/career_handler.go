@@ -63,7 +63,7 @@ func (handler *CareerHandlerImpl) CreateCareer(ctx echo.Context) error {
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
-	return responses.StatusOK(ctx, "Success create career", nil)
+	return responses.StatusCreated(ctx, "Success create career", nil)
 }
 
 func (handler *CareerHandlerImpl) FindAllCareer(ctx echo.Context) error {
