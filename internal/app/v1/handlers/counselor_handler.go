@@ -244,5 +244,5 @@ func (handler *CounselorHandlerImpl) GetCounselorProfile(ctx echo.Context) error
 
 	counselorResponse := conversion.CounselorDomainToProfileCounselor(response)
 
-	return responses.StatusOK(ctx, "Get detail counselor successfully", counselorResponse)
+	return responses.StatusOK(ctx, "Get profile counselor successfully", counselorResponse)
 }
