@@ -95,11 +95,31 @@ func (repository *CareerRepositoryImpl) DeleteCareerById(id int) error {
 
 	career := domain.Career{}
 
-	result := repository.db.Unscoped().Where("id = ?", id).Delete(&career)
+	transaction := repository.db.Begin()
+
+	result := transaction.Where("id = ?", id).First(&career)
 
 	if result.Error != nil {
 		return result.Error
 	}
+
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("Career not found")
+	}
+
+	if errAssociation := transaction.Model(&career).Association("Job_type").Clear(); errAssociation != nil {
+		transaction.Rollback()
+		fmt.Errorf(errAssociation.Error())
+		return fmt.Errorf("Error when delete relations")
+	}
+
+	if errDeleteCareer := transaction.Unscoped().Delete(&career).Error; errDeleteCareer != nil {
+		transaction.Rollback()
+		fmt.Errorf(errDeleteCareer.Error())
+		return fmt.Errorf("Error when delete career")
+	}
+
+	transaction.Commit()
 
 	return nil
 

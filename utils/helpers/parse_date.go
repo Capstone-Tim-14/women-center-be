@@ -29,3 +29,9 @@ func ParseClockToTime(time string) time.Time {
 
 	return Convert.ToStdTime()
 }
+
+func ParseTimeToClock(time *time.Time) string {
+	convert := carbon.CreateFromStdTime(*time)
+
+	return convert.Format("H:i:s")
+}
