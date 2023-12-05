@@ -15,6 +15,14 @@ type CounselorResource struct {
 	Specialist        []SpecialistCounselor `json:"specialist,omitempty"`
 }
 
+type ProfileCounselor struct {
+	Id              uint   `json:"id,omitempty"`
+	Profile_picture string `json:"profile_picture,omitempty"`
+	Username        string `json:"username,omitempty"`
+	Full_name       string `json:"full_name,omitempty"`
+	Email           string `json:"email,omitempty"`
+}
+
 type SpecialistCounselor struct {
 	Id   uint   `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
