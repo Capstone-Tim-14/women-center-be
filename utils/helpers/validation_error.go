@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"strings"
 	"woman-center-be/utils/exceptions"
 
 	"github.com/go-playground/validator/v10"
@@ -8,6 +9,7 @@ import (
 )
 
 func ValidationError(ctx echo.Context, err error) []exceptions.ValidationMessage {
+
 	validationError, ok := err.(validator.ValidationErrors)
 	if ok {
 
@@ -16,7 +18,7 @@ func ValidationError(ctx echo.Context, err error) []exceptions.ValidationMessage
 		for _, e := range validationError {
 
 			Message := exceptions.ValidationMessage{
-				Field:   e.Field(),
+				Field:   strings.ToLower(e.Field()),
 				Message: e.Tag(),
 			}
 
