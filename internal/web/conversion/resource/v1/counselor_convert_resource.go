@@ -38,8 +38,7 @@ func ConvertCounselorDomainToCounselorResponse(counselor []domain.Counselors) []
 
 func ConvertCounselorDomainToCounselorDetailResponse(counselor *domain.Counselors) resources.DetailCounselor {
 	counselorResponse := resources.DetailCounselor{
-		First_name:      counselor.First_name,
-		Last_name:       counselor.Last_name,
+		Full_name:       counselor.First_name + " " + counselor.Last_name,
 		Email:           counselor.Credential.Email,
 		Description:     counselor.Description,
 		Profile_picture: counselor.Profile_picture,
@@ -61,4 +60,14 @@ func ConvertCounselorDomainToCounselorDetailResponse(counselor *domain.Counselor
 	}
 
 	return counselorResponse
+}
+
+func CounselorDomainToProfileCounselor(counselor *domain.Counselors) resources.ProfileCounselor {
+	return resources.ProfileCounselor{
+		Id:              counselor.Id,
+		Profile_picture: counselor.Profile_picture,
+		Username:        counselor.Credential.Username,
+		Full_name:       counselor.First_name + " " + counselor.Last_name,
+		Email:           counselor.Credential.Email,
+	}
 }
