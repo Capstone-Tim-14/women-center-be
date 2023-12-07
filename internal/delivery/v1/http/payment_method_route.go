@@ -21,5 +21,5 @@ func HttpPaymentMethodRoute(group *echo.Group, db *gorm.DB) {
 	})
 
 	verifyToken := group.Group("", middlewares.VerifyTokenSignature("SECRET_KEY"))
-	verifyToken.GET("/payment-methods", PaymentMethodHandler.ListPaymentMethodHandler)
+	verifyToken.GET("/bank-methods", PaymentMethodHandler.ListPaymentMethodHandler)
 }
