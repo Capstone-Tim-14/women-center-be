@@ -20,6 +20,8 @@ type CounselorHandler interface {
 	GetAllCounselorsHandler(echo.Context) error
 	GetCounselorsForMobile(echo.Context) error
 	GetDetailCounselorHandler(echo.Context) error
+	GetDetailCounselorWeb(echo.Context) error
+	GetCounselorProfile(ctx echo.Context) error
 	UpdateCounselorHandler(echo.Context) error
 	UpdateCounselorForMobile(echo.Context) error
 }
@@ -212,4 +214,35 @@ func (handler *CounselorHandlerImpl) GetDetailCounselorHandler(ctx echo.Context)
 	counselorResponse := conversion.ConvertCounselorDomainToCounselorDetailResponse(response)
 
 	return responses.StatusOK(ctx, "Get detail counselor successfully", counselorResponse)
+}
+
+func (handler *CounselorHandlerImpl) GetDetailCounselorWeb(ctx echo.Context) error {
+
+	response, err := handler.CounselorService.GetDetailCounselor(ctx)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "Counselor not found") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	counselorResponse := conversion.ConvertCounselorDomainToCounselorDetailResponse(response)
+
+	return responses.StatusOK(ctx, "Get detail counselor successfully", counselorResponse)
+}
+
+func (handler *CounselorHandlerImpl) GetCounselorProfile(ctx echo.Context) error {
+	response, err := handler.CounselorService.GetCounselorProfile(ctx)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "Counselor not found") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	counselorResponse := conversion.CounselorDomainToProfileCounselor(response)
+
+	return responses.StatusOK(ctx, "Get profile counselor successfully", counselorResponse)
 }

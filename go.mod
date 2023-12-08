@@ -15,6 +15,7 @@ require (
 	github.com/gosimple/slug v1.13.1
 	github.com/labstack/echo-jwt/v4 v4.2.0
 	github.com/labstack/echo/v4 v4.11.3
+	github.com/midtrans/midtrans-go v1.3.7
 	github.com/pquerna/otp v1.4.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/shopspring/decimal v1.3.1

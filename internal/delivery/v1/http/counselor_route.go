@@ -40,6 +40,7 @@ func HttpCounselorRoute(group *echo.Group, db *gorm.DB, validate *validator.Vali
 	userVerify.GET("", CounselorHandler.GetCounselorsForMobile)
 	userVerify.PUT("", CounselorHandler.UpdateCounselorForMobile)
 	userVerify.GET("/:id", CounselorHandler.GetDetailCounselorHandler)
+	userVerify.GET("/profile", CounselorHandler.GetCounselorProfile)
 
 	verifyTokenAdmin := group.Group("/admin", middlewares.VerifyTokenSignature("SECRET_KEY_ADMIN"))
 
@@ -49,4 +50,5 @@ func HttpCounselorRoute(group *echo.Group, db *gorm.DB, validate *validator.Vali
 	verifyTokenAdmin.GET("/counselors", CounselorHandler.GetAllCounselorsHandler)
 	verifyTokenAdmin.PUT("/counselors/:id", CounselorHandler.UpdateCounselorHandler)
 	verifyTokenAdmin.POST("/counselor/:id/schedule", CounselorScheduleHandler.CreateScheduleHandler)
+	verifyTokenAdmin.GET("/counselor/:id", CounselorHandler.GetDetailCounselorWeb)
 }
