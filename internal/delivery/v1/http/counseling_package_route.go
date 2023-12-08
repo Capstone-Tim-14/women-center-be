@@ -12,7 +12,7 @@ import (
 )
 
 func HttpCounselingPackageRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate) {
-	CounselingRepo := repositories.NewCounselingRepository(db)
+	CounselingRepo := repositories.NewCounselingPackageRepository(db)
 	AdminRepo := repositories.NewAdminRepository(db)
 	CounselingService := services.NewCounselingPackageService(services.CounselingPackageServiceImpl{
 		CounselingPackageRepo: CounselingRepo,

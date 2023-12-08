@@ -10,7 +10,7 @@ import (
 type BookingCounselingDetail struct {
 	Id                    uint
 	Counseling_package_id uint
-	Package               *CounselingPackage
+	Package               *CounselingPackage `gorm:"foreignKey:Counseling_package_id;references:Id"`
 	Tax                   decimal.Decimal
 	Total                 decimal.Decimal
 	CreatedAt             time.Time

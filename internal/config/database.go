@@ -44,6 +44,7 @@ func migrations(db *gorm.DB) {
 	db.AutoMigrate(schema.Counseling_Schedule{})
 	db.AutoMigrate(schema.BankMethod{})
 	db.AutoMigrate(schema.WalletMethod{})
+	db.AutoMigrate(schema.Counseling_Schedule{})
 	db.AutoMigrate(schema.UserScheduleCounseling{})
 	db.AutoMigrate(schema.BookingCounseling{})
 }
