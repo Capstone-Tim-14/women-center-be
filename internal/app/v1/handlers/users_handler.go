@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"strconv"
 	"strings"
 	"woman-center-be/internal/app/v1/services"
 	conversion "woman-center-be/internal/web/conversion/resource/v1"
@@ -15,6 +16,7 @@ type UserHandler interface {
 	RegisterHandler(echo.Context) error
 	ProfileHandler(echo.Context) error
 	UpdateProfileHandler(echo.Context) error
+	AddCounselorFavorite(echo.Context) error
 }
 
 type UserHandlerImpl struct {
@@ -91,5 +93,30 @@ func (handler *UserHandlerImpl) UpdateProfileHandler(ctx echo.Context) error {
 	}
 
 	return responses.StatusCreated(ctx, "User profile updated", nil)
+
+}
+
+func (handler *UserHandlerImpl) AddCounselorFavorite(ctx echo.Context) error {
+
+	id := ctx.Param("id")
+	convertid, _ := strconv.Atoi(id)
+	var request requests.CounselorFavotireRequest
+	errBinding := ctx.Bind(&request)
+
+	if errBinding != nil {
+		return exceptions.StatusBadRequest(ctx, errBinding)
+	}
+
+	validation, err := handler.UserService.AddCounselorFavorite(ctx, convertid, request)
+
+	if validation != nil {
+		return exceptions.ValidationException(ctx, "Error validation", validation)
+	}
+
+	if err != nil {
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusCreated(ctx, "Success add user's counselor favorite", nil)
 
 }

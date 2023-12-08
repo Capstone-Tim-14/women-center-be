@@ -19,24 +19,23 @@ type UserService interface {
 	RegisterUser(ctx echo.Context, request requests.UserRequest) (*domain.Users, []exceptions.ValidationMessage, error)
 	GetUserProfile(ctx echo.Context) (*domain.Users, error)
 	UpdateUserProfile(ctx echo.Context, request requests.UpdateUserProfileRequest, picture *multipart.FileHeader) (*domain.Users, []exceptions.ValidationMessage, error)
+	AddCounselorFavorite(ctx echo.Context, id int, request requests.CounselorFavotireRequest) ([]exceptions.ValidationMessage, error)
 }
 
 type UserServiceImpl struct {
-	UserRepo  repositories.UserRepository
-	RoleRepo  repositories.RoleRepository
-	validator *validator.Validate
+	UserRepo              repositories.UserRepository
+	RoleRepo              repositories.RoleRepository
+	CounselorRepo         repositories.CounselorRepository
+	CounselorFavoriteRepo repositories.CounselorFavoriteRepository
+	Validator             *validator.Validate
 }
 
-func NewUserService(user repositories.UserRepository, role repositories.RoleRepository, validator *validator.Validate) UserService {
-	return &UserServiceImpl{
-		UserRepo:  user,
-		RoleRepo:  role,
-		validator: validator,
-	}
+func NewUserService(userServiceImpl UserServiceImpl) UserService {
+	return &userServiceImpl
 }
 
 func (service *UserServiceImpl) RegisterUser(ctx echo.Context, request requests.UserRequest) (*domain.Users, []exceptions.ValidationMessage, error) {
-	err := service.validator.Struct(request)
+	err := service.Validator.Struct(request)
 	if err != nil {
 		return nil, helpers.ValidationError(ctx, err), nil
 	}
@@ -87,7 +86,7 @@ func (service *UserServiceImpl) UpdateUserProfile(ctx echo.Context, request requ
 		request.Profile_picture = cloudURL
 	}
 
-	err := service.validator.Struct(request)
+	err := service.Validator.Struct(request)
 	if err != nil {
 		return nil, helpers.ValidationError(ctx, err), nil
 	}
@@ -107,4 +106,29 @@ func (service *UserServiceImpl) UpdateUserProfile(ctx echo.Context, request requ
 	}
 
 	return updatedUser, nil, nil
+}
+
+func (service *UserServiceImpl) AddCounselorFavorite(ctx echo.Context, id int, request requests.CounselorFavotireRequest) ([]exceptions.ValidationMessage, error) {
+
+	err := service.Validator.Struct(request)
+	if err != nil {
+		return helpers.ValidationError(ctx, err), nil
+	}
+
+	user, errUser := service.UserRepo.FindByID(id)
+	if errUser != nil {
+		return nil, errUser
+	}
+
+	counselor, errCounselor := service.CounselorRepo.FindByName(request.Name)
+	if errCounselor != nil {
+		return nil, errCounselor
+	}
+
+	errAddCounselor := service.CounselorFavoriteRepo.AddCounselorFavorite(*user, counselor)
+	if errAddCounselor != nil {
+		return nil, errAddCounselor
+	}
+
+	return nil, nil
 }

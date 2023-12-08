@@ -15,7 +15,15 @@ func HttpUserRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate)
 
 	RoleRepo := repositories.NewRoleRepository(db)
 	UserRepo := repositories.NewUserRepository(db)
-	UserService := services.NewUserService(UserRepo, RoleRepo, validate)
+	CounselorRepo := repositories.NewCounselorRepository(db)
+	CounselorFavoriteRepo := repositories.NewCounselorFavoriteRepository(db)
+	UserService := services.NewUserService(services.UserServiceImpl{
+		RoleRepo:              RoleRepo,
+		UserRepo:              UserRepo,
+		CounselorRepo:         CounselorRepo,
+		CounselorFavoriteRepo: CounselorFavoriteRepo,
+		Validator:             validate,
+	})
 	UserHandler := handlers.NewUserHandler(UserService)
 
 	user := group.Group("/users")
@@ -26,4 +34,5 @@ func HttpUserRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate)
 
 	userVerify.GET("/profile", UserHandler.ProfileHandler)
 	userVerify.PUT("/profile", UserHandler.UpdateProfileHandler)
+	userVerify.POST("/:id/add-counselor-favorite", UserHandler.AddCounselorFavorite)
 }
