@@ -22,7 +22,7 @@ func NewArticleFavoriteRepository(db *gorm.DB) ArticleFavoriteRepository {
 }
 
 func (repo *ArticleFavoriteRepositoryImpl) AddFavoriteArticle(user domain.Users, article *domain.Articles) error {
-	result := repo.Db.Model(&user).Association("Articles").Append(article)
+	result := repo.Db.Model(&user).Association("ArticleFavorites").Append(article)
 	if result != nil {
 		return result
 	}
@@ -31,7 +31,7 @@ func (repo *ArticleFavoriteRepositoryImpl) AddFavoriteArticle(user domain.Users,
 }
 
 func (repo *ArticleFavoriteRepositoryImpl) DeleteFavoriteArticle(user domain.Users, article *domain.Articles) error {
-	result := repo.Db.Model(&user).Association("Articles").Delete(article)
+	result := repo.Db.Model(&user).Association("ArticleFavorites").Delete(article)
 	if result != nil {
 		return result
 	}

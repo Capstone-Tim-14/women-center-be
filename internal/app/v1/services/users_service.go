@@ -21,6 +21,7 @@ type UserService interface {
 	UpdateUserProfile(ctx echo.Context, request requests.UpdateUserProfileRequest, picture *multipart.FileHeader) (*domain.Users, []exceptions.ValidationMessage, error)
 	AddFavoriteArticle(ctx echo.Context, slug string) error
 	DeleteFavoriteArticle(ctx echo.Context, slug string) error
+	AllFavoriteArticle(ctx echo.Context) (*domain.Users, error)
 }
 
 type UserServiceImpl struct {
@@ -149,4 +150,15 @@ func (service *UserServiceImpl) DeleteFavoriteArticle(ctx echo.Context, slug str
 	}
 
 	return nil
+}
+
+func (service *UserServiceImpl) AllFavoriteArticle(ctx echo.Context) (*domain.Users, error) {
+	getUserClaim := helpers.GetAuthClaims(ctx)
+
+	user, err := service.UserRepo.FindByID(int(getUserClaim.Id))
+	if err != nil {
+		return nil, fmt.Errorf("Failed to find user: %s", err.Error())
+	}
+
+	return user, nil
 }

@@ -17,6 +17,7 @@ type UserHandler interface {
 	UpdateProfileHandler(echo.Context) error
 	AddFavoriteArticleHandler(ctx echo.Context) error
 	DeleteFavoriteArticleHandler(ctx echo.Context) error
+	AllFavoriteArticleHandler(ctx echo.Context) error
 }
 
 type UserHandlerImpl struct {
@@ -116,4 +117,15 @@ func (h *UserHandlerImpl) DeleteFavoriteArticleHandler(ctx echo.Context) error {
 	}
 
 	return responses.StatusOK(ctx, "Success delete article favorite", nil)
+}
+
+func (h *UserHandlerImpl) AllFavoriteArticleHandler(ctx echo.Context) error {
+	user, err := h.UserService.AllFavoriteArticle(ctx)
+	if err != nil {
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	userFavoriteResponse := conversion.UserFavoriteArticleResponse(user)
+
+	return responses.StatusOK(ctx, "Success get all article favorite", userFavoriteResponse)
 }

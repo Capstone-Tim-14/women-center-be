@@ -76,7 +76,7 @@ func (repository *UserRepositoryImpl) FindyByEmail(email string) (*domain.Users,
 func (repository *UserRepositoryImpl) FindByID(id int) (*domain.Users, error) {
 	user := domain.Users{}
 
-	result := repository.db.Preload("Credential").Where("id = ?", id).First(&user)
+	result := repository.db.Preload("Credential").Preload("ArticleFavorites").Where("id = ?", id).First(&user)
 	if result.Error != nil {
 		return nil, result.Error
 	}

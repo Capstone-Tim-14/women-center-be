@@ -53,3 +53,39 @@ func UserDomainToUserOTPGenerate(code string, secret string) *resources.OtpResou
 		Secret: secret,
 	}
 }
+
+func UserFavoriteArticleResponse(user *domain.Users) resources.UserArticleFavorite {
+	ArticleFavorite := []resources.ArticleFavorite{}
+	for _, artikelFav := range user.ArticleFavorites {
+		var authorName string
+
+		if artikelFav.Admin != nil {
+			authorName = artikelFav.Admin.First_name + " " + artikelFav.Admin.Last_name
+		} else if artikelFav.Counselors != nil {
+			authorName = artikelFav.Counselors.First_name + " " + artikelFav.Counselors.Last_name
+		} else {
+			// Handle jika tidak ada Admin atau Counselors
+			authorName = "Unknown Author"
+		}
+
+		ArticleFavorite = append(ArticleFavorite, resources.ArticleFavorite{
+			Id:          artikelFav.Id,
+			Title:       artikelFav.Title,
+			PublishedAt: artikelFav.PublishedAt.String(),
+			Author_name: resources.Author_name{
+				Name: authorName,
+			},
+			Thumbnail: *artikelFav.Thumbnail,
+		})
+	}
+
+	userArticleFavorite := resources.UserArticleFavorite{}
+
+	userArticleFavorite.Id = user.Id
+	userArticleFavorite.First_name = user.First_name
+	userArticleFavorite.Last_name = user.Last_name
+	userArticleFavorite.Username = user.Credential.Username
+	userArticleFavorite.ArticleFavorite = ArticleFavorite
+
+	return userArticleFavorite
+}
