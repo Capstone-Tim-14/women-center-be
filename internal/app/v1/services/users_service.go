@@ -20,7 +20,7 @@ type UserService interface {
 	GetUserProfile(ctx echo.Context) (*domain.Users, error)
 	UpdateUserProfile(ctx echo.Context, request requests.UpdateUserProfileRequest, picture *multipart.FileHeader) (*domain.Users, []exceptions.ValidationMessage, error)
 	AddFavoriteArticle(ctx echo.Context, slug string) error
-	//DeleteFavoriteArticle(ctx echo.Context, id int, request requests.FavoriteArticleRequest) error
+	DeleteFavoriteArticle(ctx echo.Context, slug string) error
 }
 
 type UserServiceImpl struct {
@@ -122,6 +122,27 @@ func (service *UserServiceImpl) AddFavoriteArticle(ctx echo.Context, slug string
 		return fmt.Errorf("Failed to find article: %s", err.Error())
 	} else {
 		errAddFavorite := service.FavoriteArticle.AddFavoriteArticle(*user, slugArticle)
+		if errAddFavorite != nil {
+			return errAddFavorite
+		}
+	}
+
+	return nil
+}
+
+func (service *UserServiceImpl) DeleteFavoriteArticle(ctx echo.Context, slug string) error {
+	getUserClaim := helpers.GetAuthClaims(ctx)
+
+	user, err := service.UserRepo.FindByID(int(getUserClaim.Id))
+	if err != nil {
+		return fmt.Errorf("Failed to find user: %s", err.Error())
+	}
+
+	slugArticle, err := service.ArticleRepo.FindSlugForFavorite(slug)
+	if err != nil {
+		return fmt.Errorf("Failed to find article: %s", err.Error())
+	} else {
+		errAddFavorite := service.FavoriteArticle.DeleteFavoriteArticle(*user, slugArticle)
 		if errAddFavorite != nil {
 			return errAddFavorite
 		}

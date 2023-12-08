@@ -37,4 +37,5 @@ func HttpUserRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate)
 
 	verifyTokenFavorite := group.Group("/article", middlewares.VerifyTokenSignature("SECRET_KEY"))
 	verifyTokenFavorite.POST("/:slug/add-favorite", UserHandler.AddFavoriteArticleHandler)
+	verifyTokenFavorite.DELETE("/:slug/delete-favorite", UserHandler.DeleteFavoriteArticleHandler)
 }

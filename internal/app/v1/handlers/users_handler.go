@@ -16,6 +16,7 @@ type UserHandler interface {
 	ProfileHandler(echo.Context) error
 	UpdateProfileHandler(echo.Context) error
 	AddFavoriteArticleHandler(ctx echo.Context) error
+	DeleteFavoriteArticleHandler(ctx echo.Context) error
 }
 
 type UserHandlerImpl struct {
@@ -104,4 +105,15 @@ func (h *UserHandlerImpl) AddFavoriteArticleHandler(ctx echo.Context) error {
 	}
 
 	return responses.StatusCreated(ctx, "Success add article favorite", nil)
+}
+
+func (h *UserHandlerImpl) DeleteFavoriteArticleHandler(ctx echo.Context) error {
+	slugArticle := ctx.Param("slug")
+
+	err := h.UserService.DeleteFavoriteArticle(ctx, slugArticle)
+	if err != nil {
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Success delete article favorite", nil)
 }

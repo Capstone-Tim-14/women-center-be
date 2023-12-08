@@ -8,7 +8,7 @@ import (
 
 type ArticleFavoriteRepository interface {
 	AddFavoriteArticle(user domain.Users, article *domain.Articles) error
-	//DeleteFavoriteArticle(user domain.Users, article *domain.Articles) error
+	DeleteFavoriteArticle(user domain.Users, article *domain.Articles) error
 }
 
 type ArticleFavoriteRepositoryImpl struct {
