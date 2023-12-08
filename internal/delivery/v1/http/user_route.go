@@ -15,7 +15,15 @@ func HttpUserRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate)
 
 	RoleRepo := repositories.NewRoleRepository(db)
 	UserRepo := repositories.NewUserRepository(db)
-	UserService := services.NewUserService(UserRepo, RoleRepo, validate)
+	ArticleRepo := repositories.NewArticleRepository(db)
+	FavoriteRepo := repositories.NewArticleFavoriteRepository(db)
+	UserService := services.NewUserService(services.UserServiceImpl{
+		UserRepo:        UserRepo,
+		RoleRepo:        RoleRepo,
+		Validator:       validate,
+		ArticleRepo:     ArticleRepo,
+		FavoriteArticle: FavoriteRepo,
+	})
 	UserHandler := handlers.NewUserHandler(UserService)
 
 	user := group.Group("/users")
@@ -26,4 +34,7 @@ func HttpUserRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate)
 
 	userVerify.GET("/profile", UserHandler.ProfileHandler)
 	userVerify.PUT("/profile", UserHandler.UpdateProfileHandler)
+
+	verifyTokenFavorite := group.Group("/article", middlewares.VerifyTokenSignature("SECRET_KEY"))
+	verifyTokenFavorite.POST("/:slug/add-favorite", UserHandler.AddFavoriteArticleHandler)
 }

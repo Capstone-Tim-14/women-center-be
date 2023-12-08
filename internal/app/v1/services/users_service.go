@@ -19,24 +19,24 @@ type UserService interface {
 	RegisterUser(ctx echo.Context, request requests.UserRequest) (*domain.Users, []exceptions.ValidationMessage, error)
 	GetUserProfile(ctx echo.Context) (*domain.Users, error)
 	UpdateUserProfile(ctx echo.Context, request requests.UpdateUserProfileRequest, picture *multipart.FileHeader) (*domain.Users, []exceptions.ValidationMessage, error)
+	AddFavoriteArticle(ctx echo.Context, slug string) error
+	//DeleteFavoriteArticle(ctx echo.Context, id int, request requests.FavoriteArticleRequest) error
 }
 
 type UserServiceImpl struct {
-	UserRepo  repositories.UserRepository
-	RoleRepo  repositories.RoleRepository
-	validator *validator.Validate
+	UserRepo        repositories.UserRepository
+	RoleRepo        repositories.RoleRepository
+	Validator       *validator.Validate
+	ArticleRepo     repositories.ArticleRepository
+	FavoriteArticle repositories.ArticleFavoriteRepository
 }
 
-func NewUserService(user repositories.UserRepository, role repositories.RoleRepository, validator *validator.Validate) UserService {
-	return &UserServiceImpl{
-		UserRepo:  user,
-		RoleRepo:  role,
-		validator: validator,
-	}
+func NewUserService(userServiceImpl UserServiceImpl) UserService {
+	return &userServiceImpl
 }
 
 func (service *UserServiceImpl) RegisterUser(ctx echo.Context, request requests.UserRequest) (*domain.Users, []exceptions.ValidationMessage, error) {
-	err := service.validator.Struct(request)
+	err := service.Validator.Struct(request)
 	if err != nil {
 		return nil, helpers.ValidationError(ctx, err), nil
 	}
@@ -87,7 +87,7 @@ func (service *UserServiceImpl) UpdateUserProfile(ctx echo.Context, request requ
 		request.Profile_picture = cloudURL
 	}
 
-	err := service.validator.Struct(request)
+	err := service.Validator.Struct(request)
 	if err != nil {
 		return nil, helpers.ValidationError(ctx, err), nil
 	}
@@ -107,4 +107,25 @@ func (service *UserServiceImpl) UpdateUserProfile(ctx echo.Context, request requ
 	}
 
 	return updatedUser, nil, nil
+}
+
+func (service *UserServiceImpl) AddFavoriteArticle(ctx echo.Context, slug string) error {
+	getUserClaim := helpers.GetAuthClaims(ctx)
+
+	user, err := service.UserRepo.FindByID(int(getUserClaim.Id))
+	if err != nil {
+		return fmt.Errorf("Failed to find user: %s", err.Error())
+	}
+
+	slugArticle, err := service.ArticleRepo.FindSlugForFavorite(slug)
+	if err != nil {
+		return fmt.Errorf("Failed to find article: %s", err.Error())
+	} else {
+		errAddFavorite := service.FavoriteArticle.AddFavoriteArticle(*user, slugArticle)
+		if errAddFavorite != nil {
+			return errAddFavorite
+		}
+	}
+
+	return nil
 }
