@@ -25,7 +25,7 @@ type ArticleHandler interface {
 	FindAllArticleUser(ctx echo.Context) error
 	FindArticleBySlugForUser(ctx echo.Context) error
 	FindArticleBySlug(ctx echo.Context) error
-	FindAllArticleCounselor(ctx echo.Context) error
+	AllArticleCounselorHandler(ctx echo.Context) error
 }
 
 type ArticleHandlerImpl struct {
@@ -52,13 +52,13 @@ func (handler *ArticleHandlerImpl) FindArticleBySlugForUser(ctx echo.Context) er
 
 }
 
-func (handler *ArticleHandlerImpl) FindAllArticleCounselor(ctx echo.Context) error {
+func (handler *ArticleHandlerImpl) AllArticleCounselorHandler(ctx echo.Context) error {
 
 	response, err := handler.ArticleService.FindAllArticleCounselor(ctx)
 
 	if err != nil {
 
-		if strings.Contains(err.Error(), "Articles is empty") {
+		if strings.Contains(err.Error(), "Articles empty") {
 			return exceptions.StatusNotFound(ctx, err)
 		}
 
@@ -66,7 +66,6 @@ func (handler *ArticleHandlerImpl) FindAllArticleCounselor(ctx echo.Context) err
 	}
 
 	return responses.StatusOK(ctx, "Success Get Article Counselor", response)
-
 }
 
 func (handler *ArticleHandlerImpl) RemoveTagArticle(ctx echo.Context) error {
