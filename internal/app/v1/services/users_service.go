@@ -143,9 +143,9 @@ func (service *UserServiceImpl) DeleteFavoriteArticle(ctx echo.Context, slug str
 	if err != nil {
 		return fmt.Errorf("Failed to find article: %s", err.Error())
 	} else {
-		errAddFavorite := service.FavoriteArticle.DeleteFavoriteArticle(*user, slugArticle)
-		if errAddFavorite != nil {
-			return errAddFavorite
+		errFavorite := service.FavoriteArticle.DeleteFavoriteArticle(*user, slugArticle)
+		if errFavorite != nil {
+			return errFavorite
 		}
 	}
 
