@@ -14,11 +14,15 @@ import (
 func HttpBookingCounselingRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate) {
 
 	UserRepo := repositories.NewUserRepository(db)
+	RoleRepo := repositories.NewRoleRepository(db)
 	CounselorRepo := repositories.NewCounselorRepository(db)
 	UserSchedule := repositories.NewUserScheduleConselingRepository(db)
 	PackageRepo := repositories.NewCounselingPackageRepository(db)
 
+	UserService := services.NewUserService(UserRepo, RoleRepo, validate)
+
 	BookingCounselingService := services.NewBookingService(services.BookingServiceImpl{
+		UserService:       UserService,
 		UserRepo:          UserRepo,
 		ScheduleRepo:      UserSchedule,
 		CounselorRepo:     CounselorRepo,

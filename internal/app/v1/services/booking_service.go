@@ -21,6 +21,7 @@ type BookingService interface {
 }
 
 type BookingServiceImpl struct {
+	UserService       UserService
 	ScheduleRepo      repositories.UserScheduleCounselingRepository
 	UserRepo          repositories.UserRepository
 	CounselorRepo     repositories.CounselorRepository
@@ -73,8 +74,7 @@ func (service *BookingServiceImpl) GetUserLoginAndCounselorData(ctx echo.Context
 		return nil, nil, errGetData
 	}
 
-	ClaimsUser := helpers.GetAuthClaims(ctx)
-	GetUser, errGetUser := service.UserRepo.FindByID(int(ClaimsUser.Id))
+	GetUser, errGetUser := service.UserService.GetUserProfile(ctx)
 
 	if errGetUser != nil {
 		return nil, nil, fmt.Errorf("User profile not found")
