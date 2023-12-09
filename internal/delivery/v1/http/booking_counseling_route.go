@@ -18,16 +18,22 @@ func HttpBookingCounselingRoute(group *echo.Group, db *gorm.DB, validate *valida
 	CounselorRepo := repositories.NewCounselorRepository(db)
 	UserSchedule := repositories.NewUserScheduleConselingRepository(db)
 	PackageRepo := repositories.NewCounselingPackageRepository(db)
+	BookingRepo := repositories.NewBookingCounselingRepository(db)
 
 	UserService := services.NewUserService(UserRepo, RoleRepo, validate)
+	CounselingPackageService := services.NewCounselingPackageService(services.CounselingPackageServiceImpl{
+		CounselingPackageRepo: PackageRepo,
+	})
 
 	BookingCounselingService := services.NewBookingService(services.BookingServiceImpl{
-		UserService:       UserService,
-		UserRepo:          UserRepo,
-		ScheduleRepo:      UserSchedule,
-		CounselorRepo:     CounselorRepo,
-		CounselingPackage: PackageRepo,
-		Validate:          validate,
+		UserService:              UserService,
+		UserRepo:                 UserRepo,
+		ScheduleRepo:             UserSchedule,
+		CounselorRepo:            CounselorRepo,
+		BookingRepo:              BookingRepo,
+		CounselingPackage:        PackageRepo,
+		CounselingPackageService: CounselingPackageService,
+		Validate:                 validate,
 	})
 
 	BookingCounselingHandler := handlers.NewBookingCounselingHandler(handlers.BookingCounselingHandlerImpl{

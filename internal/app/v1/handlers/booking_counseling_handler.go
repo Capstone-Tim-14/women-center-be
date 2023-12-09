@@ -31,7 +31,7 @@ func (handler *BookingCounselingHandlerImpl) CreateBookingHandler(ctx echo.Conte
 		return exceptions.BadRequestException("Invalid format request", ctx)
 	}
 
-	validation, errBooking := handler.BookingService.CreateBookingCounseling(requests, ctx)
+	validation, errBooking, result := handler.BookingService.CreateBookingCounseling(requests, ctx)
 
 	if validation != nil {
 		return exceptions.ValidationException(ctx, "Error validation", validation)
@@ -41,6 +41,6 @@ func (handler *BookingCounselingHandlerImpl) CreateBookingHandler(ctx echo.Conte
 		return exceptions.StatusInternalServerError(ctx, errBooking)
 	}
 
-	return responses.StatusCreated(ctx, "Success created booking counseling", nil)
+	return responses.StatusCreated(ctx, "Success created booking counseling", result)
 
 }
