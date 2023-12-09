@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"woman-center-be/internal/app/v1/services"
@@ -17,6 +18,7 @@ type UserHandler interface {
 	ProfileHandler(echo.Context) error
 	UpdateProfileHandler(echo.Context) error
 	AddCounselorFavorite(echo.Context) error
+	RemoveCounselorFavorite(echo.Context) error
 }
 
 type UserHandlerImpl struct {
@@ -100,23 +102,40 @@ func (handler *UserHandlerImpl) AddCounselorFavorite(ctx echo.Context) error {
 
 	id := ctx.Param("id")
 	convertid, _ := strconv.Atoi(id)
-	var request requests.CounselorFavotireRequest
-	errBinding := ctx.Bind(&request)
 
-	if errBinding != nil {
-		return exceptions.StatusBadRequest(ctx, errBinding)
-	}
-
-	validation, err := handler.UserService.AddCounselorFavorite(ctx, convertid, request)
-
-	if validation != nil {
-		return exceptions.ValidationException(ctx, "Error validation", validation)
-	}
+	err := handler.UserService.AddCounselorFavorite(ctx, convertid)
 
 	if err != nil {
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
-	return responses.StatusCreated(ctx, "Success add user's counselor favorite", nil)
+	return responses.StatusCreated(ctx, "Success Add Counselor Favorite", nil)
 
+}
+
+func (handler *UserHandlerImpl) RemoveCounselorFavorite(ctx echo.Context) error {
+	GetId := ctx.Param("id")
+
+	ConvertId, errConvertId := strconv.Atoi(GetId)
+
+	if errConvertId != nil {
+		fmt.Errorf(errConvertId.Error())
+		return exceptions.StatusBadRequest(ctx, fmt.Errorf("Invalid Format id"))
+	}
+
+	Validation, errGetUser := handler.UserService.RemoveCounselorFavorite(ctx, ConvertId)
+
+	if Validation != nil {
+		return exceptions.ValidationException(ctx, "Validation Error", Validation)
+	}
+
+	if errGetUser != nil {
+		if strings.Contains(errGetUser.Error(), "User not found") {
+			return exceptions.StatusNotFound(ctx, errGetUser)
+		}
+
+		return exceptions.StatusInternalServerError(ctx, errGetUser)
+	}
+
+	return responses.StatusOK(ctx, "Success Remove Counselor Favorite", nil)
 }

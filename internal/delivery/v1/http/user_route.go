@@ -34,5 +34,8 @@ func HttpUserRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate)
 
 	userVerify.GET("/profile", UserHandler.ProfileHandler)
 	userVerify.PUT("/profile", UserHandler.UpdateProfileHandler)
-	userVerify.POST("/:id/add-counselor-favorite", UserHandler.AddCounselorFavorite)
+
+	verifyCounselorFavorite := group.Group("/counselor", middlewares.VerifyTokenSignature("SECRET_KEY"))
+	verifyCounselorFavorite.POST("/:id/add-counselor-favorite", UserHandler.AddCounselorFavorite)
+	verifyCounselorFavorite.DELETE("/:id/remove-counselor-favorite", UserHandler.RemoveCounselorFavorite)
 }

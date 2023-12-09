@@ -8,7 +8,7 @@ import (
 
 type CounselorFavoriteRepository interface {
 	AddCounselorFavorite(user domain.Users, counselor *domain.Counselors) error
-	RemoveCounselorFavorite(user domain.Users, counselor []domain.Counselors) error
+	RemoveCounselorFavorite(user domain.Users, counselor *domain.Counselors) error
 }
 
 type CounselorFavoriteRepositoryImpl struct {
@@ -22,7 +22,7 @@ func NewCounselorFavoriteRepository(db *gorm.DB) CounselorFavoriteRepository {
 }
 
 func (repository *CounselorFavoriteRepositoryImpl) AddCounselorFavorite(user domain.Users, counselor *domain.Counselors) error {
-	result := repository.Db.Model(&user).Association("Counselors").Append(counselor)
+	result := repository.Db.Model(&user).Association("Counselor_Favorite").Append(counselor)
 	if result != nil {
 		return result
 	}
@@ -31,17 +31,16 @@ func (repository *CounselorFavoriteRepositoryImpl) AddCounselorFavorite(user dom
 
 }
 
-func (repository *CounselorFavoriteRepositoryImpl) RemoveCounselorFavorite(user domain.Users, counselor []domain.Counselors) error {
+func (repository *CounselorFavoriteRepositoryImpl) RemoveCounselorFavorite(user domain.Users, counselor *domain.Counselors) error {
+	transaction := repository.Db.Begin()
 
-	Transaction := repository.Db.Begin()
-
-	result := Transaction.Model(&user).Association("Counselors").Delete(counselor)
+	result := transaction.Model(&user).Association("Counselor_Favorite").Delete(counselor)
 	if result != nil {
-		Transaction.Rollback()
+		transaction.Rollback()
 		return result
 	}
 
-	Transaction.Commit()
+	transaction.Commit()
 
 	return nil
 }

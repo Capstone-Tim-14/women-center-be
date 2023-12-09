@@ -19,7 +19,8 @@ type UserService interface {
 	RegisterUser(ctx echo.Context, request requests.UserRequest) (*domain.Users, []exceptions.ValidationMessage, error)
 	GetUserProfile(ctx echo.Context) (*domain.Users, error)
 	UpdateUserProfile(ctx echo.Context, request requests.UpdateUserProfileRequest, picture *multipart.FileHeader) (*domain.Users, []exceptions.ValidationMessage, error)
-	AddCounselorFavorite(ctx echo.Context, id int, request requests.CounselorFavotireRequest) ([]exceptions.ValidationMessage, error)
+	AddCounselorFavorite(ctx echo.Context, id int) error
+	RemoveCounselorFavorite(ctx echo.Context, id int) ([]exceptions.ValidationMessage, error)
 }
 
 type UserServiceImpl struct {
@@ -108,26 +109,45 @@ func (service *UserServiceImpl) UpdateUserProfile(ctx echo.Context, request requ
 	return updatedUser, nil, nil
 }
 
-func (service *UserServiceImpl) AddCounselorFavorite(ctx echo.Context, id int, request requests.CounselorFavotireRequest) ([]exceptions.ValidationMessage, error) {
+func (service *UserServiceImpl) AddCounselorFavorite(ctx echo.Context, id int) error {
+	getUserClaim := helpers.GetAuthClaims(ctx)
 
-	err := service.Validator.Struct(request)
-	if err != nil {
-		return helpers.ValidationError(ctx, err), nil
-	}
-
-	user, errUser := service.UserRepo.FindByID(id)
+	user, errUser := service.UserRepo.FindByID(int(getUserClaim.Id))
 	if errUser != nil {
-		return nil, errUser
+		return fmt.Errorf("Failed to find user: %s", errUser.Error())
 	}
 
-	counselor, errCounselor := service.CounselorRepo.FindByName(request.Name)
-	if errCounselor != nil {
-		return nil, errCounselor
+	counselorfav, errCounselorFav := service.CounselorRepo.FindById(id)
+	if errCounselorFav != nil {
+		return fmt.Errorf("Failed to find counselor: %s", errCounselorFav.Error())
 	}
 
-	errAddCounselor := service.CounselorFavoriteRepo.AddCounselorFavorite(*user, counselor)
+	errAddCounselor := service.CounselorFavoriteRepo.AddCounselorFavorite(*user, counselorfav)
 	if errAddCounselor != nil {
-		return nil, errAddCounselor
+		return errAddCounselor
+	}
+
+	return nil
+}
+
+func (service *UserServiceImpl) RemoveCounselorFavorite(ctx echo.Context, id int) ([]exceptions.ValidationMessage, error) {
+	getUserClaim := helpers.GetAuthClaims(ctx)
+
+	user, errUser := service.UserRepo.FindByID(int(getUserClaim.Id))
+	if errUser != nil {
+		return nil, fmt.Errorf("Failed to find user: %s", errUser.Error())
+	}
+
+	CounselorFav, errCounselorFav := service.CounselorRepo.FindById(id)
+	if errCounselorFav != nil {
+		fmt.Errorf(errCounselorFav.Error())
+		return nil, fmt.Errorf("Failed to find counselor")
+	}
+
+	errRemoveCounselorFav := service.CounselorFavoriteRepo.RemoveCounselorFavorite(*user, CounselorFav)
+	if errRemoveCounselorFav != nil {
+		fmt.Errorf(errRemoveCounselorFav.Error())
+		return nil, fmt.Errorf("Error when remove counselor favorite")
 	}
 
 	return nil, nil

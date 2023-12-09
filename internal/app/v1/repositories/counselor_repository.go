@@ -11,7 +11,6 @@ type CounselorRepository interface {
 	CreateCounselor(counselor *domain.Counselors) (*domain.Counselors, error)
 	FindById(id int) (*domain.Counselors, error)
 	FindyByEmail(email string) (*domain.Counselors, error)
-	FindByName(name string) (*domain.Counselors, error)
 	FindAllCounselors(search string, filter []string) ([]domain.Counselors, error)
 	UpdateCounselor(counselor *domain.Counselors) error
 }
@@ -53,17 +52,6 @@ func (repository *CounselorRepositoryImpl) FindyByEmail(email string) (*domain.C
 	counselor := domain.Counselors{}
 
 	result := repository.db.InnerJoins("Credential").InnerJoins("Credential.Role").Where("email = ?", email).First(&counselor)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-
-	return &counselor, nil
-}
-
-func (repository *CounselorRepositoryImpl) FindByName(name string) (*domain.Counselors, error) {
-	counselor := domain.Counselors{}
-
-	result := repository.db.Where("name = ?", name).First(&counselor)
 	if result.Error != nil {
 		return nil, result.Error
 	}
