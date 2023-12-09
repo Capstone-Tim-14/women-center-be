@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"strconv"
+	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/app/v1/repositories"
 	conversion "woman-center-be/internal/web/conversion/request/v1"
 	"woman-center-be/internal/web/requests/v1"
@@ -15,6 +16,8 @@ import (
 
 type BookingService interface {
 	CreateBookingCounseling(requests []requests.BookingCounselingRequest, ctx echo.Context) ([]exceptions.ValidationMessage, error)
+	GetUserLoginAndCounselorData(ctx echo.Context, counselor_id int) (*domain.Counselors, *domain.Users, error)
+	CreateUserScheduleBooking(request requests.BookingCounselingRequest, counselor *domain.Counselors, userAuth *domain.Users) (*domain.UserScheduleCounseling, error)
 }
 
 type BookingServiceImpl struct {
@@ -27,6 +30,57 @@ type BookingServiceImpl struct {
 
 func NewBookingService(bookingService BookingServiceImpl) BookingService {
 	return &bookingService
+}
+
+func (service *BookingServiceImpl) CreateUserScheduleBooking(request requests.BookingCounselingRequest, counselor *domain.Counselors, userAuth *domain.Users) (*domain.UserScheduleCounseling, error) {
+	GetDayRequestBooking := helpers.GetDayToTime(*helpers.ParseStringToTime(request.Booking_date))
+
+	GetDayCounselorSchedule, errGetSchedule := service.CounselorRepo.FindCounselorAndGetOneOfSchedule(int(counselor.Id), GetDayRequestBooking)
+
+	if errGetSchedule != nil {
+		return nil, fmt.Errorf("One of schedule is not found")
+	}
+
+	CounselorRequestQuery := requests.UserScheduleCounselingQueryRequest{
+		Counselor_schedule_id: GetDayCounselorSchedule.SingleSchedule.Id,
+		Day:                   *helpers.ParseStringToTime(request.Booking_date),
+		Time_start:            request.Booking_time,
+	}
+
+	fmt.Println(CounselorRequestQuery)
+
+	IsExists, _ := service.ScheduleRepo.FindScheduleByDateAndTimeExist(CounselorRequestQuery)
+
+	if IsExists {
+		return nil, fmt.Errorf("One of schedule counselor is already booked to another user")
+	}
+
+	ConvertUserSchedule := conversion.UserScheduleCounselingToDomainSchedule(request, userAuth.Id, GetDayCounselorSchedule.SingleSchedule.Id)
+
+	ResultUserSchedule, errCreateSchedule := service.ScheduleRepo.CreateUserScheduling(*userAuth, *ConvertUserSchedule)
+
+	if errCreateSchedule != nil {
+		return nil, errCreateSchedule
+	}
+
+	return ResultUserSchedule, nil
+}
+
+func (service *BookingServiceImpl) GetUserLoginAndCounselorData(ctx echo.Context, counselor_id int) (*domain.Counselors, *domain.Users, error) {
+	GetCounselor, errGetData := service.CounselorRepo.FindById(counselor_id)
+
+	if errGetData != nil {
+		return nil, nil, errGetData
+	}
+
+	ClaimsUser := helpers.GetAuthClaims(ctx)
+	GetUser, errGetUser := service.UserRepo.FindByID(int(ClaimsUser.Id))
+
+	if errGetUser != nil {
+		return nil, nil, fmt.Errorf("User profile not found")
+	}
+
+	return GetCounselor, GetUser, nil
 }
 
 func (service *BookingServiceImpl) CreateBookingCounseling(scheduleReq []requests.BookingCounselingRequest, ctx echo.Context) ([]exceptions.ValidationMessage, error) {
@@ -45,54 +99,29 @@ func (service *BookingServiceImpl) CreateBookingCounseling(scheduleReq []request
 	ConvertCounselorId, _ := strconv.Atoi(ParamCounselorId)
 	ConvertCounselingId, _ := strconv.Atoi(ParamCounselingPackageId)
 
-	GetCounselor, errGetData := service.CounselorRepo.FindById(ConvertCounselorId)
-
-	if errGetData != nil {
-		return nil, errGetData
-	}
-
-	ClaimsUser := helpers.GetAuthClaims(ctx)
-	GetUser, errGetUser := service.UserRepo.FindByID(int(ClaimsUser.Id))
+	GetCounselor, GetUserAuth, errGetUser := service.GetUserLoginAndCounselorData(ctx, ConvertCounselorId)
 
 	if errGetUser != nil {
-		return nil, fmt.Errorf("User profile not found")
+		return nil, errGetUser
 	}
 
 	_, errGetPackage := service.CounselingPackage.FindById(ConvertCounselingId)
 
 	if errGetPackage != nil {
-		return nil, errGetData
+		return nil, errGetPackage
 	}
+
+	var AllUserScheduleCounseling []domain.UserScheduleCounseling
 
 	for _, val := range scheduleReq {
 
-		GetDayRequestBooking := helpers.GetDayToTime(*helpers.ParseStringToTime(val.Booking_date))
+		DataUserSchedule, errCreateUserScheduleCounselingBook := service.CreateUserScheduleBooking(val, GetCounselor, GetUserAuth)
 
-		GetDayCounselorSchedule, errGetSchedule := service.CounselorRepo.FindCounselorAndGetOneOfSchedule(int(GetCounselor.Id), GetDayRequestBooking)
-
-		if errGetSchedule != nil {
-			return nil, fmt.Errorf("One of schedule is not found")
+		if errCreateUserScheduleCounselingBook != nil {
+			return nil, errCreateUserScheduleCounselingBook
 		}
 
-		CounselorRequestQuery := requests.UserScheduleCounselingQueryRequest{
-			Counselor_schedule_id: GetDayCounselorSchedule.SingleSchedule.Id,
-			Day:                   *helpers.ParseStringToTime(val.Booking_date),
-			Time_start:            val.Booking_time,
-		}
-
-		IsExists, _ := service.ScheduleRepo.FindScheduleByDateAndTimeExist(CounselorRequestQuery)
-
-		if IsExists {
-			return nil, fmt.Errorf("One of schedule counselor is already booked to another user")
-		}
-
-		ConvertUserSchedule := conversion.UserScheduleCounselingToDomainSchedule(val, GetUser.Id, GetDayCounselorSchedule.SingleSchedule.Id)
-
-		_, errCreateSchedule := service.ScheduleRepo.CreateUserScheduling(*GetUser, *ConvertUserSchedule)
-
-		if errCreateSchedule != nil {
-			return nil, errCreateSchedule
-		}
+		AllUserScheduleCounseling = append(AllUserScheduleCounseling, *DataUserSchedule)
 
 	}
 
