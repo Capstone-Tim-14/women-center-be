@@ -116,7 +116,7 @@ func (h *UserHandlerImpl) DeleteFavoriteArticleHandler(ctx echo.Context) error {
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
-	return responses.StatusOK(ctx, "Success delete article favorite", nil)
+	return responses.StatusOK(ctx, "Success remove article favorite", nil)
 }
 
 func (h *UserHandlerImpl) AllFavoriteArticleHandler(ctx echo.Context) error {
