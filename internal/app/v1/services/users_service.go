@@ -21,6 +21,7 @@ type UserService interface {
 	UpdateUserProfile(ctx echo.Context, request requests.UpdateUserProfileRequest, picture *multipart.FileHeader) (*domain.Users, []exceptions.ValidationMessage, error)
 	AddCounselorFavorite(ctx echo.Context, id int) error
 	RemoveCounselorFavorite(ctx echo.Context, id int) ([]exceptions.ValidationMessage, error)
+	GetCounselorFavorite(ctx echo.Context) (*domain.Users, error)
 }
 
 type UserServiceImpl struct {
@@ -151,4 +152,15 @@ func (service *UserServiceImpl) RemoveCounselorFavorite(ctx echo.Context, id int
 	}
 
 	return nil, nil
+}
+
+func (service *UserServiceImpl) GetCounselorFavorite(ctx echo.Context) (*domain.Users, error) {
+	getUserClaim := helpers.GetAuthClaims(ctx)
+
+	user, err := service.UserRepo.FindByID(int(getUserClaim.Id))
+	if err != nil {
+		return nil, fmt.Errorf("Failed to find user: %s", err.Error())
+	}
+
+	return user, nil
 }

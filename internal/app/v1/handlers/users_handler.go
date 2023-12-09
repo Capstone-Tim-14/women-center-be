@@ -19,6 +19,7 @@ type UserHandler interface {
 	UpdateProfileHandler(echo.Context) error
 	AddCounselorFavorite(echo.Context) error
 	RemoveCounselorFavorite(echo.Context) error
+	GetCounselorFavorite(echo.Context) error
 }
 
 type UserHandlerImpl struct {
@@ -138,4 +139,15 @@ func (handler *UserHandlerImpl) RemoveCounselorFavorite(ctx echo.Context) error 
 	}
 
 	return responses.StatusOK(ctx, "Success Remove Counselor Favorite", nil)
+}
+
+func (handler *UserHandlerImpl) GetCounselorFavorite(ctx echo.Context) error {
+	user, err := handler.UserService.GetCounselorFavorite(ctx)
+	if err != nil {
+		return exceptions.StatusNotFound(ctx, err)
+	}
+
+	userFavoriteResponse := conversion.UserCounselorFavoriteResponse(user)
+
+	return responses.StatusOK(ctx, "Success Get All Counselor Favorite", userFavoriteResponse)
 }
