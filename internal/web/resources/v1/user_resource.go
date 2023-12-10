@@ -42,7 +42,7 @@ type ArticleFavorite struct {
 	Title       string      `json:"title,omitempty"`
 	PublishedAt string      `json:"published_at,omitempty"`
 	Thumbnail   string      `json:"thumbnail,omitempty"`
-	Author_name Author_name `json:"author_name,omitempty"`
+	Author_name Author_name `json:"author,omitempty"`
 }
 
 type Author_name struct {

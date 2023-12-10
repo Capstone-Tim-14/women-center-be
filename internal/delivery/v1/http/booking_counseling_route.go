@@ -20,7 +20,11 @@ func HttpBookingCounselingRoute(group *echo.Group, db *gorm.DB, validate *valida
 	PackageRepo := repositories.NewCounselingPackageRepository(db)
 	BookingRepo := repositories.NewBookingCounselingRepository(db)
 
-	UserService := services.NewUserService(UserRepo, RoleRepo, validate)
+	UserService := services.NewUserService(services.UserServiceImpl{
+		UserRepo:  UserRepo,
+		RoleRepo:  RoleRepo,
+		Validator: validate,
+	})
 	CounselingPackageService := services.NewCounselingPackageService(services.CounselingPackageServiceImpl{
 		CounselingPackageRepo: PackageRepo,
 	})
