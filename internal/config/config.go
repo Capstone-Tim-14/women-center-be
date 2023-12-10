@@ -1,6 +1,8 @@
 package config
 
 import (
+	"woman-center-be/utils/helpers"
+
 	"github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
@@ -23,6 +25,7 @@ func LoadViper() {
 func LoadValidator() *validator.Validate {
 	validate := validator.New()
 
+	validate.RegisterValidation("unique_date_booking", helpers.UniqueDateBooking)
 	return validate
 }
 

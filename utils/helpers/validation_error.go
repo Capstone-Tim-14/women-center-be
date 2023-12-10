@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"reflect"
 	"strings"
 	"woman-center-be/utils/exceptions"
 
@@ -31,4 +32,27 @@ func ValidationError(ctx echo.Context, err error) []exceptions.ValidationMessage
 	}
 
 	return nil
+}
+
+func UniqueDateBooking(fl validator.FieldLevel) bool {
+
+	field := fl.Field()
+
+	if field.Kind() != reflect.Slice {
+		return false
+	}
+
+	uniqueBookingDate := make(map[string]bool)
+
+	for i := 0; i < field.Len(); i++ {
+		val := field.Index(i).Interface().(string)
+
+		if uniqueBookingDate[val] {
+			return false
+		}
+		uniqueBookingDate[val] = true
+	}
+
+	return true
+
 }
