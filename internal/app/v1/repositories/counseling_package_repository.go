@@ -10,6 +10,7 @@ import (
 type CounselingPackageRepository interface {
 	CreatePackage(pack *domain.CounselingPackage) (*domain.CounselingPackage, error)
 	FindByTitle(title string) ([]domain.CounselingPackage, error)
+	FindById(id int) (*domain.CounselingPackage, error)
 	GetAllPackage() ([]domain.CounselingPackage, error)
 }
 
@@ -17,10 +18,21 @@ type CounselingPackageRepositoryImpl struct {
 	db *gorm.DB
 }
 
-func NewCounselingRepository(db *gorm.DB) CounselingPackageRepository {
+func NewCounselingPackageRepository(db *gorm.DB) CounselingPackageRepository {
 	return &CounselingPackageRepositoryImpl{
 		db: db,
 	}
+}
+
+func (repository *CounselingPackageRepositoryImpl) FindById(id int) (*domain.CounselingPackage, error) {
+
+	var Package *domain.CounselingPackage
+
+	if errCreatePackage := repository.db.First(&Package, "id = ?", id); errCreatePackage.Error != nil {
+		return nil, fmt.Errorf("Package not found")
+	}
+
+	return Package, nil
 }
 
 func (repository *CounselingPackageRepositoryImpl) CreatePackage(pack *domain.CounselingPackage) (*domain.CounselingPackage, error) {
