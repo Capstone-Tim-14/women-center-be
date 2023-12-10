@@ -29,3 +29,19 @@ type UpdateUserProfile struct {
 	Birthday        string `json:"birthday,omitempty"`
 	Profile_picture string `json:"profile_picture,omitempty"`
 }
+
+type UserCounselorFavorite struct {
+	Id                uint                `json:"id,omitempty"`
+	First_name        string              `json:"first_name,omitempty"`
+	Last_name         string              `json:"last_name,omitempty"`
+	Username          string              `json:"username,omitempty"`
+	CounselorFavorite []CounselorFavorite `json:"counselor_favorite,omitempty"`
+}
+
+type CounselorFavorite struct {
+	Id              uint   `json:"id,omitempty"`
+	First_name      string `json:"first_name,omitempty"`
+	Last_name       string `json:"last_name,omitempty"`
+	Username        string `json:"username,omitempty"`
+	Profile_picture string `json:"profile_picture,omitempty"`
+}

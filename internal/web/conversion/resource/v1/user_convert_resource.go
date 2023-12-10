@@ -53,3 +53,24 @@ func UserDomainToUserOTPGenerate(code string, secret string) *resources.OtpResou
 		Secret: secret,
 	}
 }
+
+func UserCounselorFavoriteResponse(user *domain.Users) resources.UserCounselorFavorite {
+	var Counselor []resources.CounselorFavorite
+	CounselorFavoriteResource := resources.UserCounselorFavorite{}
+	CounselorFavoriteResource.Id = user.Id
+	CounselorFavoriteResource.First_name = user.First_name
+	CounselorFavoriteResource.Last_name = user.Last_name
+	CounselorFavoriteResource.Username = user.Credential.Username
+	for _, counselorFav := range user.Counselor_Favorite {
+		Counselor = append(Counselor, resources.CounselorFavorite{
+			Id:              counselorFav.Id,
+			First_name:      counselorFav.First_name,
+			Last_name:       counselorFav.Last_name,
+			Username:        counselorFav.Credential.Username,
+			Profile_picture: counselorFav.Profile_picture,
+		})
+	}
+	CounselorFavoriteResource.CounselorFavorite = Counselor
+
+	return CounselorFavoriteResource
+}

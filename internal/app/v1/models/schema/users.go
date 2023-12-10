@@ -20,6 +20,7 @@ type Users struct {
 	Status                 string         `gorm:"type:varchar(10);default:INACTIVE"`
 	Secret_Otp             *string        `gorm:"type:varchar(100)"`
 	Otp_enable             bool           `gorm:"default:false"`
+	Counselor_Favorite     []Counselors   `gorm:"many2many:counselor_favorite;foreignKey:Id;references:Id;"`
 	CreatedAt              time.Time      `gorm:"autoCreateTime"`
 	UpdatedAt              time.Time      `gorm:"autoUpdateTime:mili"`
 	DeletedAt              gorm.DeletedAt `gorm:"index"`
