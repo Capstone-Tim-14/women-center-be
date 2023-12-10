@@ -11,6 +11,7 @@ type CounselingPackageRepository interface {
 	CreatePackage(pack *domain.CounselingPackage) (*domain.CounselingPackage, error)
 	FindByTitle(title string) ([]domain.CounselingPackage, error)
 	GetAllPackage() ([]domain.CounselingPackage, error)
+	DeletePackage(id int) error
 }
 
 type CounselingPackageRepositoryImpl struct {
@@ -55,4 +56,13 @@ func (repository *CounselingPackageRepositoryImpl) GetAllPackage() ([]domain.Cou
 	}
 
 	return lists, nil
+}
+
+func (repository *CounselingPackageRepositoryImpl) DeletePackage(id int) error {
+	result := repository.db.Delete(domain.CounselingPackage{}, id)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
 }
