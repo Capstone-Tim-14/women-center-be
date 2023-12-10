@@ -116,6 +116,9 @@ func (h *UserHandlerImpl) DeleteFavoriteArticleHandler(ctx echo.Context) error {
 
 	err := h.UserService.DeleteFavoriteArticle(ctx, slugArticle)
 	if err != nil {
+		if strings.Contains(err.Error(), "Failed to find article") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
