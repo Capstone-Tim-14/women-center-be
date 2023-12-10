@@ -11,6 +11,7 @@ import (
 func main() {
 	config.LoadViper()
 	validator := config.LoadValidator()
+
 	db := config.InitDatabase()
 
 	e := echo.New()

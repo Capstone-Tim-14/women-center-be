@@ -15,7 +15,33 @@ type CounselorResource struct {
 	Specialist        []SpecialistCounselor `json:"specialist,omitempty"`
 }
 
+type ProfileCounselor struct {
+	Id              uint   `json:"id,omitempty"`
+	Profile_picture string `json:"profile_picture,omitempty"`
+	Username        string `json:"username,omitempty"`
+	Full_name       string `json:"full_name,omitempty"`
+	Email           string `json:"email,omitempty"`
+}
+
 type SpecialistCounselor struct {
 	Id   uint   `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
+}
+
+type CounselingSchedule struct {
+	Day_schedule string `json:"day_schedule,omitempty"`
+	Time_start   string `json:"time_start,omitempty"`
+	Time_finish  string `json:"time_finish,omitempty"`
+}
+
+type DetailCounselor struct {
+	Full_name       string                `json:"full_name,omitempty"`
+	Email           string                `json:"email,omitempty"`
+	Usernam         string                `json:"username,omitempty"`
+	Profile_picture string                `json:"profile_picture,omitempty"`
+	Phone_number    string                `json:"phone_number,omitempty"`
+	Description     string                `json:"description,omitempty"`
+	Address         string                `json:"address,omitempty"`
+	Spesialist      []SpecialistCounselor `json:"specialist,omitempty"`
+	Schedule        []CounselingSchedule  `json:"schedule,omitempty"`
 }

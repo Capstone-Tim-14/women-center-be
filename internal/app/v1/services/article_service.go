@@ -69,7 +69,7 @@ func (service *ArticleServiceImpl) FindAllArticleCounselor(ctx echo.Context) (*r
 	getArticlesList, getArticleCount, errListArticle := service.ArticleRepo.FindArticleCounselor(int(getCounselorRepo.Id))
 
 	if errListArticle != nil {
-		return nil, errCounselor
+		return nil, errListArticle
 	}
 
 	getResources := conResources.ConvertArticleCounselorResource(getArticlesList, *getArticleCount)

@@ -24,6 +24,8 @@ type CounselorService interface {
 	GetAllCounselors(ctx echo.Context) ([]domain.Counselors, error)
 	GetCounselorsForMobile(ctx echo.Context) ([]domain.Counselors, error)
 	GetCounselorProfile(ctx echo.Context) (*domain.Counselors, error)
+	GetDetailCounselor(ctx echo.Context) (*domain.Counselors, error)
+	GetDetailCounselorWeb(ctx echo.Context) (*domain.Counselors, error)
 	UpdateCounselor(ctx echo.Context, request requests.CounselorRequest, picture *multipart.FileHeader) (*domain.Counselors, []exceptions.ValidationMessage, error)
 	UpdateCounselorForMobile(ctx echo.Context, request requests.CounselorRequest, picture *multipart.FileHeader) (*domain.Counselors, []exceptions.ValidationMessage, error)
 }
@@ -257,4 +259,28 @@ func (service *CounselorServiceImpl) GetCounselorsForMobile(ctx echo.Context) ([
 	}
 
 	return counselors, nil
+}
+
+func (service *CounselorServiceImpl) GetDetailCounselor(ctx echo.Context) (*domain.Counselors, error) {
+	getId := ctx.Param("id")
+	getcounselorId, _ := strconv.Atoi(getId)
+
+	getUser, _ := service.CounselorRepo.FindById(getcounselorId)
+	if getUser == nil {
+		return nil, fmt.Errorf("Counselor not found")
+	}
+
+	return getUser, nil
+}
+
+func (service *CounselorServiceImpl) GetDetailCounselorWeb(ctx echo.Context) (*domain.Counselors, error) {
+	getId := ctx.Param("id")
+	getcounselorId, _ := strconv.Atoi(getId)
+
+	getUser, _ := service.CounselorRepo.FindById(getcounselorId)
+	if getUser == nil {
+		return nil, fmt.Errorf("Counselor not found")
+	}
+
+	return getUser, nil
 }
