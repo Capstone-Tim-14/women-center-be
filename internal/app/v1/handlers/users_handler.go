@@ -17,6 +17,9 @@ type UserHandler interface {
 	RegisterHandler(echo.Context) error
 	ProfileHandler(echo.Context) error
 	UpdateProfileHandler(echo.Context) error
+	AddFavoriteArticleHandler(ctx echo.Context) error
+	DeleteFavoriteArticleHandler(ctx echo.Context) error
+	AllFavoriteArticleHandler(ctx echo.Context) error
 	AddCounselorFavorite(echo.Context) error
 	RemoveCounselorFavorite(echo.Context) error
 	GetCounselorFavorite(echo.Context) error
@@ -97,6 +100,45 @@ func (handler *UserHandlerImpl) UpdateProfileHandler(ctx echo.Context) error {
 
 	return responses.StatusCreated(ctx, "User profile updated", nil)
 
+}
+
+func (h *UserHandlerImpl) AddFavoriteArticleHandler(ctx echo.Context) error {
+	slug := ctx.Param("slug")
+
+	err := h.UserService.AddFavoriteArticle(ctx, slug)
+	if err != nil {
+		if strings.Contains(err.Error(), "Failed to find article") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusCreated(ctx, "Success add article favorite", nil)
+}
+
+func (h *UserHandlerImpl) DeleteFavoriteArticleHandler(ctx echo.Context) error {
+	slugArticle := ctx.Param("slug")
+
+	err := h.UserService.DeleteFavoriteArticle(ctx, slugArticle)
+	if err != nil {
+		if strings.Contains(err.Error(), "Failed to find article") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Success remove article favorite", nil)
+}
+
+func (h *UserHandlerImpl) AllFavoriteArticleHandler(ctx echo.Context) error {
+	user, err := h.UserService.AllFavoriteArticle(ctx)
+	if err != nil {
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	userFavoriteResponse := conversion.UserFavoriteArticleResponse(user)
+
+	return responses.StatusOK(ctx, "Success get all article favorite", userFavoriteResponse)
 }
 
 func (handler *UserHandlerImpl) AddCounselorFavorite(ctx echo.Context) error {

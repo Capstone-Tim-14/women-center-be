@@ -2,6 +2,8 @@ package domain
 
 import (
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Users struct {
@@ -19,5 +21,8 @@ type Users struct {
 	Secret_Otp             *string
 	Otp_enable             bool
 	Counselor_Favorite     []Counselors `gorm:"many2many:counselor_favorite;foreignKey:Id;references:Id;"`
+	ArticleFavorites       []Articles   `gorm:"many2many:user_favorite_articles;foreignKey:Id;references:Id;"`
 	CreatedAt              time.Time
+	UpdatedAt              time.Time
+	DeletedAt              gorm.DeletedAt
 }
