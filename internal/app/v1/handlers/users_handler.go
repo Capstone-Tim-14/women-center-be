@@ -134,6 +134,9 @@ func (handler *UserHandlerImpl) RemoveCounselorFavorite(ctx echo.Context) error 
 		if strings.Contains(errGetUser.Error(), "User not found") {
 			return exceptions.StatusNotFound(ctx, errGetUser)
 		}
+		if strings.Contains(errGetUser.Error(), "Counselor not found") {
+			return exceptions.StatusNotFound(ctx, errGetUser)
+		}
 
 		return exceptions.StatusInternalServerError(ctx, errGetUser)
 	}
