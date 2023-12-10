@@ -8,7 +8,7 @@ import (
 
 func BookingCounselingToDomainBookingCounseling(transaction *domain.BookingCounseling, counselingPackage *domain.CounselingPackage, user *domain.Users, Counselor *domain.Counselors, schedule []domain.UserScheduleCounseling) *resources.BookingCounselingResource {
 	result := resources.BookingCounselingResource{
-		Booking_id:       transaction.Id,
+		Order_id:         transaction.OrderId,
 		Transaction_date: helpers.ParseOnlyDate(&transaction.Transaction_date),
 		Status:           transaction.Status,
 		UserBooking: resources.UserBookingCounseling{

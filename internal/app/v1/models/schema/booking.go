@@ -3,11 +3,13 @@ package schema
 import (
 	"time"
 
+	uuid "github.com/satori/go.uuid"
 	"gorm.io/gorm"
 )
 
 type BookingCounseling struct {
-	Id                    uint `gorm:"primaryKey"`
+	Id                    uint      `gorm:"primaryKey"`
+	OrderId               uuid.UUID `gorm:"type:char(36);"`
 	User_id               uint
 	User                  *Users `gorm:"foreignKey:User_id;references:Id"`
 	Booking_counseling_id uint

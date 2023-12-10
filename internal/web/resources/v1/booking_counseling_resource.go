@@ -1,10 +1,12 @@
 package resources
 
+import uuid "github.com/satori/go.uuid"
+
 type BookingCounselingResource struct {
-	Booking_id        uint                        `json:"booking_id,omitempty"`
+	Order_id          uuid.UUID                   `json:"order_id,omitempty"`
 	Transaction_date  string                      `json:"transaction_date,omitempty"`
 	Status            string                      `json:"status,omitempty"`
-	UserBooking       UserBookingCounseling       `json:"use_booking,omitempty"`
+	UserBooking       UserBookingCounseling       `json:"user_booking,omitempty"`
 	Counselor         string                      `json:"counselor,omitempty"`
 	CounselingPackege CouselingPackage            `json:"counseling_package,omitempty"`
 	Schedule          []BookingCounselingSchedule `json:"counseling_schedule,omitempty"`
