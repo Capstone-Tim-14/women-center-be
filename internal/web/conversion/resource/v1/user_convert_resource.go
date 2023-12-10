@@ -71,7 +71,7 @@ func UserFavoriteArticleResponse(user *domain.Users) resources.UserArticleFavori
 		ArticleFavorite = append(ArticleFavorite, resources.ArticleFavorite{
 			Id:          artikelFav.Id,
 			Title:       artikelFav.Title,
-			PublishedAt: artikelFav.PublishedAt.String(),
+			PublishedAt: helpers.ParseOnlyDate(&artikelFav.PublishedAt),
 			Author_name: resources.Author_name{
 				Name: authorName,
 			},

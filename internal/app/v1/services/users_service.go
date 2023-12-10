@@ -113,19 +113,19 @@ func (service *UserServiceImpl) UpdateUserProfile(ctx echo.Context, request requ
 func (service *UserServiceImpl) AddFavoriteArticle(ctx echo.Context, slug string) error {
 	getUserClaim := helpers.GetAuthClaims(ctx)
 
-	user, err := service.UserRepo.FindByID(int(getUserClaim.Id))
-	if err != nil {
-		return fmt.Errorf("Failed to find user: %s", err.Error())
+	user, errUser := service.UserRepo.FindByID(int(getUserClaim.Id))
+	if errUser != nil {
+		return errUser
 	}
 
-	slugArticle, err := service.ArticleRepo.FindSlugForFavorite(slug)
-	if err != nil {
-		return fmt.Errorf("Failed to find article: %s", err.Error())
-	} else {
-		errAddFavorite := service.FavoriteArticle.AddFavoriteArticle(*user, slugArticle)
-		if errAddFavorite != nil {
-			return errAddFavorite
-		}
+	slugArticle, errArticle := service.ArticleRepo.FindSlugForFavorite(slug)
+	if errArticle != nil {
+		return fmt.Errorf("Failed to find article")
+	}
+
+	errAddFavorite := service.FavoriteArticle.AddFavoriteArticle(*user, slugArticle)
+	if errAddFavorite != nil {
+		return errAddFavorite
 	}
 
 	return nil

@@ -98,10 +98,13 @@ func (handler *UserHandlerImpl) UpdateProfileHandler(ctx echo.Context) error {
 }
 
 func (h *UserHandlerImpl) AddFavoriteArticleHandler(ctx echo.Context) error {
-	slugArticle := ctx.Param("slug")
+	slug := ctx.Param("slug")
 
-	err := h.UserService.AddFavoriteArticle(ctx, slugArticle)
+	err := h.UserService.AddFavoriteArticle(ctx, slug)
 	if err != nil {
+		if strings.Contains(err.Error(), "Failed to find article") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
