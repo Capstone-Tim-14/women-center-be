@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"fmt"
+	"strconv"
 	"strings"
 	"woman-center-be/internal/app/v1/services"
 	conversion "woman-center-be/internal/web/conversion/resource/v1"
@@ -18,6 +20,9 @@ type UserHandler interface {
 	AddFavoriteArticleHandler(ctx echo.Context) error
 	DeleteFavoriteArticleHandler(ctx echo.Context) error
 	AllFavoriteArticleHandler(ctx echo.Context) error
+	AddCounselorFavorite(echo.Context) error
+	RemoveCounselorFavorite(echo.Context) error
+	GetCounselorFavorite(echo.Context) error
 }
 
 type UserHandlerImpl struct {
@@ -134,4 +139,60 @@ func (h *UserHandlerImpl) AllFavoriteArticleHandler(ctx echo.Context) error {
 	userFavoriteResponse := conversion.UserFavoriteArticleResponse(user)
 
 	return responses.StatusOK(ctx, "Success get all article favorite", userFavoriteResponse)
+}
+
+func (handler *UserHandlerImpl) AddCounselorFavorite(ctx echo.Context) error {
+
+	id := ctx.Param("id")
+	convertid, _ := strconv.Atoi(id)
+
+	err := handler.UserService.AddCounselorFavorite(ctx, convertid)
+
+	if err != nil {
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusCreated(ctx, "Success Add Counselor Favorite", nil)
+
+}
+
+func (handler *UserHandlerImpl) RemoveCounselorFavorite(ctx echo.Context) error {
+	GetId := ctx.Param("id")
+
+	ConvertId, errConvertId := strconv.Atoi(GetId)
+
+	if errConvertId != nil {
+		fmt.Errorf(errConvertId.Error())
+		return exceptions.StatusBadRequest(ctx, fmt.Errorf("Invalid Format id"))
+	}
+
+	Validation, errGetUser := handler.UserService.RemoveCounselorFavorite(ctx, ConvertId)
+
+	if Validation != nil {
+		return exceptions.ValidationException(ctx, "Validation Error", Validation)
+	}
+
+	if errGetUser != nil {
+		if strings.Contains(errGetUser.Error(), "User not found") {
+			return exceptions.StatusNotFound(ctx, errGetUser)
+		}
+		if strings.Contains(errGetUser.Error(), "Counselor not found") {
+			return exceptions.StatusNotFound(ctx, errGetUser)
+		}
+
+		return exceptions.StatusInternalServerError(ctx, errGetUser)
+	}
+
+	return responses.StatusOK(ctx, "Success Remove Counselor Favorite", nil)
+}
+
+func (handler *UserHandlerImpl) GetCounselorFavorite(ctx echo.Context) error {
+	user, err := handler.UserService.GetCounselorFavorite(ctx)
+	if err != nil {
+		return exceptions.StatusNotFound(ctx, err)
+	}
+
+	userFavoriteResponse := conversion.UserCounselorFavoriteResponse(user)
+
+	return responses.StatusOK(ctx, "Success Get All Counselor Favorite", userFavoriteResponse)
 }

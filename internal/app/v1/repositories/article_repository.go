@@ -51,21 +51,21 @@ func (repository *ArticleRepositoryImpl) FindArticleCounselor(id int) ([]domain.
 	var articles []domain.Articles
 	var articles_count *domain.ArticleStatusCount
 
-	errListArticles := repository.db.InnerJoins("Counselors").InnerJoins("Counselors.Credential").InnerJoins("Counselors.Credential.Role").Find(&articles, "Articles.status = ? AND Counselors.id = ?", "PUBLISHED", id)
-
-	errGetCountArticles := repository.db.Raw("SELECT SUM(CASE WHEN articles.status = 'PUBLISHED' THEN 1 ELSE 0 END) AS PUBLISHED_COUNT, SUM(CASE WHEN articles.status = 'REVIEW' THEN 1 ELSE 0 END) AS REVIEW_COUNT, SUM(CASE WHEN articles.status = 'REJECTED' THEN 1 ELSE 0 END) AS REJECTED_COUNT FROM `articles` INNER JOIN `counselors` ON counselors.id = articles.counselors_id WHERE counselors.id = 5").Scan(&articles_count)
-
-	if errGetCountArticles.Error != nil {
-		return nil, nil, fmt.Errorf("Error to generate count article")
-	}
+	errListArticles := repository.db.InnerJoins("Counselors").InnerJoins("Counselors.Credential").InnerJoins("Counselors.Credential.Role").Find(&articles, "Counselors.id = ?", id)
 
 	if errListArticles.Error != nil {
-		fmt.Errorf(errListArticles.Error.Error())
+		fmt.Println(errListArticles.Error.Error())
 		return nil, nil, fmt.Errorf("Error to find article")
 	}
 
 	if errListArticles.RowsAffected == 0 {
-		return nil, nil, fmt.Errorf("Article not found")
+		return nil, nil, fmt.Errorf("Articles empty")
+	}
+
+	errGetCountArticles := repository.db.Raw("SELECT SUM(CASE WHEN articles.status = 'PUBLISHED' THEN 1 ELSE 0 END) AS PUBLISHED_COUNT, SUM(CASE WHEN articles.status = 'REVIEW' THEN 1 ELSE 0 END) AS REVIEW_COUNT, SUM(CASE WHEN articles.status = 'REJECTED' THEN 1 ELSE 0 END) AS REJECTED_COUNT FROM `articles` INNER JOIN `counselors` ON counselors.id = articles.counselors_id WHERE counselors.id = ?", id).Scan(&articles_count)
+
+	if errGetCountArticles.Error != nil {
+		return nil, nil, fmt.Errorf("Error to generate count article")
 	}
 
 	return articles, articles_count, nil

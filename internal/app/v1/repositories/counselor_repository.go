@@ -10,6 +10,7 @@ import (
 type CounselorRepository interface {
 	CreateCounselor(counselor *domain.Counselors) (*domain.Counselors, error)
 	FindById(id int) (*domain.Counselors, error)
+	FindCounselorAndGetOneOfSchedule(id int, day string) (*domain.Counselors, error)
 	FindyByEmail(email string) (*domain.Counselors, error)
 	FindAllCounselors(search string, filter []string) ([]domain.Counselors, error)
 	UpdateCounselor(counselor *domain.Counselors) error
@@ -46,6 +47,19 @@ func (repository *CounselorRepositoryImpl) CreateCounselor(counselor *domain.Cou
 	}
 
 	return counselor, nil
+}
+
+func (repository *CounselorRepositoryImpl) FindCounselorAndGetOneOfSchedule(id int, day string) (*domain.Counselors, error) {
+
+	var counselor *domain.Counselors
+
+	result := repository.db.InnerJoins("SingleSchedule").Where("counselors.id = ? AND SingleSchedule.day_schedule = ? AND SingleSchedule.status = ?", id, day, "OPEN").First(&counselor)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return counselor, nil
+
 }
 
 func (repository *CounselorRepositoryImpl) FindyByEmail(email string) (*domain.Counselors, error) {

@@ -7,19 +7,22 @@ import (
 )
 
 type Users struct {
-	Id               uint `gorm:"primaryKey;"`
-	Credential_id    uint
-	Credential       *Credentials `gorm:"foreignKey:Credential_id;references:Id;"`
-	First_name       string       `gorm:"type:varchar(100)"`
-	Last_name        string       `gorm:"type:varchar(100)"`
-	Profile_picture  string       `gorm:"varchar(255);default:https://pub-86c5755f32914550adb162dd2b8850d0.r2.dev/default-profile.jpg"`
-	Phone_number     string       `gorm:"type:varchar(20)"`
-	Birthday         *time.Time
-	Status           string         `gorm:"type:varchar(10);default:INACTIVE"`
-	Secret_Otp       *string        `gorm:"type:varchar(100)"`
-	Otp_enable       bool           `gorm:"default:false"`
-	ArticleFavorites []Articles     `gorm:"many2many:user_favorite_articles;foreignKey:Id;references:Id;"`
-	CreatedAt        time.Time      `gorm:"autoCreateTime"`
-	UpdatedAt        time.Time      `gorm:"autoUpdateTime:mili"`
-	DeletedAt        gorm.DeletedAt `gorm:"index"`
+	Id                     uint `gorm:"primaryKey;"`
+	Credential_id          uint
+	Credential             *Credentials             `gorm:"foreignKey:Credential_id;references:Id;"`
+	UserScheduleCounseling []UserScheduleCounseling `gorm:"foreignKey:User_id;references:Id"`
+	UserBooking            []BookingCounseling      `gorm:"foreignKey:User_id;references:Id"`
+	First_name             string                   `gorm:"type:varchar(100)"`
+	Last_name              string                   `gorm:"type:varchar(100)"`
+	Profile_picture        string                   `gorm:"varchar(255);default:https://pub-86c5755f32914550adb162dd2b8850d0.r2.dev/default-profile.jpg"`
+	Phone_number           string                   `gorm:"type:varchar(20)"`
+	Birthday               *time.Time
+	Status                 string         `gorm:"type:varchar(10);default:INACTIVE"`
+	Secret_Otp             *string        `gorm:"type:varchar(100)"`
+	Otp_enable             bool           `gorm:"default:false"`
+	Counselor_Favorite     []Counselors   `gorm:"many2many:counselor_favorite;foreignKey:Id;references:Id;"`
+	ArticleFavorites       []Articles     `gorm:"many2many:user_favorite_articles;foreignKey:Id;references:Id;"`
+	CreatedAt              time.Time      `gorm:"autoCreateTime"`
+	UpdatedAt              time.Time      `gorm:"autoUpdateTime:mili"`
+	DeletedAt              gorm.DeletedAt `gorm:"index"`
 }

@@ -17,12 +17,16 @@ func HttpUserRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate)
 	UserRepo := repositories.NewUserRepository(db)
 	ArticleRepo := repositories.NewArticleRepository(db)
 	FavoriteRepo := repositories.NewArticleFavoriteRepository(db)
+	CounselorRepo := repositories.NewCounselorRepository(db)
+	CounselorFavoriteRepo := repositories.NewCounselorFavoriteRepository(db)
 	UserService := services.NewUserService(services.UserServiceImpl{
-		UserRepo:        UserRepo,
-		RoleRepo:        RoleRepo,
-		Validator:       validate,
-		ArticleRepo:     ArticleRepo,
-		FavoriteArticle: FavoriteRepo,
+		RoleRepo:              RoleRepo,
+		UserRepo:              UserRepo,
+		CounselorRepo:         CounselorRepo,
+		CounselorFavoriteRepo: CounselorFavoriteRepo,
+		Validator:             validate,
+		ArticleRepo:           ArticleRepo,
+		FavoriteArticle:       FavoriteRepo,
 	})
 	UserHandler := handlers.NewUserHandler(UserService)
 
@@ -39,4 +43,8 @@ func HttpUserRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate)
 	verifyTokenFavorite.POST("/:slug/add-favorite", UserHandler.AddFavoriteArticleHandler)
 	verifyTokenFavorite.DELETE("/:slug/delete-favorite", UserHandler.DeleteFavoriteArticleHandler)
 	verifyTokenFavorite.GET("/favorites", UserHandler.AllFavoriteArticleHandler)
+	verifyCounselorFavorite := group.Group("/counselor", middlewares.VerifyTokenSignature("SECRET_KEY"))
+	verifyCounselorFavorite.POST("/:id/add-counselor-favorite", UserHandler.AddCounselorFavorite)
+	verifyCounselorFavorite.DELETE("/:id/remove-counselor-favorite", UserHandler.RemoveCounselorFavorite)
+	verifyCounselorFavorite.GET("/favorites", UserHandler.GetCounselorFavorite)
 }
