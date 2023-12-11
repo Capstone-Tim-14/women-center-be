@@ -11,13 +11,47 @@ import (
 func ConversionPaymentCharge(booking domain.BookingCounseling, paymentType string) *coreapi.ChargeReq {
 
 	var PaymentType coreapi.CoreapiPaymentType
+	var paymentBank midtrans.Bank
 
-	if paymentType == string(midtrans.BankBca) || paymentType == string(midtrans.BankMandiri) || paymentType == string(midtrans.BankBri) || paymentType == string(midtrans.BankPermata) || paymentType == string(midtrans.BankMega) || paymentType == string(midtrans.BankCimb) || paymentType == string(midtrans.BankMaybank) || paymentType == string(midtrans.BankBni) {
+	if paymentType == string(midtrans.BankBca) {
+		paymentBank = midtrans.BankBca
+	}
+
+	if paymentType == string(midtrans.BankMandiri) {
+		paymentBank = midtrans.BankMandiri
+	}
+
+	if paymentType == string(midtrans.BankBri) {
+		paymentBank = midtrans.BankBri
+	}
+
+	if paymentType == string(midtrans.BankMega) {
+		paymentBank = midtrans.BankMega
+	}
+
+	if paymentType == string(midtrans.BankCimb) {
+		paymentBank = midtrans.BankCimb
+	}
+
+	if paymentType == string(midtrans.BankMaybank) {
+		paymentBank = midtrans.BankMaybank
+	}
+
+	if paymentType == string(midtrans.BankBni) {
+		paymentBank = midtrans.BankBni
+	}
+
+	if paymentType == string(midtrans.BankPermata) {
+		paymentBank = midtrans.BankPermata
+	}
+
+	switch paymentType {
+	case string(midtrans.BankBca), string(midtrans.BankMandiri), string(midtrans.BankBri), string(midtrans.BankPermata), string(midtrans.BankMega), string(midtrans.BankCimb), string(midtrans.BankMaybank), string(midtrans.BankBni):
 		PaymentType = coreapi.PaymentTypeBankTransfer
-	} else if paymentType == "gopay" {
+	case "gopay":
 		PaymentType = coreapi.PaymentTypeGopay
-	} else {
-		paymentType = string(coreapi.PaymentTypeQris)
+	default:
+		PaymentType = coreapi.PaymentTypeQris
 	}
 
 	chargeRequest := &coreapi.ChargeReq{
@@ -35,10 +69,16 @@ func ConversionPaymentCharge(booking domain.BookingCounseling, paymentType strin
 			{
 				ID:    slug.Make(booking.BookingDetail.Package.Title),
 				Name:  booking.BookingDetail.Package.Title,
-				Price: booking.BookingDetail.Package.Price.IntPart(),
+				Price: booking.BookingDetail.Total.IntPart(),
 				Qty:   1,
 			},
 		},
+	}
+
+	if PaymentType == coreapi.PaymentTypeBankTransfer {
+		chargeRequest.BankTransfer = &coreapi.BankTransferDetails{
+			Bank: paymentBank,
+		}
 	}
 
 	return chargeRequest
