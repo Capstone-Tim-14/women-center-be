@@ -19,6 +19,7 @@ type CounselingPackageService interface {
 	CreatePackage(ctx echo.Context, request requests.CounselingPackageRequest, thumbnail *multipart.FileHeader) (*domain.CounselingPackage, []exceptions.ValidationMessage, error)
 	FindByTitle(ctx echo.Context, title string) ([]domain.CounselingPackage, error)
 	GetAllPackage(ctx echo.Context) ([]domain.CounselingPackage, error)
+	GetPackageById(ctx echo.Context, id int) (*domain.CounselingPackage, error)
 	DeletePackageById(ctx echo.Context, id int) error
 }
 
@@ -81,4 +82,12 @@ func (service *CounselingPackageServiceImpl) GetAllPackage(ctx echo.Context) ([]
 func (service *CounselingPackageServiceImpl) DeletePackageById(ctx echo.Context, id int) error {
 	//existingPackage, _ := service.CounselingPackageRepo.
 	return nil
+}
+
+func (service *CounselingPackageServiceImpl) GetPackageById(ctx echo.Context, id int) (*domain.CounselingPackage, error) {
+	idPackage, err := service.CounselingPackageRepo.FindById(id)
+	if err != nil {
+		return nil, err
+	}
+	return idPackage, nil
 }

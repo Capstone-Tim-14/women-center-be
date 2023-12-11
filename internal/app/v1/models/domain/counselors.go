@@ -17,6 +17,7 @@ type Counselors struct {
 	Status          string
 	Specialists     []Specialist          `gorm:"many2many:counselor_has_specialists;foreignKey:Id;references:Id;"`
 	Schedules       []Counseling_Schedule `gorm:"foreignKey:Counselor_id;references:Id;"`
+	SingleSchedule  *Counseling_Schedule  `gorm:"foreignKey:Counselor_id;references:Id;"`
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 	DeletedAt       gorm.DeletedAt
