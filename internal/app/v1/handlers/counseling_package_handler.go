@@ -17,6 +17,7 @@ type CounselingPackageHandler interface {
 	FindByTitle(ctx echo.Context) error
 	GetAllPackage(ctx echo.Context) error
 	DeletePackage(ctx echo.Context) error
+	UpdatePackage(ctx echo.Context) error
 }
 
 type CounselingPackageHandlerImpl struct {
