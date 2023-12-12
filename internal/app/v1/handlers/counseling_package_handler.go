@@ -104,3 +104,31 @@ func (handler *CounselingPackageHandlerImpl) DeletePackage(ctx echo.Context) err
 
 	return responses.StatusOK(ctx, "Success remove package", nil)
 }
+
+func (handler *CounselingPackageHandlerImpl) UpdatePackage(ctx echo.Context) error {
+	var request requests.CounselingPackageRequest
+	errBinding := ctx.Bind(&request)
+
+	Thumbnail, _ := ctx.FormFile("thumbnail")
+
+	if errBinding != nil {
+		return exceptions.StatusBadRequest(ctx, errBinding)
+	}
+
+	_, validation, err := handler.CounselingPackageService.UpdatePackageById(ctx, request, Thumbnail)
+	if validation != nil {
+		return exceptions.ValidationException(ctx, "Error Validation", validation)
+	}
+
+	if err != nil {
+		if strings.Contains(err.Error(), "invalid id") {
+			return exceptions.StatusBadRequest(ctx, err)
+		}
+		if strings.Contains(err.Error(), "package not found") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Package updated!", nil)
+}
