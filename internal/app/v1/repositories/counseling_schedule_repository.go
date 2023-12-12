@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"fmt"
+	"time"
 	"woman-center-be/internal/app/v1/models/domain"
 
 	"gorm.io/gorm"
@@ -10,7 +11,7 @@ import (
 type ScheduleRepository interface {
 	CreateSchedule(counselor *domain.Counselors, scheduling []domain.Counseling_Schedule) error
 	CheckDayCounselingScheduleExists(id int, day string) (*domain.Counseling_Schedule, error)
-	FindFreeSchedule(day, start, finish string) (*domain.Counseling_Schedule, error)
+	FindStartEndDateCounseling(counselor_id int, day string, start time.Time, finish time.Time) (*domain.Counseling_Schedule, error)
 }
 
 type ScheduleRepositoryImpl struct {
@@ -59,12 +60,12 @@ func (repository *ScheduleRepositoryImpl) CreateSchedule(counselor *domain.Couns
 
 }
 
-func (repository *ScheduleRepositoryImpl) FindFreeSchedule(day, start, finish string) (*domain.Counseling_Schedule, error) {
+func (repository *ScheduleRepositoryImpl) FindStartEndDateCounseling(counselor_id int, day string, start time.Time, finish time.Time) (*domain.Counseling_Schedule, error) {
 	var Schedule domain.Counseling_Schedule
 
-	DataSchedule := repository.Db.Preload("Counselors").Where("day = ? AND start = ? AND finish = ?", day, start, finish).First(&Schedule)
-	if DataSchedule.Error != nil {
-		return nil, DataSchedule.Error
+	GetScheduleData := repository.Db.Where("counselor_id = ? AND day_schedule = ? AND time_start = ? AND time_finish = ?", counselor_id, day, start, finish).First(&Schedule)
+	if GetScheduleData.Error != nil {
+		return nil, GetScheduleData.Error
 	}
 
 	return &Schedule, nil
