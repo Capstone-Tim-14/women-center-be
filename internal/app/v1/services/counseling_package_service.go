@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"mime/multipart"
+	"strings"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/app/v1/repositories"
 	conversion "woman-center-be/internal/web/conversion/request/v1"
@@ -80,7 +81,15 @@ func (service *CounselingPackageServiceImpl) GetAllPackage(ctx echo.Context) ([]
 }
 
 func (service *CounselingPackageServiceImpl) DeletePackageById(ctx echo.Context, id int) error {
-	//existingPackage, _ := service.CounselingPackageRepo.
+
+	err := service.CounselingPackageRepo.DeletePackageById(id)
+	if err != nil {
+		if strings.Contains(err.Error(), "package not found") {
+			return fmt.Errorf("package not found")
+		}
+		return fmt.Errorf("error when delete package")
+	}
+
 	return nil
 }
 

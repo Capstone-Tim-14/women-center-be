@@ -12,7 +12,7 @@ type CounselingPackageRepository interface {
 	FindByTitle(title string) ([]domain.CounselingPackage, error)
 	FindById(id int) (*domain.CounselingPackage, error)
 	GetAllPackage() ([]domain.CounselingPackage, error)
-	DeletePackage(id int) error
+	DeletePackageById(id int) error
 }
 
 type CounselingPackageRepositoryImpl struct {
@@ -27,13 +27,19 @@ func NewCounselingPackageRepository(db *gorm.DB) CounselingPackageRepository {
 
 func (repository *CounselingPackageRepositoryImpl) FindById(id int) (*domain.CounselingPackage, error) {
 
-	var Package *domain.CounselingPackage
+	// var Package *domain.CounselingPackage
+	Package := domain.CounselingPackage{}
 
-	if errCreatePackage := repository.db.First(&Package, "id = ?", id); errCreatePackage.Error != nil {
-		return nil, fmt.Errorf("Package not found")
+	result := repository.db.Where("id = ?", id).First(&Package)
+	if result.Error != nil {
+		return nil, result.Error
 	}
 
-	return Package, nil
+	// if errCreatePackage := repository.db.First(&Package, "id = ?", id); errCreatePackage.Error != nil {
+	// 	return nil, fmt.Errorf("Package not found")
+	// }
+
+	return &Package, nil
 }
 
 func (repository *CounselingPackageRepositoryImpl) CreatePackage(pack *domain.CounselingPackage) (*domain.CounselingPackage, error) {
@@ -70,8 +76,13 @@ func (repository *CounselingPackageRepositoryImpl) GetAllPackage() ([]domain.Cou
 	return lists, nil
 }
 
-func (repository *CounselingPackageRepositoryImpl) DeletePackage(id int) error {
-	result := repository.db.Delete(domain.CounselingPackage{}, id)
+func (repository *CounselingPackageRepositoryImpl) DeletePackageById(id int) error {
+	findPackage, err := repository.FindById(id)
+	if err != nil {
+		return fmt.Errorf("package not found")
+	}
+
+	result := repository.db.Delete(&findPackage)
 	if result.Error != nil {
 		return result.Error
 	}

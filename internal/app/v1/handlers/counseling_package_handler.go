@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"strconv"
 	"strings"
 	"woman-center-be/internal/app/v1/services"
 	conversion "woman-center-be/internal/web/conversion/resource/v1"
@@ -15,6 +16,7 @@ type CounselingPackageHandler interface {
 	CreatePackage(ctx echo.Context) error
 	FindByTitle(ctx echo.Context) error
 	GetAllPackage(ctx echo.Context) error
+	DeletePackage(ctx echo.Context) error
 }
 
 type CounselingPackageHandlerImpl struct {
@@ -82,4 +84,22 @@ func (handler *CounselingPackageHandlerImpl) GetAllPackage(ctx echo.Context) err
 	listResponse := conversion.ConvertCounselingPackageDomainToResponse(response)
 
 	return responses.StatusOK(ctx, "Success Get All Counseling Package", listResponse)
+}
+
+func (handler *CounselingPackageHandlerImpl) DeletePackage(ctx echo.Context) error {
+	pkgId := ctx.Param("id")
+	pkgIdInt, errId := strconv.Atoi(pkgId)
+	if errId != nil {
+		return exceptions.StatusBadRequest(ctx, errId)
+	}
+
+	errPkg := handler.CounselingPackageService.DeletePackageById(ctx, pkgIdInt)
+	if errPkg != nil {
+		if strings.Contains(errPkg.Error(), "package not found") {
+			return exceptions.StatusNotFound(ctx, errPkg)
+		}
+		return exceptions.StatusInternalServerError(ctx, errPkg)
+	}
+
+	return responses.StatusOK(ctx, "Success remove package", nil)
 }
