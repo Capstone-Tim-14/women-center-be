@@ -147,6 +147,12 @@ func (service *BookingServiceImpl) CreateBookingCounseling(scheduleReq []request
 		return nil, fmt.Errorf("Failed to create transaction"), nil
 	}
 
+	UpdateBookingDetailToSchedule := service.ScheduleRepo.UpdateMultipleScheduleBooked(AllUserScheduleCounseling, resultTransaction.Booking_detail_id)
+
+	if UpdateBookingDetailToSchedule != nil {
+		return nil, fmt.Errorf("Failed processing transaction"), nil
+	}
+
 	result := resource.BookingCounselingToDomainBookingCounseling(resultTransaction, ConvertCounselingPackage, GetUserAuth, GetCounselor, AllUserScheduleCounseling)
 
 	return nil, nil, result

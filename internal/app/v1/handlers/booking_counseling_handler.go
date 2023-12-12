@@ -13,6 +13,7 @@ import (
 type BookingCounselingHandler interface {
 	CreateBookingHandler(echo.Context) error
 	CreateTransactionPaymentHandler(echo.Context) error
+	// NotificationHandler(echo.Context) error
 }
 
 type BookingCounselingHandlerImpl struct {
@@ -23,6 +24,18 @@ type BookingCounselingHandlerImpl struct {
 func NewBookingCounselingHandler(bookingHandler BookingCounselingHandlerImpl) BookingCounselingHandler {
 	return &bookingHandler
 }
+
+// func (handler *BookingCounselingHandlerImpl) NotificationHandler(ctx echo.Context) error {
+
+// 	notification := make(chan map[string]interface{})
+
+// 	errDecodeNotification := ctx.Bind(&notification)
+
+// 	if errDecodeNotification != nil {
+// 		return exceptions.StatusBadRequest(ctx, errDecodeNotification)
+// 	}
+
+// }
 
 func (handler *BookingCounselingHandlerImpl) CreateTransactionPaymentHandler(ctx echo.Context) error {
 

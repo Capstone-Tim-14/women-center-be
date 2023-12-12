@@ -11,6 +11,7 @@ import (
 type UserScheduleCounselingRepository interface {
 	FindScheduleByDateAndTimeExist(request requests.UserScheduleCounselingQueryRequest) (bool, error)
 	CreateUserScheduling(user domain.Users, request domain.UserScheduleCounseling) (*domain.UserScheduleCounseling, error)
+	UpdateMultipleScheduleBooked(schedules []domain.UserScheduleCounseling, booking_detail_id uint) error
 }
 
 type UserScheduleCounselingRepositoryImpl struct {
@@ -21,6 +22,25 @@ func NewUserScheduleConselingRepository(db *gorm.DB) UserScheduleCounselingRepos
 	return &UserScheduleCounselingRepositoryImpl{
 		Db: db,
 	}
+}
+
+func (repo *UserScheduleCounselingRepositoryImpl) UpdateMultipleScheduleBooked(schedules []domain.UserScheduleCounseling, booking_detail_id uint) error {
+
+	transaction := repo.Db.Begin()
+
+	for _, schedule := range schedules {
+		errUpdateBookingDetail := transaction.Model(&schedule).Update("booking_detail_id", booking_detail_id)
+
+		if errUpdateBookingDetail.Error != nil {
+			transaction.Rollback()
+			fmt.Errorf(errUpdateBookingDetail.Error.Error())
+			return fmt.Errorf("Error update booking detail")
+		}
+	}
+
+	transaction.Commit()
+
+	return nil
 }
 
 func (repo *UserScheduleCounselingRepositoryImpl) FindScheduleByDateAndTimeExist(request requests.UserScheduleCounselingQueryRequest) (bool, error) {

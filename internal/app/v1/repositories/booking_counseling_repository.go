@@ -45,6 +45,7 @@ func (repository *BookingCounselingRepositoryImpl) FindByOrderId(orderId uuid.UU
 		Preload("User.Credential").
 		Preload("BookingDetail").
 		Preload("BookingDetail.Package").
+		Preload("BookingDetail.User_Schedules").
 		First(&booking, "order_id = ? AND status = ?", orderId, "IN PROCESS")
 
 	if errGetbooking.Error != nil {
