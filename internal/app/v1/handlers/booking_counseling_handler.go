@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"woman-center-be/internal/app/v1/services"
 	"woman-center-be/internal/web/requests/v1"
 	"woman-center-be/utils/exceptions"
@@ -13,7 +14,7 @@ import (
 type BookingCounselingHandler interface {
 	CreateBookingHandler(echo.Context) error
 	CreateTransactionPaymentHandler(echo.Context) error
-	// NotificationHandler(echo.Context) error
+	NotificationHandler(echo.Context) error
 }
 
 type BookingCounselingHandlerImpl struct {
@@ -25,17 +26,23 @@ func NewBookingCounselingHandler(bookingHandler BookingCounselingHandlerImpl) Bo
 	return &bookingHandler
 }
 
-// func (handler *BookingCounselingHandlerImpl) NotificationHandler(ctx echo.Context) error {
+func (handler *BookingCounselingHandlerImpl) NotificationHandler(ctx echo.Context) error {
 
-// 	notification := make(chan map[string]interface{})
+	notification := make(map[string]interface{})
 
-// 	errDecodeNotification := ctx.Bind(&notification)
+	errDecodeNotification := ctx.Bind(&notification)
 
-// 	if errDecodeNotification != nil {
-// 		return exceptions.StatusBadRequest(ctx, errDecodeNotification)
-// 	}
+	if errDecodeNotification != nil {
+		return exceptions.StatusBadRequest(ctx, errDecodeNotification)
+	}
 
-// }
+	orderId, isExists := notification["order_id"].(string)
+
+	if !isExists {
+		return exceptions.StatusNotFound(ctx, fmt.Errorf("OrderId not found"))
+	}
+
+}
 
 func (handler *BookingCounselingHandlerImpl) CreateTransactionPaymentHandler(ctx echo.Context) error {
 

@@ -10,6 +10,7 @@ import (
 
 type MidtransCoreApi interface {
 	ChargeTransaction(request *coreapi.ChargeReq) (*coreapi.ChargeResponse, error)
+	CheckTransactionPayment(transactionData map[string]interface{}) (string, error)
 }
 
 type MidtransCoreApiImpl struct {
@@ -38,4 +39,27 @@ func (payment *MidtransCoreApiImpl) ChargeTransaction(request *coreapi.ChargeReq
 
 	return response, nil
 
+}
+
+func (payment *MidtransCoreApiImpl) CheckTransactionPayment(orderId string) (string, error) {
+
+	transactionStatusReps, errGetTransaction := payment.CoreApi.CheckTransaction(orderId)
+
+	if errGetTransaction != nil {
+		return "", fmt.Errorf("Transaction not found")
+	}
+
+	if transactionStatusReps != nil {
+		if transactionStatusReps.TransactionStatus == "capture" {
+			if transactionStatusReps.FraudStatus == "challenge" {
+				return transactionStatusReps.FraudStatus, nil
+			} else if transactionStatusReps.FraudStatus == "accept" {
+				return transactionStatusReps.FraudStatus, nil
+			}
+		} else {
+			return transactionStatusReps.TransactionStatus, nil
+		}
+	}
+
+	return "", fmt.Errorf("Transaction invalid")
 }
