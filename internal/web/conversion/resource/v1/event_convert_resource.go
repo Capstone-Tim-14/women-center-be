@@ -24,3 +24,19 @@ func EventDetailDomainToEventResource(event *domain.Event) *resources.EventResou
 		UpdatedAt:   helpers.ParseOnlyDate(&event.UpdatedAt),
 	}
 }
+
+func AllEventConvertResource(events []domain.Event) []resources.AllEventResource {
+	eventResource := []resources.AllEventResource{}
+	for _, event := range events {
+		singleEventResource := resources.AllEventResource{}
+		singleEventResource.Id = event.Id
+		singleEventResource.Title = event.Title
+		singleEventResource.Locations = event.Locations
+		singleEventResource.Date = helpers.ParseOnlyDate(event.Date)
+		singleEventResource.Time_start = helpers.ParseTimeToClock(&event.Time_start)
+		singleEventResource.Time_finish = helpers.ParseTimeToClock(&event.Time_finish)
+		eventResource = append(eventResource, singleEventResource)
+	}
+
+	return eventResource
+}

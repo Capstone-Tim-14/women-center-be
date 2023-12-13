@@ -10,6 +10,7 @@ import (
 type EventRepository interface {
 	CreateEvent(event *domain.Event) (*domain.Event, error)
 	FindDetailEvent(id int) (*domain.Event, error)
+	FindAllEvent() ([]domain.Event, error)
 }
 
 type EventRepositoryImpl struct {
@@ -39,4 +40,18 @@ func (repository *EventRepositoryImpl) FindDetailEvent(id int) (*domain.Event, e
 	}
 
 	return &event, nil
+}
+
+func (repository *EventRepositoryImpl) FindAllEvent() ([]domain.Event, error) {
+	var events []domain.Event
+	result := repository.db.Find(&events)
+	if result.Error != nil {
+		return nil, fmt.Errorf("Event not found")
+	}
+
+	if result.RowsAffected == 0 {
+		return nil, fmt.Errorf("Event empty")
+	}
+
+	return events, nil
 }
