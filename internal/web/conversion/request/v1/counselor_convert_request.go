@@ -44,6 +44,8 @@ func CounselorScheduleToCounselorDomain(requests []requests.CounselingScheduleRe
 		Scheduling := domain.Counseling_Schedule{
 			Day_schedule: val.Day_schedule,
 			Time_start:   helpers.ParseClockToTime(val.Time_start),
+			Time_starts:  nil,
+			Time_finishs: nil,
 			Time_finish:  helpers.ParseClockToTime(val.Time_finish),
 		}
 

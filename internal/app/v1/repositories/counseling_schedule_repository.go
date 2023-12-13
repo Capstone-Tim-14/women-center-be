@@ -31,6 +31,7 @@ func (repository *ScheduleRepositoryImpl) GroupingStartTimeAndFinishTimeCounseli
 	GetListCounselor := repository.Db.Select("day_schedule,GROUP_CONCAT(time_start) AS time_starts,GROUP_CONCAT(time_finish) AS time_finishs").
 		Where("counselor_id = ?", counselor_id).
 		Group("day_schedule").
+		Order("day_schedule DESC").
 		Find(&counselorSchedules)
 
 	if GetListCounselor.Error != nil {
