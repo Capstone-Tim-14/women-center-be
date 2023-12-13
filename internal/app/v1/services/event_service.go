@@ -19,6 +19,7 @@ type EventService interface {
 	CreateEvent(ctx echo.Context, request requests.EventRequest, poster *multipart.FileHeader) (*domain.Event, []exceptions.ValidationMessage, error)
 	GetDetailEvent(ctx echo.Context, id int) (*domain.Event, error)
 	GetAllEvent(ctx echo.Context) ([]domain.Event, error)
+	GetAllEventMobile(ctx echo.Context) ([]domain.Event, error)
 }
 
 type EventServiceImpl struct {
@@ -65,6 +66,16 @@ func (service *EventServiceImpl) GetDetailEvent(ctx echo.Context, id int) (*doma
 }
 
 func (service *EventServiceImpl) GetAllEvent(ctx echo.Context) ([]domain.Event, error) {
+	events, err := service.EventRepo.FindAllEvent()
+
+	if err != nil {
+		return nil, fmt.Errorf("Error get all event: %w", err)
+	}
+
+	return events, nil
+}
+
+func (service *EventServiceImpl) GetAllEventMobile(ctx echo.Context) ([]domain.Event, error) {
 	events, err := service.EventRepo.FindAllEvent()
 
 	if err != nil {
