@@ -15,6 +15,7 @@ import (
 type EventHandler interface {
 	CreateEvent(ctx echo.Context) error
 	GetDetailEvent(ctx echo.Context) error
+	GetDetailEventMobile(ctx echo.Context) error
 }
 
 type EventHandlerImpl struct {
@@ -59,6 +60,24 @@ func (handler *EventHandlerImpl) CreateEvent(ctx echo.Context) error {
 }
 
 func (handler *EventHandlerImpl) GetDetailEvent(ctx echo.Context) error {
+	getId := ctx.Param("id")
+	eventId, _ := strconv.Atoi(getId)
+
+	event, err := handler.EventService.GetDetailEvent(ctx, eventId)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "Error get detail event") {
+			return exceptions.StatusBadRequest(ctx, err)
+		}
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	result := conversion.EventDetailDomainToEventResource(event)
+
+	return responses.StatusOK(ctx, "Success Get Detail Event", result)
+}
+
+func (handler *EventHandlerImpl) GetDetailEventMobile(ctx echo.Context) error {
 	getId := ctx.Param("id")
 	eventId, _ := strconv.Atoi(getId)
 
