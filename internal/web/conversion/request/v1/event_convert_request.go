@@ -11,7 +11,7 @@ func EventCreateRequestToEventDomain(request *requests.EventRequest) *domain.Eve
 		Title:       request.Title,
 		Poster:      *request.Poster,
 		Locations:   request.Locations,
-		Date:        *helpers.ParseStringToTime(request.Date),
+		Date:        helpers.ParseStringToTime(request.Date),
 		Price:       helpers.StringToDecimal(request.Price),
 		Time_start:  helpers.ParseClockToTime(request.Time_start),
 		Time_finish: helpers.ParseClockToTime(request.Time_finish),

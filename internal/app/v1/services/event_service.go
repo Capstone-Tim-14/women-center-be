@@ -17,6 +17,7 @@ import (
 
 type EventService interface {
 	CreateEvent(ctx echo.Context, request requests.EventRequest, poster *multipart.FileHeader) (*domain.Event, []exceptions.ValidationMessage, error)
+	GetDetailEvent(ctx echo.Context, id int) (*domain.Event, error)
 }
 
 type EventServiceImpl struct {
@@ -50,4 +51,14 @@ func (service *EventServiceImpl) CreateEvent(ctx echo.Context, request requests.
 	}
 
 	return createEvent, nil, nil
+}
+
+func (service *EventServiceImpl) GetDetailEvent(ctx echo.Context, id int) (*domain.Event, error) {
+	event, err := service.EventRepo.FindDetailEvent(id)
+
+	if err != nil {
+		return nil, fmt.Errorf("Error get detail event: %w", err)
+	}
+
+	return event, nil
 }

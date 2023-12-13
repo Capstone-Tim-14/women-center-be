@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"strconv"
 	"strings"
 	"woman-center-be/internal/app/v1/services"
+	conversion "woman-center-be/internal/web/conversion/resource/v1"
 	"woman-center-be/internal/web/requests/v1"
 	"woman-center-be/utils/exceptions"
 	"woman-center-be/utils/responses"
@@ -12,6 +14,7 @@ import (
 
 type EventHandler interface {
 	CreateEvent(ctx echo.Context) error
+	GetDetailEvent(ctx echo.Context) error
 }
 
 type EventHandlerImpl struct {
@@ -53,4 +56,22 @@ func (handler *EventHandlerImpl) CreateEvent(ctx echo.Context) error {
 	}
 
 	return responses.StatusCreated(ctx, "Success Create Event", nil)
+}
+
+func (handler *EventHandlerImpl) GetDetailEvent(ctx echo.Context) error {
+	getId := ctx.Param("id")
+	eventId, _ := strconv.Atoi(getId)
+
+	event, err := handler.EventService.GetDetailEvent(ctx, eventId)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "Error get detail event") {
+			return exceptions.StatusBadRequest(ctx, err)
+		}
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	result := conversion.EventDetailDomainToEventResource(event)
+
+	return responses.StatusOK(ctx, "Success Get Detail Event", result)
 }

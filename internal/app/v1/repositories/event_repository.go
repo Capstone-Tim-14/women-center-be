@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"fmt"
 	"woman-center-be/internal/app/v1/models/domain"
 
 	"gorm.io/gorm"
@@ -8,6 +9,7 @@ import (
 
 type EventRepository interface {
 	CreateEvent(event *domain.Event) (*domain.Event, error)
+	FindDetailEvent(id int) (*domain.Event, error)
 }
 
 type EventRepositoryImpl struct {
@@ -27,4 +29,14 @@ func (repository *EventRepositoryImpl) CreateEvent(event *domain.Event) (*domain
 	}
 
 	return event, nil
+}
+
+func (repository *EventRepositoryImpl) FindDetailEvent(id int) (*domain.Event, error) {
+	var event domain.Event
+	result := repository.db.Where("id = ?", id).First(&event)
+	if result.Error != nil {
+		return nil, fmt.Errorf("Event not found")
+	}
+
+	return &event, nil
 }
