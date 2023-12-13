@@ -16,3 +16,12 @@ type EventResource struct {
 	CreatedAt   string `json:"created_at"`
 	UpdatedAt   string `json:"updated_at"`
 }
+
+type AllEventResource struct {
+	Id          uint   `json:"id"`
+	Title       string `json:"title"`
+	Locations   string `json:"locations"`
+	Date        string `json:"date"`
+	Time_start  string `json:"time_start"`
+	Time_finish string `json:"time_finish"`
+}
