@@ -31,5 +31,6 @@ func HttpEventRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate
 	verifyTokenUser := group.Group("", middlewares.VerifyTokenSignature("SECRET_KEY"))
 
 	verifyTokenUser.GET("/event/:id", EventHandler.GetDetailEventMobile)
+	verifyTokenUser.GET("/events", EventHandler.GetAllEventMobile)
 
 }
