@@ -30,7 +30,11 @@ func (repository *CounselorRepositoryImpl) FindById(id int) (*domain.Counselors,
 
 	var Counselor domain.Counselors
 
-	ErrGetCounselor := repository.db.Preload("Credential").Preload("Credential.Role").Preload("Specialists").Preload("Schedules").Where("id = ?", id).First(&Counselor)
+	ErrGetCounselor := repository.db.Preload("Credential").
+		Preload("Credential.Role").
+		Preload("Specialists").
+		Preload("Schedules").
+		Where("id = ?", id).First(&Counselor)
 
 	if ErrGetCounselor.Error != nil {
 		return nil, fmt.Errorf("Counselor not found")

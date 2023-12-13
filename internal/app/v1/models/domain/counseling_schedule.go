@@ -12,7 +12,9 @@ type Counseling_Schedule struct {
 	Counselor    *Counselors
 	Day_schedule string
 	Time_start   time.Time
+	Time_starts  *string
 	Time_finish  time.Time
+	Time_finishs *string
 	Status       string `gorm:"type:enum('OPEN', 'BOOKED', 'CLOSED');default:'OPEN'"`
 	CreatedAt    time.Time
 	UpdatedAt    time.Time

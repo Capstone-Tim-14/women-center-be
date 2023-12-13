@@ -8,7 +8,9 @@ import (
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/app/v1/repositories"
 	conversion "woman-center-be/internal/web/conversion/request/v1"
+	conRes "woman-center-be/internal/web/conversion/resource/v1"
 	"woman-center-be/internal/web/requests/v1"
+	"woman-center-be/internal/web/resources/v1"
 	"woman-center-be/pkg/storage"
 	"woman-center-be/utils/exceptions"
 	"woman-center-be/utils/helpers"
@@ -24,13 +26,13 @@ type CounselorService interface {
 	GetAllCounselors(ctx echo.Context) ([]domain.Counselors, error)
 	GetCounselorsForMobile(ctx echo.Context) ([]domain.Counselors, error)
 	GetCounselorProfile(ctx echo.Context) (*domain.Counselors, error)
-	GetDetailCounselor(ctx echo.Context) (*domain.Counselors, error)
-	GetDetailCounselorWeb(ctx echo.Context) (*domain.Counselors, error)
+	GetDetailCounselor(ctx echo.Context) (*resources.DetailCounselor, error)
 	UpdateCounselor(ctx echo.Context, request requests.CounselorRequest, picture *multipart.FileHeader) (*domain.Counselors, []exceptions.ValidationMessage, error)
 	UpdateCounselorForMobile(ctx echo.Context, request requests.CounselorRequest, picture *multipart.FileHeader) (*domain.Counselors, []exceptions.ValidationMessage, error)
 }
 
 type CounselorServiceImpl struct {
+	ScheduleRepo               repositories.ScheduleRepository
 	CounselorRepo              repositories.CounselorRepository
 	RoleRepo                   repositories.RoleRepository
 	Validator                  *validator.Validate
@@ -261,26 +263,22 @@ func (service *CounselorServiceImpl) GetCounselorsForMobile(ctx echo.Context) ([
 	return counselors, nil
 }
 
-func (service *CounselorServiceImpl) GetDetailCounselor(ctx echo.Context) (*domain.Counselors, error) {
+func (service *CounselorServiceImpl) GetDetailCounselor(ctx echo.Context) (*resources.DetailCounselor, error) {
 	getId := ctx.Param("id")
 	getcounselorId, _ := strconv.Atoi(getId)
 
-	getUser, _ := service.CounselorRepo.FindById(getcounselorId)
-	if getUser == nil {
+	getCounselor, _ := service.CounselorRepo.FindById(getcounselorId)
+	if getCounselor == nil {
 		return nil, fmt.Errorf("Counselor not found")
 	}
 
-	return getUser, nil
-}
+	getScheduleCounselor, errGetSchedule := service.ScheduleRepo.GroupingStartTimeAndFinishTimeCounseling(getcounselorId)
 
-func (service *CounselorServiceImpl) GetDetailCounselorWeb(ctx echo.Context) (*domain.Counselors, error) {
-	getId := ctx.Param("id")
-	getcounselorId, _ := strconv.Atoi(getId)
-
-	getUser, _ := service.CounselorRepo.FindById(getcounselorId)
-	if getUser == nil {
-		return nil, fmt.Errorf("Counselor not found")
+	if errGetSchedule != nil {
+		return nil, errGetSchedule
 	}
 
-	return getUser, nil
+	counselorResponse := conRes.ConvertCounselorDomainToCounselorDetailResponse(getCounselor, getScheduleCounselor)
+
+	return &counselorResponse, nil
 }

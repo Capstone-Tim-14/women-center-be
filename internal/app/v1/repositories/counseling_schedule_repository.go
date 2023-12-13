@@ -12,6 +12,7 @@ type ScheduleRepository interface {
 	CreateSchedule(counselor *domain.Counselors, scheduling []domain.Counseling_Schedule) error
 	CheckDayCounselingScheduleExists(id int, day string) (*domain.Counseling_Schedule, error)
 	FindStartEndDateCounseling(counselor_id int, day string, start time.Time, finish time.Time) (*domain.Counseling_Schedule, error)
+	GroupingStartTimeAndFinishTimeCounseling(counselor_id int) ([]domain.Counseling_Schedule, error)
 }
 
 type ScheduleRepositoryImpl struct {
@@ -22,6 +23,26 @@ func NewScheduleRepository(db *gorm.DB) ScheduleRepository {
 	return &ScheduleRepositoryImpl{
 		Db: db,
 	}
+}
+func (repository *ScheduleRepositoryImpl) GroupingStartTimeAndFinishTimeCounseling(counselor_id int) ([]domain.Counseling_Schedule, error) {
+
+	var counselorSchedules []domain.Counseling_Schedule
+
+	GetListCounselor := repository.Db.Select("day_schedule,GROUP_CONCAT(time_start) AS time_starts,GROUP_CONCAT(time_finish) AS time_finishs").
+		Where("counselor_id = ?", counselor_id).
+		Group("day_schedule").
+		Find(&counselorSchedules)
+
+	if GetListCounselor.Error != nil {
+		return nil, fmt.Errorf("Error to get schedules")
+	}
+
+	if GetListCounselor.RowsAffected == 0 {
+		return nil, fmt.Errorf("schedules not found")
+	}
+
+	return counselorSchedules, nil
+
 }
 
 func (repository *ScheduleRepositoryImpl) CheckDayCounselingScheduleExists(id int, day string) (*domain.Counseling_Schedule, error) {
