@@ -211,9 +211,7 @@ func (handler *CounselorHandlerImpl) GetDetailCounselorHandler(ctx echo.Context)
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
-	counselorResponse := conversion.ConvertCounselorDomainToCounselorDetailResponse(response)
-
-	return responses.StatusOK(ctx, "Get detail counselor successfully", counselorResponse)
+	return responses.StatusOK(ctx, "Get detail counselor successfully", response)
 }
 
 func (handler *CounselorHandlerImpl) GetDetailCounselorWeb(ctx echo.Context) error {
@@ -227,9 +225,7 @@ func (handler *CounselorHandlerImpl) GetDetailCounselorWeb(ctx echo.Context) err
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
-	counselorResponse := conversion.ConvertCounselorDomainToCounselorDetailResponse(response)
-
-	return responses.StatusOK(ctx, "Get detail counselor successfully", counselorResponse)
+	return responses.StatusOK(ctx, "Get detail counselor successfully", response)
 }
 
 func (handler *CounselorHandlerImpl) GetCounselorProfile(ctx echo.Context) error {

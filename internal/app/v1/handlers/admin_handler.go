@@ -51,5 +51,4 @@ func (handler *AdminHandlerImpl) RegisterHandler(ctx echo.Context) error {
 	adminCreateResponse := conversion.AdminDomainToAdminResource(response)
 
 	return responses.StatusCreated(ctx, "Admin created successfully", adminCreateResponse)
-
 }

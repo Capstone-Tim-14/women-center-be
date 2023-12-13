@@ -54,40 +54,45 @@ func UserDomainToUserOTPGenerate(code string, secret string) *resources.OtpResou
 	}
 }
 
-func UserFavoriteArticleResponse(user *domain.Users) resources.UserArticleFavorite {
-	ArticleFavorite := []resources.ArticleFavorite{}
+func UserFavoriteArticleResponse(user *domain.Users) *[]resources.ArticleResource {
+	userArticleFavorite := []resources.ArticleResource{}
+	var authorName string
+	var tagCategories []resources.ArticleCategory
+
 	for _, artikelFav := range user.ArticleFavorites {
-		var authorName string
 
 		if artikelFav.Admin != nil {
 			authorName = artikelFav.Admin.First_name + " " + artikelFav.Admin.Last_name
 		} else if artikelFav.Counselors != nil {
 			authorName = artikelFav.Counselors.First_name + " " + artikelFav.Counselors.Last_name
 		} else {
-			// Handle jika tidak ada Admin atau Counselors
 			authorName = "Unknown Author"
 		}
 
-		ArticleFavorite = append(ArticleFavorite, resources.ArticleFavorite{
-			Id:          artikelFav.Id,
-			Title:       artikelFav.Title,
-			PublishedAt: helpers.ParseOnlyDate(&artikelFav.PublishedAt),
-			Author_name: resources.Author_name{
+		for _, tag := range artikelFav.Tags {
+			tagCategories = append(tagCategories, resources.ArticleCategory{
+				Id:   tag.Id,
+				Name: tag.Name,
+			})
+		}
+
+		favoriteArticle := resources.ArticleResource{
+			Id:        artikelFav.Id,
+			Title:     artikelFav.Title,
+			Thumbnail: *artikelFav.Thumbnail,
+			Slug:      artikelFav.Slug,
+			Content:   artikelFav.Content,
+			Status:    artikelFav.Status,
+			Tag:       tagCategories,
+			Author: resources.Author{
 				Name: authorName,
 			},
-			Thumbnail: *artikelFav.Thumbnail,
-		})
+			PublishedAt: helpers.ParseOnlyDate(&artikelFav.PublishedAt),
+		}
+		userArticleFavorite = append(userArticleFavorite, favoriteArticle)
 	}
 
-	userArticleFavorite := resources.UserArticleFavorite{}
-
-	userArticleFavorite.Id = user.Id
-	userArticleFavorite.First_name = user.First_name
-	userArticleFavorite.Last_name = user.Last_name
-	userArticleFavorite.Username = user.Credential.Username
-	userArticleFavorite.ArticleFavorite = ArticleFavorite
-
-	return userArticleFavorite
+	return &userArticleFavorite
 }
 
 func UserCounselorFavoriteResponse(user *domain.Users) []resources.CounselorResource {
