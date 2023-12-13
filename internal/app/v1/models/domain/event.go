@@ -12,7 +12,7 @@ type Event struct {
 	Title       string
 	Poster      string
 	Locations   string
-	Date        time.Time
+	Date        *time.Time
 	Price       decimal.Decimal
 	EventUrl    string
 	Time_start  time.Time

@@ -22,8 +22,9 @@ func HttpEventRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate
 
 	verifyTokenAdmin := group.Group("/admin", middlewares.VerifyTokenSignature("SECRET_KEY_ADMIN"))
 
-	EventGroup := verifyTokenAdmin.Group("/events")
+	EventGroup := verifyTokenAdmin.Group("")
 
-	EventGroup.POST("", EventHandler.CreateEvent)
+	EventGroup.POST("/event", EventHandler.CreateEvent)
+	EventGroup.GET("/event/:id", EventHandler.GetDetailEvent)
 
 }
