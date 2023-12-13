@@ -60,7 +60,7 @@ func (service *ScheduleServiceImpl) CreateSchedule(ctx echo.Context, requests []
 
 	for _, val := range SchedulingConvert {
 
-		CheckSchedulingExists, _ := service.ScheduleRepo.CheckDayCounselingScheduleExists(int(GetCounselorData.Id), val.Day_schedule)
+		CheckSchedulingExists, _ := service.ScheduleRepo.FindStartEndDateCounseling(int(GetCounselorData.Id), val.Day_schedule, val.Time_start, val.Time_finish)
 
 		if CheckSchedulingExists != nil {
 			return nil, fmt.Errorf("One of schedule is already exists")

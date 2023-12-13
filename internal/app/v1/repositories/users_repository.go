@@ -77,7 +77,8 @@ func (repository *UserRepositoryImpl) FindByID(id int) (*domain.Users, error) {
 	user := domain.Users{}
 
 	result := repository.db.Preload("Credential").Preload("Counselor_Favorite").Preload("Counselor_Favorite.Credential").
-		Preload("ArticleFavorites").Preload("ArticleFavorites.Admin").Preload("ArticleFavorites.Counselors").Where("id = ?", id).First(&user)
+		Preload("ArticleFavorites").Preload("ArticleFavorites.Admin").Preload("ArticleFavorites.Counselors").
+		Preload("ArticleFavorites.Tags").Where("id = ?", id).First(&user)
 
 	if result.Error != nil {
 		return nil, result.Error

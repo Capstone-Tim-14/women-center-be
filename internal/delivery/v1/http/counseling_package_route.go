@@ -25,6 +25,8 @@ func HttpCounselingPackageRoute(group *echo.Group, db *gorm.DB, validate *valida
 	verifyTokenAdmin.POST("/counseling-packages", CounselingHandler.CreatePackage)
 	verifyTokenAdmin.GET("/counseling-packages/:title", CounselingHandler.FindByTitle)
 	verifyTokenAdmin.GET("/counseling-packages", CounselingHandler.GetAllPackage)
+	verifyTokenAdmin.DELETE("/counseling-packages/:id", CounselingHandler.DeletePackage)
+	verifyTokenAdmin.PUT("/counseling-packages/:id", CounselingHandler.UpdatePackage)
 
 	verifyToken := group.Group("", middlewares.VerifyTokenSignature("SECRET_KEY"))
 	cpackageUser := verifyToken.Group("/counseling-packages")

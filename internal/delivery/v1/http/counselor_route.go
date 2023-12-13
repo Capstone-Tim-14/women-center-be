@@ -26,6 +26,7 @@ func HttpCounselorRoute(group *echo.Group, db *gorm.DB, validate *validator.Vali
 		AdminRepo:                  AdminRepo,
 		SpecialistRepo:             SpecialistRepo,
 		CounselorHasSpecialistRepo: CounselorHasSpecialistRepo,
+		ScheduleRepo:               ScheduleRepo,
 	})
 	CounselorScheduleService := services.NewScheduleService(ScheduleRepo, validate, CounselorRepo)
 

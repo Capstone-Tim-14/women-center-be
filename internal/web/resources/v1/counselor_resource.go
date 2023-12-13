@@ -29,9 +29,13 @@ type SpecialistCounselor struct {
 }
 
 type CounselingSchedule struct {
-	Day_schedule string `json:"day_schedule,omitempty"`
-	Time_start   string `json:"time_start,omitempty"`
-	Time_finish  string `json:"time_finish,omitempty"`
+	Day_schedule  string                   `json:"day_schedule,omitempty"`
+	Time_schedule []CounselingScheduleTime `json:"time_schedule,omitempty"`
+}
+
+type CounselingScheduleTime struct {
+	Time_start  string `json:"time_start,omitempty"`
+	Time_finish string `json:"time_finish,omitempty"`
 }
 
 type DetailCounselor struct {

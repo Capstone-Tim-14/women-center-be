@@ -29,25 +29,6 @@ type UpdateUserProfile struct {
 	Birthday        string `json:"birthday,omitempty"`
 	Profile_picture string `json:"profile_picture,omitempty"`
 }
-type UserArticleFavorite struct {
-	Id              uint              `json:"id,omitempty"`
-	First_name      string            `json:"first_name,omitempty"`
-	Last_name       string            `json:"last_name,omitempty"`
-	Username        string            `json:"username,omitempty"`
-	ArticleFavorite []ArticleFavorite `json:"article_favorite,omitempty"`
-}
-
-type ArticleFavorite struct {
-	Id          uint        `json:"id,omitempty"`
-	Title       string      `json:"title,omitempty"`
-	PublishedAt string      `json:"published_at,omitempty"`
-	Thumbnail   string      `json:"thumbnail,omitempty"`
-	Author_name Author_name `json:"author,omitempty"`
-}
-
-type Author_name struct {
-	Name string `json:"name,omitempty"`
-}
 
 type UserCounselorFavorite struct {
 	Id                uint                `json:"id,omitempty"`
