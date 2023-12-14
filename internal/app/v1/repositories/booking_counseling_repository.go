@@ -63,13 +63,20 @@ func (repository *BookingCounselingRepositoryImpl) FindByOrderId(orderId uuid.UU
 
 func (repository *BookingCounselingRepositoryImpl) UpdateStatusBooking(orderId uuid.UUID, status string) (bool, error) {
 
-	GetBookingTransaction, errGetTransaction := repository.FindByOrderId(orderId)
+	var booking *domain.BookingCounseling
 
-	if errGetTransaction != nil {
-		return false, errGetTransaction
+	errGetTransaction := repository.db.Preload("User").
+		Preload("User.Credential").
+		Preload("BookingDetail").
+		Preload("BookingDetail.Package").
+		Preload("BookingDetail.User_Schedules").
+		First(&booking, "order_id = ?", orderId)
+
+	if errGetTransaction.Error != nil {
+		return false, errGetTransaction.Error
 	}
 
-	errUpdateStatus := repository.db.Model(&GetBookingTransaction).Update("status", status)
+	errUpdateStatus := repository.db.Model(&booking).Update("status", status)
 
 	if errUpdateStatus.Error != nil {
 		return false, fmt.Errorf("Error when update status")

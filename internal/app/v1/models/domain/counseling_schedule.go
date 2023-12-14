@@ -20,3 +20,19 @@ type Counseling_Schedule struct {
 	UpdatedAt    time.Time
 	DeletedAt    gorm.DeletedAt
 }
+type Counseling_Single_Schedule struct {
+	Id           uint
+	Counselor_id uint
+	Counselor    *Counselors
+	Day_schedule string
+	Time_start   time.Time
+	Time_finish  time.Time
+	Status       string `gorm:"type:enum('OPEN', 'BOOKED', 'CLOSED');default:'OPEN'"`
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+	DeletedAt    gorm.DeletedAt
+}
+
+func (Counseling_Single_Schedule) TableName() string {
+	return "counseling_schedules"
+}

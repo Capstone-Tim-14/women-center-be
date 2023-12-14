@@ -52,9 +52,11 @@ func (handler *BookingCounselingHandlerImpl) NotificationHandler(ctx echo.Contex
 	}
 
 	if GetTransactionStatus == "challange" || GetTransactionStatus == "accept" || GetTransactionStatus == "settlement" || GetTransactionStatus == "deny" {
-		_, errUpdateStatusBooking = handler.BookingService.UpdateStatusBooking(orderId, "SUCCESS")
+		_, errUpdateStatusBooking = handler.BookingService.UpdateStatusBooking(orderId, "SETTLEMENT")
 	} else if GetTransactionStatus == "cancel" || GetTransactionStatus == "expire" {
 		_, errUpdateStatusBooking = handler.BookingService.UpdateStatusBooking(orderId, "FAILED")
+	} else if GetTransactionStatus == "pending" {
+		return responses.StatusCreated(ctx, "Your transcation is pending, finish your payment", nil)
 	}
 
 	if errUpdateStatusBooking != nil {

@@ -21,7 +21,11 @@ func HttpBookingCounselingRoute(group *echo.Group, db *gorm.DB, validate *valida
 	PackageRepo := repositories.NewCounselingPackageRepository(db)
 	BookingRepo := repositories.NewBookingCounselingRepository(db)
 
-	UserService := services.NewUserService(UserRepo, RoleRepo, validate)
+	UserService := services.NewUserService(services.UserServiceImpl{
+		UserRepo:      UserRepo,
+		RoleRepo:      RoleRepo,
+		CounselorRepo: CounselorRepo,
+	})
 	MidtransService := payment.NewMidtransCoreApiImpl()
 
 	TransactionService := services.NewTransactionPaymentService(services.TransactionPaymentServiceImpl{
@@ -47,12 +51,13 @@ func HttpBookingCounselingRoute(group *echo.Group, db *gorm.DB, validate *valida
 	BookingCounselingHandler := handlers.NewBookingCounselingHandler(handlers.BookingCounselingHandlerImpl{
 		BookingService:     BookingCounselingService,
 		TransactionService: TransactionService,
+		MidtransService:    MidtransService,
 	})
 
 	verifyToken := group.Group("", middlewares.VerifyTokenSignature("SECRET_KEY"))
 
 	verifyToken.POST("/booking", BookingCounselingHandler.CreateBookingHandler)
 	verifyToken.POST("/charge-payment", BookingCounselingHandler.CreateTransactionPaymentHandler)
-	verifyToken.POST("/notification-payment", BookingCounselingHandler.NotificationHandler)
+	group.POST("/notification-payment", BookingCounselingHandler.NotificationHandler)
 
 }
