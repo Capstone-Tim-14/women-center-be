@@ -9,6 +9,7 @@ import (
 type UserScheduleCounseling struct {
 	Id                    uint `gorm:"primaryKey"`
 	User_id               uint
+	Booking_detail_id     uint
 	User                  *Users `gorm:"foreignKey:User_id;references:Id;"`
 	Counselor_schedule_id uint
 	Counselor_schedule    *Counseling_Schedule `gorm:"foreignKey:Counselor_schedule_id;references:Id;"`

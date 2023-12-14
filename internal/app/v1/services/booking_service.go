@@ -15,12 +15,14 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
+	uuid "github.com/satori/go.uuid"
 )
 
 type BookingService interface {
 	CreateBookingCounseling(requests []requests.BookingCounselingRequest, ctx echo.Context) ([]exceptions.ValidationMessage, error, *resources.BookingCounselingResource)
 	GetUserLoginAndCounselorData(ctx echo.Context, counselor_id int) (*domain.Counselors, *domain.Users, error)
 	CreateUserScheduleBooking(request requests.BookingCounselingRequest, counselor *domain.Counselors, userAuth *domain.Users) (*domain.UserScheduleCounseling, error)
+	UpdateStatusBooking(orderId string, status string) (bool, error)
 }
 
 type BookingServiceImpl struct {
@@ -38,6 +40,23 @@ func NewBookingService(bookingService BookingServiceImpl) BookingService {
 	return &bookingService
 }
 
+func (service *BookingServiceImpl) UpdateStatusBooking(orderId string, status string) (bool, error) {
+
+	ConvertToUUID, errConvert := uuid.FromString(orderId)
+
+	if errConvert != nil {
+		return false, fmt.Errorf("Error convert order id")
+	}
+
+	StatusUpdate, errUpdateBookingStatus := service.BookingRepo.UpdateStatusBooking(ConvertToUUID, status)
+
+	if errUpdateBookingStatus != nil {
+		return false, fmt.Errorf("failed update")
+	}
+
+	return StatusUpdate, nil
+}
+
 func (service *BookingServiceImpl) CreateUserScheduleBooking(request requests.BookingCounselingRequest, counselor *domain.Counselors, userAuth *domain.Users) (*domain.UserScheduleCounseling, error) {
 	GetDayRequestBooking := helpers.GetDayToTime(*helpers.ParseStringToTime(request.Booking_date))
 
@@ -52,9 +71,6 @@ func (service *BookingServiceImpl) CreateUserScheduleBooking(request requests.Bo
 		Day:                   *helpers.ParseStringToTime(request.Booking_date),
 		Time_start:            request.Booking_time,
 	}
-
-	fmt.Println(CounselorRequestQuery)
-
 	IsExists, _ := service.ScheduleRepo.FindScheduleByDateAndTimeExist(CounselorRequestQuery)
 
 	if IsExists {
@@ -145,6 +161,12 @@ func (service *BookingServiceImpl) CreateBookingCounseling(scheduleReq []request
 
 	if errCreateTransaction != nil {
 		return nil, fmt.Errorf("Failed to create transaction"), nil
+	}
+
+	UpdateBookingDetailToSchedule := service.ScheduleRepo.UpdateMultipleScheduleBooked(AllUserScheduleCounseling, resultTransaction.Booking_detail_id)
+
+	if UpdateBookingDetailToSchedule != nil {
+		return nil, fmt.Errorf("Failed processing transaction"), nil
 	}
 
 	result := resource.BookingCounselingToDomainBookingCounseling(resultTransaction, ConvertCounselingPackage, GetUserAuth, GetCounselor, AllUserScheduleCounseling)
