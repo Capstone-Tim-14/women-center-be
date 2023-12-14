@@ -53,3 +53,65 @@ func UserDomainToUserOTPGenerate(code string, secret string) *resources.OtpResou
 		Secret: secret,
 	}
 }
+
+func UserFavoriteArticleResponse(user *domain.Users) *[]resources.ArticleResource {
+	userArticleFavorite := []resources.ArticleResource{}
+	var authorName string
+	var tagCategories []resources.ArticleCategory
+
+	for _, artikelFav := range user.ArticleFavorites {
+
+		if artikelFav.Admin != nil {
+			authorName = artikelFav.Admin.First_name + " " + artikelFav.Admin.Last_name
+		} else if artikelFav.Counselors != nil {
+			authorName = artikelFav.Counselors.First_name + " " + artikelFav.Counselors.Last_name
+		} else {
+			authorName = "Unknown Author"
+		}
+
+		for _, tag := range artikelFav.Tags {
+			tagCategories = append(tagCategories, resources.ArticleCategory{
+				Id:   tag.Id,
+				Name: tag.Name,
+			})
+		}
+
+		favoriteArticle := resources.ArticleResource{
+			Id:        artikelFav.Id,
+			Title:     artikelFav.Title,
+			Thumbnail: *artikelFav.Thumbnail,
+			Slug:      artikelFav.Slug,
+			Content:   artikelFav.Content,
+			Status:    artikelFav.Status,
+			Tag:       tagCategories,
+			Author: resources.Author{
+				Name: authorName,
+			},
+			PublishedAt: helpers.ParseOnlyDate(&artikelFav.PublishedAt),
+		}
+		userArticleFavorite = append(userArticleFavorite, favoriteArticle)
+	}
+
+	return &userArticleFavorite
+}
+
+func UserCounselorFavoriteResponse(user *domain.Users) resources.UserCounselorFavorite {
+	var Counselor []resources.CounselorFavorite
+	CounselorFavoriteResource := resources.UserCounselorFavorite{}
+	CounselorFavoriteResource.Id = user.Id
+	CounselorFavoriteResource.First_name = user.First_name
+	CounselorFavoriteResource.Last_name = user.Last_name
+	CounselorFavoriteResource.Username = user.Credential.Username
+	for _, counselorFav := range user.Counselor_Favorite {
+		Counselor = append(Counselor, resources.CounselorFavorite{
+			Id:              counselorFav.Id,
+			First_name:      counselorFav.First_name,
+			Last_name:       counselorFav.Last_name,
+			Username:        counselorFav.Credential.Username,
+			Profile_picture: counselorFav.Profile_picture,
+		})
+	}
+	CounselorFavoriteResource.CounselorFavorite = Counselor
+
+	return CounselorFavoriteResource
+}

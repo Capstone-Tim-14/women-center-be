@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"strconv"
 	"strings"
 	"woman-center-be/internal/app/v1/services"
 	conversion "woman-center-be/internal/web/conversion/resource/v1"
@@ -15,6 +16,8 @@ type CounselingPackageHandler interface {
 	CreatePackage(ctx echo.Context) error
 	FindByTitle(ctx echo.Context) error
 	GetAllPackage(ctx echo.Context) error
+	DeletePackage(ctx echo.Context) error
+	UpdatePackage(ctx echo.Context) error
 }
 
 type CounselingPackageHandlerImpl struct {
@@ -82,4 +85,50 @@ func (handler *CounselingPackageHandlerImpl) GetAllPackage(ctx echo.Context) err
 	listResponse := conversion.ConvertCounselingPackageDomainToResponse(response)
 
 	return responses.StatusOK(ctx, "Success Get All Counseling Package", listResponse)
+}
+
+func (handler *CounselingPackageHandlerImpl) DeletePackage(ctx echo.Context) error {
+	pkgId := ctx.Param("id")
+	pkgIdInt, errId := strconv.Atoi(pkgId)
+	if errId != nil {
+		return exceptions.StatusBadRequest(ctx, errId)
+	}
+
+	errPkg := handler.CounselingPackageService.DeletePackageById(ctx, pkgIdInt)
+	if errPkg != nil {
+		if strings.Contains(errPkg.Error(), "package not found") {
+			return exceptions.StatusNotFound(ctx, errPkg)
+		}
+		return exceptions.StatusInternalServerError(ctx, errPkg)
+	}
+
+	return responses.StatusOK(ctx, "Success remove package", nil)
+}
+
+func (handler *CounselingPackageHandlerImpl) UpdatePackage(ctx echo.Context) error {
+	var request requests.CounselingPackageRequest
+	errBinding := ctx.Bind(&request)
+
+	Thumbnail, _ := ctx.FormFile("thumbnail")
+
+	if errBinding != nil {
+		return exceptions.StatusBadRequest(ctx, errBinding)
+	}
+
+	_, validation, err := handler.CounselingPackageService.UpdatePackageById(ctx, request, Thumbnail)
+	if validation != nil {
+		return exceptions.ValidationException(ctx, "Error Validation", validation)
+	}
+
+	if err != nil {
+		if strings.Contains(err.Error(), "invalid id") {
+			return exceptions.StatusBadRequest(ctx, err)
+		}
+		if strings.Contains(err.Error(), "package not found") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Package updated!", nil)
 }

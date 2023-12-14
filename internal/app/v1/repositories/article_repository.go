@@ -23,6 +23,7 @@ type ArticleRepository interface {
 	FindBySlug(slug string) (*domain.Articles, error)
 	FindByTitle(title string) (*domain.Articles, error)
 	UpdateArticle(id int, article *domain.Articles) error
+	FindSlugForFavorite(slug string) (*domain.Articles, error)
 }
 
 type ArticleRepositoryImpl struct {
@@ -233,4 +234,14 @@ func (repository *ArticleRepositoryImpl) UpdateArticle(id int, article *domain.A
 	}
 
 	return nil
+}
+
+func (repository *ArticleRepositoryImpl) FindSlugForFavorite(slug string) (*domain.Articles, error) {
+	article := domain.Articles{}
+	result := repository.db.Where("slug = ?", slug).First(&article)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &article, nil
 }

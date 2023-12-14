@@ -19,24 +19,30 @@ type UserService interface {
 	RegisterUser(ctx echo.Context, request requests.UserRequest) (*domain.Users, []exceptions.ValidationMessage, error)
 	GetUserProfile(ctx echo.Context) (*domain.Users, error)
 	UpdateUserProfile(ctx echo.Context, request requests.UpdateUserProfileRequest, picture *multipart.FileHeader) (*domain.Users, []exceptions.ValidationMessage, error)
+	AddFavoriteArticle(ctx echo.Context, slug string) error
+	DeleteFavoriteArticle(ctx echo.Context, slug string) error
+	AllFavoriteArticle(ctx echo.Context) (*domain.Users, error)
+	AddCounselorFavorite(ctx echo.Context, id int) error
+	RemoveCounselorFavorite(ctx echo.Context, id int) ([]exceptions.ValidationMessage, error)
+	GetCounselorFavorite(ctx echo.Context) (*domain.Users, error)
 }
 
 type UserServiceImpl struct {
-	UserRepo  repositories.UserRepository
-	RoleRepo  repositories.RoleRepository
-	validator *validator.Validate
+	UserRepo              repositories.UserRepository
+	RoleRepo              repositories.RoleRepository
+	Validator             *validator.Validate
+	ArticleRepo           repositories.ArticleRepository
+	FavoriteArticle       repositories.ArticleFavoriteRepository
+	CounselorRepo         repositories.CounselorRepository
+	CounselorFavoriteRepo repositories.CounselorFavoriteRepository
 }
 
-func NewUserService(user repositories.UserRepository, role repositories.RoleRepository, validator *validator.Validate) UserService {
-	return &UserServiceImpl{
-		UserRepo:  user,
-		RoleRepo:  role,
-		validator: validator,
-	}
+func NewUserService(userServiceImpl UserServiceImpl) UserService {
+	return &userServiceImpl
 }
 
 func (service *UserServiceImpl) RegisterUser(ctx echo.Context, request requests.UserRequest) (*domain.Users, []exceptions.ValidationMessage, error) {
-	err := service.validator.Struct(request)
+	err := service.Validator.Struct(request)
 	if err != nil {
 		return nil, helpers.ValidationError(ctx, err), nil
 	}
@@ -87,7 +93,7 @@ func (service *UserServiceImpl) UpdateUserProfile(ctx echo.Context, request requ
 		request.Profile_picture = cloudURL
 	}
 
-	err := service.validator.Struct(request)
+	err := service.Validator.Struct(request)
 	if err != nil {
 		return nil, helpers.ValidationError(ctx, err), nil
 	}
@@ -107,4 +113,112 @@ func (service *UserServiceImpl) UpdateUserProfile(ctx echo.Context, request requ
 	}
 
 	return updatedUser, nil, nil
+}
+
+func (service *UserServiceImpl) AddFavoriteArticle(ctx echo.Context, slug string) error {
+	getUserClaim := helpers.GetAuthClaims(ctx)
+
+	user, errUser := service.UserRepo.FindByID(int(getUserClaim.Id))
+	if errUser != nil {
+		return fmt.Errorf("Failed to find user")
+	}
+
+	slugArticle, errArticle := service.ArticleRepo.FindSlugForFavorite(slug)
+	if errArticle != nil {
+		return fmt.Errorf("Failed to find article")
+	}
+
+	errAddFavorite := service.FavoriteArticle.AddFavoriteArticle(*user, slugArticle)
+	if errAddFavorite != nil {
+		return errAddFavorite
+	}
+
+	return nil
+}
+
+func (service *UserServiceImpl) AddCounselorFavorite(ctx echo.Context, id int) error {
+	getUserClaim := helpers.GetAuthClaims(ctx)
+
+	user, errUser := service.UserRepo.FindByID(int(getUserClaim.Id))
+	if errUser != nil {
+		return fmt.Errorf("Failed to find user")
+	}
+
+	counselorfav, errCounselorFav := service.CounselorRepo.FindById(id)
+	if errCounselorFav != nil {
+		return fmt.Errorf("Failed to find counselor")
+	}
+
+	errAddCounselor := service.CounselorFavoriteRepo.AddCounselorFavorite(*user, counselorfav)
+	if errAddCounselor != nil {
+		return errAddCounselor
+	}
+
+	return nil
+}
+
+func (service *UserServiceImpl) DeleteFavoriteArticle(ctx echo.Context, slug string) error {
+	getUserClaim := helpers.GetAuthClaims(ctx)
+
+	user, err := service.UserRepo.FindByID(int(getUserClaim.Id))
+	if err != nil {
+		return fmt.Errorf("Failed to find user: %s", err.Error())
+	}
+
+	slugArticle, err := service.ArticleRepo.FindSlugForFavorite(slug)
+	if err != nil {
+		return fmt.Errorf("Failed to find article")
+	} else {
+		errFavorite := service.FavoriteArticle.DeleteFavoriteArticle(*user, slugArticle)
+		if errFavorite != nil {
+			return errFavorite
+		}
+	}
+
+	return nil
+}
+
+func (service *UserServiceImpl) AllFavoriteArticle(ctx echo.Context) (*domain.Users, error) {
+	getUserClaim := helpers.GetAuthClaims(ctx)
+
+	user, err := service.UserRepo.FindByID(int(getUserClaim.Id))
+	if err != nil {
+		return nil, fmt.Errorf("Failed to find user: %s", err.Error())
+	}
+
+	return user, nil
+}
+
+func (service *UserServiceImpl) RemoveCounselorFavorite(ctx echo.Context, id int) ([]exceptions.ValidationMessage, error) {
+	getUserClaim := helpers.GetAuthClaims(ctx)
+
+	user, errUser := service.UserRepo.FindByID(int(getUserClaim.Id))
+	if errUser != nil {
+		return nil, fmt.Errorf("Failed to find user: %s", errUser.Error())
+	}
+
+	CounselorFav, errCounselorFav := service.CounselorRepo.FindById(id)
+	if errCounselorFav != nil {
+		fmt.Errorf(errCounselorFav.Error())
+		return nil, fmt.Errorf("Failed to find counselor")
+	}
+
+	errRemoveCounselorFav := service.CounselorFavoriteRepo.RemoveCounselorFavorite(*user, CounselorFav)
+	if errRemoveCounselorFav != nil {
+		fmt.Errorf(errRemoveCounselorFav.Error())
+		return nil, fmt.Errorf("Error when remove counselor favorite")
+	}
+
+	return nil, nil
+}
+
+func (service *UserServiceImpl) GetCounselorFavorite(ctx echo.Context) (*domain.Users, error) {
+	getUserClaim := helpers.GetAuthClaims(ctx)
+
+	user, err := service.UserRepo.FindByID(int(getUserClaim.Id))
+	if err != nil {
+		return nil, fmt.Errorf("Failed to find user: %s", err.Error())
+	}
+
+	return user, nil
 }
