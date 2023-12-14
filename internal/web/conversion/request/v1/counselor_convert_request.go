@@ -53,3 +53,11 @@ func CounselorScheduleToCounselorDomain(requests []requests.CounselingScheduleRe
 	return CounselorScheduling
 
 }
+
+func ScheduleUpdateOnlyOne(requests requests.CounselingScheduleRequest) domain.Counseling_Schedule {
+	return domain.Counseling_Schedule{
+		Day_schedule: requests.Day_schedule,
+		Time_start:   helpers.ParseClockToTime(requests.Time_start),
+		Time_finish:  helpers.ParseClockToTime(requests.Time_finish),
+	}
+}
