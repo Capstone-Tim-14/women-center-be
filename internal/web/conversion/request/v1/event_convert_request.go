@@ -6,7 +6,7 @@ import (
 	"woman-center-be/utils/helpers"
 )
 
-func EventCreateRequestToEventDomain(request *requests.EventRequest) *domain.Event {
+func EventCreateRequestToEventDomain(request requests.EventRequest) *domain.Event {
 	return &domain.Event{
 		Title:       request.Title,
 		Poster:      *request.Poster,

@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"mime/multipart"
+	"strconv"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/app/v1/repositories"
 	conversion "woman-center-be/internal/web/conversion/request/v1"
@@ -20,6 +21,7 @@ type EventService interface {
 	GetDetailEvent(ctx echo.Context, id int) (*domain.Event, error)
 	GetAllEvent(ctx echo.Context) ([]domain.Event, error)
 	GetAllEventMobile(ctx echo.Context) ([]domain.Event, error)
+	UpdateEvent(ctx echo.Context, request requests.EventRequest, poster *multipart.FileHeader) ([]exceptions.ValidationMessage, error)
 }
 
 type EventServiceImpl struct {
@@ -44,7 +46,7 @@ func (service *EventServiceImpl) CreateEvent(ctx echo.Context, request requests.
 		return nil, helpers.ValidationError(ctx, err), nil
 	}
 
-	event := conversion.EventCreateRequestToEventDomain(&request)
+	event := conversion.EventCreateRequestToEventDomain(request)
 
 	createEvent, err := service.EventRepo.CreateEvent(event)
 
@@ -83,4 +85,41 @@ func (service *EventServiceImpl) GetAllEventMobile(ctx echo.Context) ([]domain.E
 	}
 
 	return events, nil
+}
+
+func (service *EventServiceImpl) UpdateEvent(ctx echo.Context, request requests.EventRequest, poster *multipart.FileHeader) ([]exceptions.ValidationMessage, error) {
+
+	if poster != nil {
+
+		PosterCloudURL, errUploadPoster := storage.S3PutFile(poster, "event/poster")
+
+		if errUploadPoster != nil {
+			return nil, errUploadPoster
+		}
+
+		request.Poster = &PosterCloudURL
+	}
+
+	err := service.Validator.Struct(request)
+	if err != nil {
+		return helpers.ValidationError(ctx, err), nil
+	}
+
+	id := ctx.Param("id")
+	getId, _ := strconv.Atoi(id)
+
+	_, err = service.EventRepo.FindById(getId)
+	if err != nil {
+		return nil, fmt.Errorf("Event not found")
+
+	}
+
+	event := conversion.EventCreateRequestToEventDomain(request)
+
+	_, err = service.EventRepo.UpdateEvent(getId, event), nil
+	if err != nil {
+		return nil, fmt.Errorf("Error update event")
+	}
+
+	return nil, nil
 }

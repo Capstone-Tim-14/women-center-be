@@ -22,15 +22,26 @@ func CounselorCreateRequestToCounselorDomain(request requests.CounselorRequest) 
 	}
 }
 
-func CounselorUpdateRequestToCounselorDomain(request requests.CounselorRequest, counselor *domain.Counselors) *domain.Counselors {
+func CounselorUpdateRequestToCounselorDomainForMobile(request requests.UpdateCounselorProfileRequestForMobile, counselor *domain.Counselors) *domain.Counselors {
 	counselor.First_name = request.First_name
 	counselor.Last_name = request.Last_name
-	counselor.Credential.Username = request.Username
-	counselor.Credential.Password = helpers.HashPassword(request.Password)
+	counselor.Credential.Role_id = request.Role_id
+	counselor.Credential.Email = request.Email
+	counselor.Profile_picture = request.Profile_picture
+	counselor.Birthday = helpers.ParseStringToTime(request.Birthday)
+
+	return counselor
+}
+
+func CounselorUpdateRequestToCounselorDomain(request requests.UpdateCounselorProfileRequest, counselor *domain.Counselors) *domain.Counselors {
+	counselor.First_name = request.First_name
+	counselor.Last_name = request.Last_name
 	counselor.Credential.Role_id = request.Role_id
 	counselor.Credential.Email = request.Email
 	counselor.Profile_picture = request.Profile_picture
 	counselor.Description = request.Description
+	counselor.Education = request.Education
+	counselor.Birthday = helpers.ParseStringToTime(request.Birthday)
 
 	return counselor
 }

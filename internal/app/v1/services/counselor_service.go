@@ -27,8 +27,8 @@ type CounselorService interface {
 	GetCounselorsForMobile(ctx echo.Context) ([]domain.Counselors, error)
 	GetCounselorProfile(ctx echo.Context) (*domain.Counselors, error)
 	GetDetailCounselor(ctx echo.Context) (*resources.DetailCounselor, error)
-	UpdateCounselor(ctx echo.Context, request requests.CounselorRequest, picture *multipart.FileHeader) (*domain.Counselors, []exceptions.ValidationMessage, error)
-	UpdateCounselorForMobile(ctx echo.Context, request requests.CounselorRequest, picture *multipart.FileHeader) (*domain.Counselors, []exceptions.ValidationMessage, error)
+	UpdateCounselor(ctx echo.Context, request requests.UpdateCounselorProfileRequest, picture *multipart.FileHeader) (*domain.Counselors, []exceptions.ValidationMessage, error)
+	UpdateCounselorForMobile(ctx echo.Context, request requests.UpdateCounselorProfileRequestForMobile, picture *multipart.FileHeader) (*domain.Counselors, []exceptions.ValidationMessage, error)
 }
 
 type CounselorServiceImpl struct {
@@ -178,7 +178,7 @@ func (service *CounselorServiceImpl) GetCounselorProfile(ctx echo.Context) (*dom
 	return counselor, nil
 }
 
-func (service *CounselorServiceImpl) UpdateCounselor(ctx echo.Context, request requests.CounselorRequest, picture *multipart.FileHeader) (*domain.Counselors, []exceptions.ValidationMessage, error) {
+func (service *CounselorServiceImpl) UpdateCounselor(ctx echo.Context, request requests.UpdateCounselorProfileRequest, picture *multipart.FileHeader) (*domain.Counselors, []exceptions.ValidationMessage, error) {
 	if picture != nil {
 		cloudURL, errUpload := storage.S3PutFile(picture, "counselor/picture")
 
@@ -212,7 +212,7 @@ func (service *CounselorServiceImpl) UpdateCounselor(ctx echo.Context, request r
 	return nil, nil, nil
 }
 
-func (service *CounselorServiceImpl) UpdateCounselorForMobile(ctx echo.Context, request requests.CounselorRequest, picture *multipart.FileHeader) (*domain.Counselors, []exceptions.ValidationMessage, error) {
+func (service *CounselorServiceImpl) UpdateCounselorForMobile(ctx echo.Context, request requests.UpdateCounselorProfileRequestForMobile, picture *multipart.FileHeader) (*domain.Counselors, []exceptions.ValidationMessage, error) {
 	if picture != nil {
 		cloudURL, errUpload := storage.S3PutFile(picture, "counselor/picture")
 
@@ -234,7 +234,7 @@ func (service *CounselorServiceImpl) UpdateCounselorForMobile(ctx echo.Context, 
 	}
 
 	request.Role_id = getUser.Credential.Role_id
-	counselor := conversion.CounselorUpdateRequestToCounselorDomain(request, getUser)
+	counselor := conversion.CounselorUpdateRequestToCounselorDomainForMobile(request, getUser)
 
 	errUpdate := service.CounselorRepo.UpdateCounselor(counselor)
 

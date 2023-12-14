@@ -10,7 +10,7 @@ import (
 
 type ScheduleRepository interface {
 	CreateSchedule(counselor *domain.Counselors, scheduling []domain.Counseling_Schedule) error
-	CheckDayCounselingScheduleExists(id int, day string) (*domain.Counseling_Schedule, error)
+	CheckDayCounselingScheduleExists(id int, day string) (*domain.Counseling_Single_Schedule, error)
 	FindStartEndDateCounseling(counselor_id int, day string, start time.Time, finish time.Time) (*domain.Counseling_Schedule, error)
 	GroupingStartTimeAndFinishTimeCounseling(counselor_id int) ([]domain.Counseling_Schedule, error)
 }
@@ -46,11 +46,13 @@ func (repository *ScheduleRepositoryImpl) GroupingStartTimeAndFinishTimeCounseli
 
 }
 
-func (repository *ScheduleRepositoryImpl) CheckDayCounselingScheduleExists(id int, day string) (*domain.Counseling_Schedule, error) {
+func (repository *ScheduleRepositoryImpl) CheckDayCounselingScheduleExists(id int, day string) (*domain.Counseling_Single_Schedule, error) {
 
-	var counselorSchedule domain.Counseling_Schedule
+	var counselorSchedule domain.Counseling_Single_Schedule
 
-	errGetDaySchedule := repository.Db.Where("counselor_id = ? AND day_schedule = ?", id, day).First(&counselorSchedule)
+	errGetDaySchedule := repository.Db.Where("counselor_id = ? AND day_schedule = ?", id, day).
+		Select("counselor_id", "day_schedule").
+		First(&counselorSchedule)
 
 	if errGetDaySchedule.Error != nil {
 		fmt.Errorf(errGetDaySchedule.Error.Error())
