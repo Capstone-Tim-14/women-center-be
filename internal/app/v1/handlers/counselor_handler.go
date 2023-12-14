@@ -136,7 +136,7 @@ func (handler *CounselorHandlerImpl) GetAllCounselorsHandler(ctx echo.Context) e
 }
 
 func (handler *CounselorHandlerImpl) UpdateCounselorHandler(ctx echo.Context) error {
-	counselorUpdateRequest := requests.CounselorRequest{}
+	counselorUpdateRequest := requests.UpdateCounselorProfileRequest{}
 	picture, _ := ctx.FormFile("picture")
 	err := ctx.Bind(&counselorUpdateRequest)
 	if err != nil {
@@ -161,7 +161,7 @@ func (handler *CounselorHandlerImpl) UpdateCounselorHandler(ctx echo.Context) er
 }
 
 func (handler *CounselorHandlerImpl) UpdateCounselorForMobile(ctx echo.Context) error {
-	counselorUpdateRequest := requests.CounselorRequest{}
+	counselorUpdateRequest := requests.UpdateCounselorProfileRequestForMobile{}
 	picture, _ := ctx.FormFile("picture")
 	err := ctx.Bind(&counselorUpdateRequest)
 	if err != nil {
