@@ -71,9 +71,6 @@ func (service *BookingServiceImpl) CreateUserScheduleBooking(request requests.Bo
 		Day:                   *helpers.ParseStringToTime(request.Booking_date),
 		Time_start:            request.Booking_time,
 	}
-
-	fmt.Println(CounselorRequestQuery)
-
 	IsExists, _ := service.ScheduleRepo.FindScheduleByDateAndTimeExist(CounselorRequestQuery)
 
 	if IsExists {

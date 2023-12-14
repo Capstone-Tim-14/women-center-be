@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"strings"
 	"woman-center-be/internal/app/v1/services"
 	"woman-center-be/internal/web/requests/v1"
 	payment "woman-center-be/pkg/payment/midtrans"
@@ -113,6 +114,9 @@ func (handler *BookingCounselingHandlerImpl) CreateBookingHandler(ctx echo.Conte
 	}
 
 	if errBooking != nil {
+		if strings.Contains(errBooking.Error(), "One of schedule counselor is already booked to another user") {
+			return exceptions.StatusAlreadyExist(ctx, errBooking)
+		}
 		return exceptions.StatusInternalServerError(ctx, errBooking)
 	}
 
