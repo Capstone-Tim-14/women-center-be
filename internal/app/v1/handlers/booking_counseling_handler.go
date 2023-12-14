@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"woman-center-be/internal/app/v1/services"
 	"woman-center-be/internal/web/requests/v1"
+	payment "woman-center-be/pkg/payment/midtrans"
 	"woman-center-be/utils/exceptions"
 	"woman-center-be/utils/responses"
 
@@ -20,6 +21,7 @@ type BookingCounselingHandler interface {
 type BookingCounselingHandlerImpl struct {
 	BookingService     services.BookingService
 	TransactionService services.TransactionPaymentService
+	MidtransService    payment.MidtransCoreApi
 }
 
 func NewBookingCounselingHandler(bookingHandler BookingCounselingHandlerImpl) BookingCounselingHandler {
@@ -29,6 +31,7 @@ func NewBookingCounselingHandler(bookingHandler BookingCounselingHandlerImpl) Bo
 func (handler *BookingCounselingHandlerImpl) NotificationHandler(ctx echo.Context) error {
 
 	notification := make(map[string]interface{})
+	var errUpdateStatusBooking error
 
 	errDecodeNotification := ctx.Bind(&notification)
 
@@ -41,6 +44,24 @@ func (handler *BookingCounselingHandlerImpl) NotificationHandler(ctx echo.Contex
 	if !isExists {
 		return exceptions.StatusNotFound(ctx, fmt.Errorf("OrderId not found"))
 	}
+
+	GetTransactionStatus, errStatus := handler.MidtransService.CheckTransactionPayment(orderId)
+
+	if errStatus != nil {
+		return exceptions.StatusInternalServerError(ctx, errStatus)
+	}
+
+	if GetTransactionStatus == "challange" || GetTransactionStatus == "accept" || GetTransactionStatus == "settlement" || GetTransactionStatus == "deny" {
+		_, errUpdateStatusBooking = handler.BookingService.UpdateStatusBooking(orderId, "SUCCESS")
+	} else if GetTransactionStatus == "cancel" || GetTransactionStatus == "expire" {
+		_, errUpdateStatusBooking = handler.BookingService.UpdateStatusBooking(orderId, "FAILED")
+	}
+
+	if errUpdateStatusBooking != nil {
+		return exceptions.StatusInternalServerError(ctx, errUpdateStatusBooking)
+	}
+
+	return responses.StatusCreated(ctx, "Updated status transaction "+GetTransactionStatus, nil)
 
 }
 

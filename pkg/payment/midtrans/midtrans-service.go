@@ -10,7 +10,7 @@ import (
 
 type MidtransCoreApi interface {
 	ChargeTransaction(request *coreapi.ChargeReq) (*coreapi.ChargeResponse, error)
-	CheckTransactionPayment(transactionData map[string]interface{}) (string, error)
+	CheckTransactionPayment(orderId string) (string, error)
 }
 
 type MidtransCoreApiImpl struct {
