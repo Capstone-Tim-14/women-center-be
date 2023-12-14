@@ -85,6 +85,12 @@ func (handler *ScheduleHandlerImpl) UpdateScheduleHandler(ctx echo.Context) erro
 	}
 
 	if err != nil {
+		if strings.Contains(err.Error(), "invalid id") {
+			return exceptions.StatusBadRequest(ctx, err)
+		}
+		if strings.Contains(err.Error(), "schedule not found") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
