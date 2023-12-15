@@ -83,6 +83,9 @@ func (handler *SpecialistHandlerImpl) DeleteSpecialistHandler(ctx echo.Context) 
 
 	err = handler.SpecialistService.DeleteSpecialistById(ctx, idInt)
 	if err != nil {
+		if strings.Contains(err.Error(), "specialist not found") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
