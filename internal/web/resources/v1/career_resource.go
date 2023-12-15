@@ -15,6 +15,7 @@ type CareerResource struct {
 	Company_industry      string    `json:"company_industry,omitempty"`
 	Size_company_employee uint      `json:"size_company_employee,omitempty"`
 	Job_type              []JobType `json:"job_type,omitempty"`
+	Recomendation         string    `json:"recomendation,omitempty"`
 	CreatedAt             string    `json:"created_at,omitempty"`
 	UpdatedAt             string    `json:"updated_at,omitempty"`
 }

@@ -36,7 +36,10 @@ func HttpCareerRoute(group *echo.Group, db *gorm.DB, validate *validator.Validat
 	CareerGroup.DELETE("/:id/remove-job-type", CareerHandler.RemoveJobType)
 	CareerGroup.PUT("/:id", CareerHandler.UpdateCareer)
 	CareerGroup.DELETE("/:id", CareerHandler.DeleteCareer)
+	CareerGroup.GET("/recomendation", CareerHandler.RecomendationCareerList)
+	CareerGroup.PUT("/recomended", CareerHandler.UpdateRecomendationCareer)
 
 	verifyTokenUser.GET("/careers", CareerHandler.FindAllCareer)
 	verifyTokenUser.GET("/career/:id", CareerHandler.FindDetailCareer)
+	verifyTokenUser.GET("/recomendation-careers", CareerHandler.RecomendationCareerListForMobile)
 }
