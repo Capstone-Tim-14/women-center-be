@@ -1,6 +1,7 @@
 package conversion
 
 import (
+	"strconv"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/web/resources/v1"
 	"woman-center-be/utils/helpers"
@@ -40,6 +41,7 @@ func CounselingSessionBookedConvert(CounselingBooked []domain.CounselingSession)
 	for _, item := range CounselingBooked {
 		CounselingSessionings = append(CounselingSessionings, resources.CounselingSessioningResource{
 			OrderId:       item.OrderId,
+			UserId:        strconv.Itoa(int(item.User_id)),
 			FullName:      item.First_name + " " + item.Last_name,
 			Package:       item.Package_title,
 			Date_schedule: helpers.ParseOnlyDate(helpers.ParseStringToTime(item.Date_schedule)),
