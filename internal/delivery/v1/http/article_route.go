@@ -47,6 +47,7 @@ func HttpArticleRoute(group *echo.Group, db *gorm.DB, validate *validator.Valida
 	articleCounselor := CounselorGroup.Group("/articles")
 	articleCounselor.POST("", ArticleHandler.CreateArticle)
 	articleCounselor.GET("", ArticleHandler.AllArticleCounselorHandler)
+	articleCounselor.PUT("/:id", ArticleHandler.UpdateArticle)
 
 	articleUser := verifyToken.Group("/articles")
 	articleUser.GET("", ArticleHandler.FindAllArticleUser)
