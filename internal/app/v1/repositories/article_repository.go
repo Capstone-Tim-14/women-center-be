@@ -230,7 +230,7 @@ func (repository *ArticleRepositoryImpl) FindByTitle(title string) (*domain.Arti
 func (repository *ArticleRepositoryImpl) UpdateArticle(id int, article *domain.Articles) error {
 	result := repository.db.Model(&article).Where("id = ?", id).Updates(article)
 	if result.Error != nil {
-		return result.Error
+		return fmt.Errorf("error updating article")
 	}
 
 	return nil

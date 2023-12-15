@@ -292,6 +292,14 @@ func (handler *ArticleHandlerImpl) UpdateArticle(ctx echo.Context) error {
 		return exceptions.ValidationException(ctx, "Error Validation", validation)
 	}
 
+	if strings.Contains(err.Error(), "invalid id") {
+		return exceptions.StatusBadRequest(ctx, err)
+	}
+
+	if strings.Contains(err.Error(), "article not found") {
+		return exceptions.StatusNotFound(ctx, err)
+	}
+
 	if err != nil {
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
