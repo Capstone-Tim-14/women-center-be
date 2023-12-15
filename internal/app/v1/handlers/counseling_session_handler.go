@@ -11,6 +11,7 @@ import (
 
 type CounselingSessionHandlers interface {
 	ListCounselingSessionHandler(echo.Context) error
+	CounselingSessionDetailHandler(echo.Context) error
 }
 
 type CounselingSessionHandlerImpl struct {
@@ -19,6 +20,17 @@ type CounselingSessionHandlerImpl struct {
 
 func NewCounselingSessionHandlers(counselingSession CounselingSessionHandlerImpl) CounselingSessionHandlers {
 	return &counselingSession
+}
+
+func (handler *CounselingSessionHandlerImpl) CounselingSessionDetailHandler(ctx echo.Context) error {
+
+	response, err := handler.CounselingSession.GetCounselingSessionDetail(ctx)
+
+	if err != nil {
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Success get counseling session detail", response)
 }
 
 func (handler *CounselingSessionHandlerImpl) ListCounselingSessionHandler(ctx echo.Context) error {

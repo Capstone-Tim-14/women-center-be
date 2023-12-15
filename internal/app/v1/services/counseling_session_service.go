@@ -7,10 +7,12 @@ import (
 	"woman-center-be/internal/web/resources/v1"
 
 	"github.com/labstack/echo/v4"
+	uuid "github.com/satori/go.uuid"
 )
 
 type CounselingSessionService interface {
 	GetListCounselingSession(echo.Context) ([]resources.CounselingSessioningResource, error)
+	GetCounselingSessionDetail(echo.Context) (*resources.CounselingSessionDetailResource, error)
 }
 
 type CounselingSessionServiceImpl struct {
@@ -21,6 +23,34 @@ type CounselingSessionServiceImpl struct {
 
 func NewCounselingSessionService(counselingSession CounselingSessionServiceImpl) CounselingSessionService {
 	return &counselingSession
+}
+
+func (service *CounselingSessionServiceImpl) GetCounselingSessionDetail(ctx echo.Context) (*resources.CounselingSessionDetailResource, error) {
+
+	paramOrderId := ctx.Param("order_id")
+
+	convertOrderId, errConvert := uuid.FromString(paramOrderId)
+
+	if errConvert != nil {
+		return nil, fmt.Errorf("invalid format order_id")
+	}
+
+	CounselorProfile, errCounselorProfile := service.CounselorService.GetCounselorProfile(ctx)
+
+	if errCounselorProfile != nil {
+		return nil, fmt.Errorf("Counselor not found")
+	}
+
+	CounselorSessionDetail, CounselingScheduleSessions, errGetCounseling := service.BookingRepo.GetBookingCounselingDetail(CounselorProfile.Id, convertOrderId)
+
+	if errGetCounseling != nil {
+		return nil, errGetCounseling
+	}
+
+	Response := conversion.CounselingSessionBookedDetailConvert(CounselorSessionDetail, CounselingScheduleSessions)
+
+	return &Response, nil
+
 }
 
 func (service *CounselingSessionServiceImpl) GetListCounselingSession(ctx echo.Context) ([]resources.CounselingSessioningResource, error) {

@@ -53,6 +53,7 @@ func HttpCounselorRoute(group *echo.Group, db *gorm.DB, validate *validator.Vali
 	userVerify.GET("/:id", CounselorHandler.GetDetailCounselorHandler)
 	userVerify.GET("/profile", CounselorHandler.GetCounselorProfile)
 	userVerify.GET("/counseling-session", CounselingSessionHandler.ListCounselingSessionHandler)
+	userVerify.GET("/counseling-session/:order_id", CounselingSessionHandler.CounselingSessionDetailHandler)
 
 	verifyTokenAdmin := group.Group("/admin", middlewares.VerifyTokenSignature("SECRET_KEY_ADMIN"))
 

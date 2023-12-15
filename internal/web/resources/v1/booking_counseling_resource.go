@@ -38,3 +38,18 @@ type CounselingSessioningResource struct {
 	Time_start    string `json:"time_start,omitempty"`
 	Time_finisih  string `json:"time_finish,omitempty"`
 }
+
+type CounselingSessionDetailResource struct {
+	OrderId         string                              `json:"order_id,omitempty"`
+	Fulltime        string                              `json:"fulltime,omitempty"`
+	Package_title   string                              `json:"package,omitempty"`
+	Status          string                              `json:"status,omitempty"`
+	Email           string                              `json:"email,omitempty"`
+	ScheduleSession []CounselingScheduleSessionResource `json:"schedules,omitempty"`
+}
+
+type CounselingScheduleSessionResource struct {
+	Day_schedule string `json:"date_schedule,omitempty"`
+	Time_start   string `json:"time_start,omitempty"`
+	Time_finish  string `json:"time_finish,omitempty"`
+}

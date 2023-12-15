@@ -21,13 +21,12 @@ type CounselingSessionDetail struct {
 	First_name    string
 	Last_name     string
 	Package_title string
-	Date_schedule string
 	Status        string
 	Email         string
 }
 
 type CounselingScheduleSession struct {
-	Day_schedule string
-	Time_start   string
-	Time_finish  string
+	Date_schedule string
+	Time_start    string
+	Time_finish   string
 }

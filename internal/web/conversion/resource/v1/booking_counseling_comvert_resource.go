@@ -53,3 +53,22 @@ func CounselingSessionBookedConvert(CounselingBooked []domain.CounselingSession)
 	return CounselingSessionings
 
 }
+
+func CounselingSessionBookedDetailConvert(CounselingSessionDetail *domain.CounselingSessionDetail, ScheduleSessions []domain.CounselingScheduleSession) resources.CounselingSessionDetailResource {
+	result := resources.CounselingSessionDetailResource{
+		OrderId:       CounselingSessionDetail.OrderId,
+		Fulltime:      CounselingSessionDetail.First_name + " " + CounselingSessionDetail.Last_name,
+		Package_title: CounselingSessionDetail.Package_title,
+		Email:         CounselingSessionDetail.Email,
+	}
+
+	for _, item := range ScheduleSessions {
+		result.ScheduleSession = append(result.ScheduleSession, resources.CounselingScheduleSessionResource{
+			Day_schedule: helpers.ParseOnlyDate(helpers.ParseStringToTime(item.Date_schedule)),
+			Time_start:   helpers.ParseTimeToClock(helpers.ParseStringToTime(item.Time_start)),
+			Time_finish:  helpers.ParseTimeToClock(helpers.ParseStringToTime(item.Time_finish)),
+		})
+	}
+
+	return result
+}

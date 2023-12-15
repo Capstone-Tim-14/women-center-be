@@ -13,7 +13,7 @@ type BookingCounselingRepository interface {
 	FindByOrderId(orderId uuid.UUID) (*domain.BookingCounseling, error)
 	UpdateStatusBooking(orderId uuid.UUID, status string) (bool, error)
 	GetBookingListByCounselor(counselor_id uint) ([]domain.CounselingSession, error)
-	GetBookingCounselingDetail(counselor_id uint, user_id uint) (*domain.CounselingSessionDetail, []domain.CounselingScheduleSession, error)
+	GetBookingCounselingDetail(counselor_id uint, orderId uuid.UUID) (*domain.CounselingSessionDetail, []domain.CounselingScheduleSession, error)
 }
 
 type BookingCounselingRepositoryImpl struct {
@@ -26,8 +26,24 @@ func NewBookingCounselingRepository(db *gorm.DB) BookingCounselingRepository {
 	}
 }
 
-func (repository *BookingCounselingRepositoryImpl) GetBookingCounselingDetail(counselor_id uint, user_id uint) (*domain.CounselingSessionDetail, []domain.CounselingScheduleSession, error) {
+func (repository *BookingCounselingRepositoryImpl) GetBookingCounselingDetail(counselor_id uint, orderId uuid.UUID) (*domain.CounselingSessionDetail, []domain.CounselingScheduleSession, error) {
 
+	var CounselingSessionDetail *domain.CounselingSessionDetail
+	var CounselingScheduleSessions []domain.CounselingScheduleSession
+
+	errGetCounselingSessionDetail := repository.db.Raw("SELECT booking.order_id, user.first_name, user.last_name, auth.email,package.title,booking.status FROM booking_counselings booking INNER JOIN users user ON user.id = booking.user_id INNER JOIN credentials auth ON auth.id = USER.credential_id INNER JOIN booking_counseling_details detail ON detail.id = booking.booking_detail_id INNER JOIN counseling_packages package ON package.id = detail.counseling_package_id WHERE booking.status = ? AND booking.order_id = ?", "SETTLEMENT", orderId).Scan(&CounselingSessionDetail)
+
+	if errGetCounselingSessionDetail.Error != nil {
+		return nil, nil, fmt.Errorf("User counseling not found")
+	}
+
+	errGetCounselingScheduleSession := repository.db.Raw("SELECT user_counseling.date_schedule,counseling_schedule.day_schedule,counseling_schedule.time_start,counseling_schedule.time_finish FROM user_schedule_counselings user_counseling INNER JOIN counseling_schedules counseling_schedule ON user_counseling.counselor_schedule_id = counseling_schedule.id INNER JOIN booking_counseling_details counseling_detail ON user_counseling.booking_detail_id = counseling_detail.id INNER JOIN booking_counselings booking_counseling ON counseling_detail.id = booking_counseling.booking_detail_id WHERE booking_counseling.status = ? AND counseling_schedule.counselor_id = ? AND booking_counseling.order_id = ?", "SETTLEMENT", counselor_id, orderId).Scan(&CounselingScheduleSessions)
+
+	if errGetCounselingScheduleSession.Error != nil {
+		return nil, nil, fmt.Errorf("User counseling not found")
+	}
+
+	return CounselingSessionDetail, CounselingScheduleSessions, nil
 }
 
 func (repository *BookingCounselingRepositoryImpl) GetBookingListByCounselor(counselor_id uint) ([]domain.CounselingSession, error) {
