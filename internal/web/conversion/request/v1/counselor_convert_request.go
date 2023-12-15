@@ -39,6 +39,7 @@ func CounselorUpdateRequestToCounselorDomain(request requests.UpdateCounselorPro
 	counselor.Credential.Role_id = request.Role_id
 	counselor.Credential.Email = request.Email
 	counselor.Profile_picture = request.Profile_picture
+	counselor.Credential.Password = request.Password
 	counselor.Description = request.Description
 	counselor.Education = request.Education
 	counselor.Birthday = helpers.ParseStringToTime(request.Birthday)

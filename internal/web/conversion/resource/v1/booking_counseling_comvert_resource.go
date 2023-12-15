@@ -1,6 +1,7 @@
 package conversion
 
 import (
+	"strconv"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/web/resources/v1"
 	"woman-center-be/utils/helpers"
@@ -31,4 +32,43 @@ func BookingCounselingToDomainBookingCounseling(transaction *domain.BookingCouns
 	result.Total = int(transaction.BookingDetail.Total.IntPart())
 
 	return &result
+}
+
+func CounselingSessionBookedConvert(CounselingBooked []domain.CounselingSession) []resources.CounselingSessioningResource {
+
+	var CounselingSessionings []resources.CounselingSessioningResource
+
+	for _, item := range CounselingBooked {
+		CounselingSessionings = append(CounselingSessionings, resources.CounselingSessioningResource{
+			OrderId:       item.OrderId,
+			UserId:        strconv.Itoa(int(item.User_id)),
+			FullName:      item.First_name + " " + item.Last_name,
+			Package:       item.Package_title,
+			Date_schedule: helpers.ParseOnlyDate(helpers.ParseStringToTime(item.Date_schedule)),
+			Time_start:    helpers.ParseTimeToClock(helpers.ParseStringToTime(item.Time_start)),
+			Time_finisih:  helpers.ParseTimeToClock(helpers.ParseStringToTime(item.Time_finish)),
+		})
+	}
+
+	return CounselingSessionings
+
+}
+
+func CounselingSessionBookedDetailConvert(CounselingSessionDetail *domain.CounselingSessionDetail, ScheduleSessions []domain.CounselingScheduleSession) resources.CounselingSessionDetailResource {
+	result := resources.CounselingSessionDetailResource{
+		OrderId:       CounselingSessionDetail.OrderId,
+		Fulltime:      CounselingSessionDetail.First_name + " " + CounselingSessionDetail.Last_name,
+		Package_title: CounselingSessionDetail.Package_title,
+		Email:         CounselingSessionDetail.Email,
+	}
+
+	for _, item := range ScheduleSessions {
+		result.ScheduleSession = append(result.ScheduleSession, resources.CounselingScheduleSessionResource{
+			Day_schedule: helpers.ParseOnlyDate(helpers.ParseStringToTime(item.Date_schedule)),
+			Time_start:   helpers.ParseTimeToClock(helpers.ParseStringToTime(item.Time_start)),
+			Time_finish:  helpers.ParseTimeToClock(helpers.ParseStringToTime(item.Time_finish)),
+		})
+	}
+
+	return result
 }
