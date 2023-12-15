@@ -1,6 +1,7 @@
 package conversion
 
 import (
+	"strconv"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/web/resources/v1"
 	"woman-center-be/utils/helpers"
@@ -15,6 +16,7 @@ func ConvertCareerRsource(careers []domain.Career) []resources.CareerResource {
 		singleCareerResource.Company_name = career.Company_name
 		singleCareerResource.Logo = career.Logo
 		singleCareerResource.Location = career.Location
+		singleCareerResource.Recomendation = strconv.FormatBool(career.Recomendation)
 		singleCareerResource.PublishedAt = helpers.ParseDateFormat(&career.PublishedAt)
 		careerResource = append(careerResource, singleCareerResource)
 	}
@@ -48,4 +50,20 @@ func ConvertCareerDetailResource(career *domain.Career) *resources.CareerResourc
 	careerDetailResource.UpdatedAt = helpers.ParseDateFormat(&career.UpdatedAt)
 
 	return &careerDetailResource
+}
+
+func ConvertRecomendationCareer(careers []domain.Career) []resources.CareerResource {
+	careerResource := []resources.CareerResource{}
+	for _, career := range careers {
+		singleCareerResource := resources.CareerResource{}
+		singleCareerResource.Id = career.Id
+		singleCareerResource.Title_job = career.Title_job
+		singleCareerResource.Company_name = career.Company_name
+		singleCareerResource.Logo = career.Logo
+		singleCareerResource.Location = career.Location
+		singleCareerResource.PublishedAt = helpers.ParseDateFormat(&career.PublishedAt)
+		careerResource = append(careerResource, singleCareerResource)
+	}
+
+	return careerResource
 }
