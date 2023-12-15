@@ -32,3 +32,22 @@ func BookingCounselingToDomainBookingCounseling(transaction *domain.BookingCouns
 
 	return &result
 }
+
+func CounselingSessionBookedConvert(CounselingBooked []domain.CounselingSession) []resources.CounselingSessioningResource {
+
+	var CounselingSessionings []resources.CounselingSessioningResource
+
+	for _, item := range CounselingBooked {
+		CounselingSessionings = append(CounselingSessionings, resources.CounselingSessioningResource{
+			OrderId:       item.OrderId,
+			FullName:      item.First_name + " " + item.Last_name,
+			Package:       item.Package_title,
+			Date_schedule: helpers.ParseOnlyDate(helpers.ParseStringToTime(item.Date_schedule)),
+			Time_start:    helpers.ParseTimeToClock(helpers.ParseStringToTime(item.Time_start)),
+			Time_finisih:  helpers.ParseTimeToClock(helpers.ParseStringToTime(item.Time_finish)),
+		})
+	}
+
+	return CounselingSessionings
+
+}

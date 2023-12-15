@@ -28,3 +28,12 @@ type BookingCounselingSchedule struct {
 	Date string `json:"date,omitempty"`
 	Time string `json:"time,omitempty"`
 }
+
+type CounselingSessioningResource struct {
+	OrderId       string `json:"booking_id,omitempty"`
+	FullName      string `json:"fullname,omitempty"`
+	Package       string `json:"package,omitempty"`
+	Date_schedule string `json:"date_schedule,omitempty"`
+	Time_start    string `json:"time_start,omitempty"`
+	Time_finisih  string `json:"time_finish,omitempty"`
+}

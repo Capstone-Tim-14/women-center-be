@@ -12,6 +12,7 @@ type BookingCounselingRepository interface {
 	CreateBooking(booking *domain.BookingCounseling) (*domain.BookingCounseling, error)
 	FindByOrderId(orderId uuid.UUID) (*domain.BookingCounseling, error)
 	UpdateStatusBooking(orderId uuid.UUID, status string) (bool, error)
+	GetBookingListByCounselor(counselor_id uint) ([]domain.CounselingSession, error)
 }
 
 type BookingCounselingRepositoryImpl struct {
@@ -22,6 +23,22 @@ func NewBookingCounselingRepository(db *gorm.DB) BookingCounselingRepository {
 	return &BookingCounselingRepositoryImpl{
 		db: db,
 	}
+}
+
+func (repository *BookingCounselingRepositoryImpl) GetBookingListByCounselor(counselor_id uint) ([]domain.CounselingSession, error) {
+	var CounselingSessionBooked []domain.CounselingSession
+
+	errGetBookingCounseling := repository.db.Raw("SELECT booking.status,booking.order_id,GROUP_CONCAT(counselor_schedule.time_start) AS time_starts,GROUP_CONCAT(counselor_schedule.time_finish) AS time_finishs,counselor_schedule.day_schedule,user_schedule.date_schedule,users.first_name,users.last_name,package.title AS package_title,counselor_schedule.time_start,counselor_schedule.time_finish FROM booking_counselings booking INNER JOIN booking_counseling_details detail ON detail.id = booking.booking_detail_id INNER JOIN counseling_packages package ON package.id = detail.counseling_package_id INNER JOIN user_schedule_counselings user_schedule ON user_schedule.booking_detail_id = detail.id INNER JOIN users ON user_schedule.user_id = users.id INNER JOIN counseling_schedules counselor_schedule ON counselor_schedule.id = user_schedule.counselor_schedule_id WHERE counselor_schedule.counselor_id = ? AND booking.status = ? GROUP BY user_schedule.id,booking.order_id,package_title,booking.status", counselor_id, "SETTLEMENT").Scan(&CounselingSessionBooked)
+
+	if errGetBookingCounseling.Error != nil {
+		return nil, fmt.Errorf("Error when find counseling data")
+	}
+
+	if errGetBookingCounseling.RowsAffected == 0 {
+		return nil, fmt.Errorf("Error when find counseling data")
+	}
+
+	return CounselingSessionBooked, nil
 }
 
 func (repository *BookingCounselingRepositoryImpl) CreateBooking(booking *domain.BookingCounseling) (*domain.BookingCounseling, error) {

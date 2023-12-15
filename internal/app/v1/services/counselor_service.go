@@ -202,6 +202,10 @@ func (service *CounselorServiceImpl) UpdateCounselor(ctx echo.Context, request r
 		return nil, nil, fmt.Errorf("Counselor not found")
 	}
 	request.Role_id = getUser.Credential.Role_id
+
+	encryptPassword := helpers.HashPassword(request.Password)
+	request.Password = encryptPassword
+
 	counselor := conversion.CounselorUpdateRequestToCounselorDomain(request, getUser)
 
 	errUpdate := service.CounselorRepo.UpdateCounselor(counselor)
