@@ -17,6 +17,7 @@ type ArticleRepository interface {
 	FindAllArticle(string, string, query.Pagination) ([]domain.Articles, *query.Pagination, error)
 	FindArticleCounselor(id int) ([]domain.Articles, *domain.ArticleStatusCount, error)
 	FindById(id int) (*domain.Articles, error)
+	FindArticleCounselorById(counselorID int, articleID int) (*domain.Articles, error)
 	DeleteArticleById(id int) error
 	UpdateStatusArticle(slug, status string) error
 	FindActiveArticleBySlug(slug string) (*domain.Articles, error)
@@ -163,6 +164,21 @@ func (repository *ArticleRepositoryImpl) FindById(id int) (*domain.Articles, err
 	if result.RowsAffected == 0 {
 		return nil, fmt.Errorf("Article not found")
 	}
+	return &article, nil
+}
+
+func (repository *ArticleRepositoryImpl) FindArticleCounselorById(counselorID int, articleID int) (*domain.Articles, error) {
+	var article domain.Articles
+
+	result := repository.db.Preload("Tags").Where("id = ? AND counselors_id = ?", articleID, counselorID).First(&article)
+	if result.Error != nil {
+		return nil, fmt.Errorf("Access denied")
+	}
+
+	if result.RowsAffected == 0 {
+		return nil, fmt.Errorf("Article not found")
+	}
+
 	return &article, nil
 }
 
