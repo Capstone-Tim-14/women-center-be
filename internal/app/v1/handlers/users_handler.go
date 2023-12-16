@@ -14,6 +14,7 @@ import (
 )
 
 type UserHandler interface {
+	ListUserHandler(echo.Context) error
 	RegisterHandler(echo.Context) error
 	ProfileHandler(echo.Context) error
 	UpdateProfileHandler(echo.Context) error
@@ -33,6 +34,17 @@ func NewUserHandler(user services.UserService) UserHandler {
 	return &UserHandlerImpl{
 		UserService: user,
 	}
+}
+
+func (h *UserHandlerImpl) ListUserHandler(ctx echo.Context) error {
+
+	GetUsers, errGetUser := h.UserService.UsersList()
+
+	if errGetUser != nil {
+		return exceptions.StatusBadRequest(ctx, errGetUser)
+	}
+
+	return responses.StatusOK(ctx, "Succcess get users", GetUsers)
 }
 
 func (h *UserHandlerImpl) ProfileHandler(ctx echo.Context) error {

@@ -6,7 +6,9 @@ import (
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/app/v1/repositories"
 	conversion "woman-center-be/internal/web/conversion/request/v1"
+	conRes "woman-center-be/internal/web/conversion/resource/v1"
 	"woman-center-be/internal/web/requests/v1"
+	"woman-center-be/internal/web/resources/v1"
 	"woman-center-be/pkg/storage"
 	"woman-center-be/utils/exceptions"
 	"woman-center-be/utils/helpers"
@@ -16,6 +18,7 @@ import (
 )
 
 type UserService interface {
+	UsersList() ([]resources.UserResource, error)
 	RegisterUser(ctx echo.Context, request requests.UserRequest) (*domain.Users, []exceptions.ValidationMessage, error)
 	GetUserProfile(ctx echo.Context) (*domain.Users, error)
 	UpdateUserProfile(ctx echo.Context, request requests.UpdateUserProfileRequest, picture *multipart.FileHeader) (*domain.Users, []exceptions.ValidationMessage, error)
@@ -39,6 +42,19 @@ type UserServiceImpl struct {
 
 func NewUserService(userServiceImpl UserServiceImpl) UserService {
 	return &userServiceImpl
+}
+
+func (service *UserServiceImpl) UsersList() ([]resources.UserResource, error) {
+
+	users, errGetUser := service.UserRepo.GetAllUsers()
+
+	if errGetUser != nil {
+		return nil, errGetUser
+	}
+
+	UserResp := conRes.UserDomainToUsersResource(users)
+
+	return UserResp, nil
 }
 
 func (service *UserServiceImpl) RegisterUser(ctx echo.Context, request requests.UserRequest) (*domain.Users, []exceptions.ValidationMessage, error) {
