@@ -38,9 +38,10 @@ func (handler *CounselingSessionHandlerImpl) ListCounselingSessionHandler(ctx ec
 	Response, err := handler.CounselingSession.GetListCounselingSession(ctx)
 
 	if err != nil {
-		if strings.Contains(err.Error(), "Counselor not found") {
-			return exceptions.StatusInternalServerError(ctx, err)
+		if strings.Contains(err.Error(), "Counseling session empty") {
+			return exceptions.StatusNotFound(ctx, err)
 		}
+		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
 	return responses.StatusOK(ctx, "Success get list counseling session", Response)

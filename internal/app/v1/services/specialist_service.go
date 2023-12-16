@@ -67,12 +67,12 @@ func (service *SpecialistServiceImpl) GetListSpecialist(ctx echo.Context) ([]dom
 func (service *SpecialistServiceImpl) DeleteSpecialistById(ctx echo.Context, id int) error {
 	existingSpecialist, _ := service.SpecialistRepo.FindById(id)
 	if existingSpecialist == nil {
-		return fmt.Errorf("Specialist not found")
+		return fmt.Errorf("specialist not found")
 	}
 
 	err := service.SpecialistRepo.DeleteSpecialistById(id)
 	if err != nil {
-		return fmt.Errorf("Error when delete specialist: %s", err.Error())
+		return fmt.Errorf("error when delete specialist")
 	}
 
 	return nil

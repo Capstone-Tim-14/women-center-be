@@ -20,7 +20,9 @@ type ArticleHandler interface {
 	UpdatePublishedArticle(ctx echo.Context) error
 	UpdateArticle(ctx echo.Context) error
 	AddTagArticle(ctx echo.Context) error
+	AddTagArticleCounselor(ctx echo.Context) error
 	RemoveTagArticle(ctx echo.Context) error
+	RemoveTagArticleCounselor(ctx echo.Context) error
 	LatestArticleHandler(ctx echo.Context) error
 	FindAllArticleUser(ctx echo.Context) error
 	FindArticleBySlugForUser(ctx echo.Context) error
@@ -106,6 +108,42 @@ func (handler *ArticleHandlerImpl) RemoveTagArticle(ctx echo.Context) error {
 
 	return responses.StatusOK(ctx, "Article Remove Successfully", nil)
 
+}
+
+func (handler *ArticleHandlerImpl) RemoveTagArticleCounselor(ctx echo.Context) error {
+	var request requests.ArticleHasManyRequest
+
+	GetId := ctx.Param("id")
+
+	ErrBinding := ctx.Bind(&request)
+	if ErrBinding != nil {
+		return exceptions.StatusBadRequest(ctx, ErrBinding)
+	}
+
+	ParseToId, errParsing := strconv.Atoi(GetId)
+	if errParsing != nil {
+		return exceptions.StatusBadRequest(ctx, fmt.Errorf("Invalid Format id"))
+	}
+
+	Validation, ErrGetArticle := handler.ArticleService.RemoveTagArticleCounselor(ctx, ParseToId, request)
+	if Validation != nil {
+		return exceptions.ValidationException(ctx, "Validation Error", Validation)
+	}
+
+	if ErrGetArticle != nil {
+		if strings.Contains(ErrGetArticle.Error(), "Access denied") {
+			return exceptions.StatusForbiddenResponse(ctx, ErrGetArticle)
+		}
+		if strings.Contains(ErrGetArticle.Error(), "Article not found") {
+			return exceptions.StatusNotFound(ctx, ErrGetArticle)
+		}
+		if strings.Contains(ErrGetArticle.Error(), "One of article request is not found") {
+			return exceptions.StatusNotFound(ctx, ErrGetArticle)
+		}
+		return exceptions.StatusInternalServerError(ctx, ErrGetArticle)
+	}
+
+	return responses.StatusOK(ctx, "Article Remove Successfully", nil)
 }
 
 func (handler *ArticleHandlerImpl) LatestArticleHandler(ctx echo.Context) error {
@@ -276,6 +314,40 @@ func (handler *ArticleHandlerImpl) AddTagArticle(ctx echo.Context) error {
 	return responses.StatusCreated(ctx, "Success add category to article", nil)
 }
 
+func (handler *ArticleHandlerImpl) AddTagArticleCounselor(ctx echo.Context) error {
+
+	id := ctx.Param("id")
+	convertid, errId := strconv.Atoi(id)
+	if errId != nil {
+		return exceptions.StatusBadRequest(ctx, errId)
+	}
+
+	var request requests.ArticlehasTagRequest
+	errBinding := ctx.Bind(&request)
+
+	if errBinding != nil {
+		return exceptions.StatusBadRequest(ctx, errBinding)
+	}
+
+	validation, err := handler.ArticleService.AddTagArticleCounselor(ctx, convertid, request)
+
+	if validation != nil {
+		return exceptions.ValidationException(ctx, "Error Validation", validation)
+	}
+
+	if err != nil {
+		if strings.Contains(err.Error(), "Article not found") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+		if strings.Contains(err.Error(), "Access denied") {
+			return exceptions.StatusForbiddenResponse(ctx, err)
+		}
+		return exceptions.StatusInternalServerError(ctx, errBinding)
+	}
+
+	return responses.StatusCreated(ctx, "Success add category to article", nil)
+}
+
 func (handler *ArticleHandlerImpl) UpdateArticle(ctx echo.Context) error {
 
 	var request requests.ArticleRequest
@@ -288,19 +360,19 @@ func (handler *ArticleHandlerImpl) UpdateArticle(ctx echo.Context) error {
 	}
 
 	validation, err := handler.ArticleService.UpdateArticle(ctx, request, Thumbnail)
+
 	if validation != nil {
 		return exceptions.ValidationException(ctx, "Error Validation", validation)
 	}
 
-	if strings.Contains(err.Error(), "invalid id") {
-		return exceptions.StatusBadRequest(ctx, err)
-	}
-
-	if strings.Contains(err.Error(), "article not found") {
-		return exceptions.StatusNotFound(ctx, err)
-	}
-
 	if err != nil {
+		if strings.Contains(err.Error(), "invalid id") {
+			return exceptions.StatusBadRequest(ctx, err)
+		}
+
+		if strings.Contains(err.Error(), "article not found") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
