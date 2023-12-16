@@ -40,6 +40,7 @@ type CounselingScheduleTime struct {
 }
 
 type DetailCounselor struct {
+	Id              string                `json:"id,omitempty"`
 	Full_name       string                `json:"full_name,omitempty"`
 	Email           string                `json:"email,omitempty"`
 	Usernam         string                `json:"username,omitempty"`

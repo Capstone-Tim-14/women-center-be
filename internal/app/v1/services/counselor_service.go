@@ -27,6 +27,7 @@ type CounselorService interface {
 	GetCounselorsForMobile(ctx echo.Context) ([]domain.Counselors, error)
 	GetCounselorProfile(ctx echo.Context) (*domain.Counselors, error)
 	GetDetailCounselor(ctx echo.Context) (*resources.DetailCounselor, error)
+	GetDetailCounselorOnly(ctx echo.Context) (*resources.DetailCounselor, error)
 	UpdateCounselor(ctx echo.Context, request requests.UpdateCounselorProfileRequest, picture *multipart.FileHeader) (*domain.Counselors, []exceptions.ValidationMessage, error)
 	UpdateCounselorForMobile(ctx echo.Context, request requests.UpdateCounselorProfileRequestForMobile, picture *multipart.FileHeader) (*domain.Counselors, []exceptions.ValidationMessage, error)
 }
@@ -285,4 +286,20 @@ func (service *CounselorServiceImpl) GetDetailCounselor(ctx echo.Context) (*reso
 	counselorResponse := conRes.ConvertCounselorDomainToCounselorDetailResponse(getCounselor, getScheduleCounselor)
 
 	return &counselorResponse, nil
+}
+
+func (service *CounselorServiceImpl) GetDetailCounselorOnly(ctx echo.Context) (*resources.DetailCounselor, error) {
+
+	getId := ctx.Param("id")
+	getcounselorId, _ := strconv.Atoi(getId)
+
+	getCounselor, _ := service.CounselorRepo.FindById(getcounselorId)
+	if getCounselor == nil {
+		return nil, fmt.Errorf("Counselor not found")
+	}
+
+	counselorResponse := conRes.ConvertCounselorDomainToDetail(getCounselor)
+
+	return &counselorResponse, nil
+
 }
