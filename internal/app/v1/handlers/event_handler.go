@@ -16,6 +16,9 @@ type EventHandler interface {
 	CreateEvent(ctx echo.Context) error
 	GetDetailEvent(ctx echo.Context) error
 	GetDetailEventMobile(ctx echo.Context) error
+	GetAllEvent(ctx echo.Context) error
+	GetAllEventMobile(ctx echo.Context) error
+	UpdateEvent(ctx echo.Context) error
 }
 
 type EventHandlerImpl struct {
@@ -93,4 +96,57 @@ func (handler *EventHandlerImpl) GetDetailEventMobile(ctx echo.Context) error {
 	result := conversion.EventDetailDomainToEventResource(event)
 
 	return responses.StatusOK(ctx, "Success Get Detail Event", result)
+}
+
+func (handler *EventHandlerImpl) GetAllEvent(ctx echo.Context) error {
+	events, err := handler.EventService.GetAllEvent(ctx)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "Error get all event") {
+			return exceptions.StatusBadRequest(ctx, err)
+		}
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	result := conversion.AllEventConvertResource(events)
+
+	return responses.StatusOK(ctx, "Success Get All Event", result)
+}
+
+func (handler *EventHandlerImpl) GetAllEventMobile(ctx echo.Context) error {
+	events, err := handler.EventService.GetAllEvent(ctx)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "Error get all event") {
+			return exceptions.StatusBadRequest(ctx, err)
+		}
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	result := conversion.AllEventConvertResource(events)
+
+	return responses.StatusOK(ctx, "Success Get All Event", result)
+}
+
+func (handler *EventHandlerImpl) UpdateEvent(ctx echo.Context) error {
+
+	var request requests.EventRequest
+	errBinding := ctx.Bind(&request)
+
+	Poster, _ := ctx.FormFile("poster")
+
+	if errBinding != nil {
+		return exceptions.StatusBadRequest(ctx, errBinding)
+	}
+
+	validation, err := handler.EventService.UpdateEvent(ctx, request, Poster)
+	if validation != nil {
+		return exceptions.ValidationException(ctx, "Error Validation", validation)
+	}
+
+	if err != nil {
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Event updated!", nil)
 }

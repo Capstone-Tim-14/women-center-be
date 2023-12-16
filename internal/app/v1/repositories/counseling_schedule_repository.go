@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"fmt"
+	"time"
 	"woman-center-be/internal/app/v1/models/domain"
 
 	"gorm.io/gorm"
@@ -9,11 +10,12 @@ import (
 
 type ScheduleRepository interface {
 	CreateSchedule(counselor *domain.Counselors, scheduling []domain.Counseling_Schedule) error
-	CheckDayCounselingScheduleExists(id int, day string) (*domain.Counseling_Schedule, error)
-	FindFreeSchedule(day, start, finish string) (*domain.Counseling_Schedule, error)
 	DeleteScheduleById(id int) error
 	FindById(id int) (*domain.Counseling_Schedule, error)
 	UpdateScheduleById(id int, schedule *domain.Counseling_Schedule) error
+	CheckDayCounselingScheduleExists(id int, day string) (*domain.Counseling_Single_Schedule, error)
+	FindStartEndDateCounseling(counselor_id int, day string, start time.Time, finish time.Time) (*domain.Counseling_Schedule, error)
+	GroupingStartTimeAndFinishTimeCounseling(counselor_id int) ([]domain.Counseling_Schedule, error)
 }
 
 type ScheduleRepositoryImpl struct {
@@ -25,12 +27,34 @@ func NewScheduleRepository(db *gorm.DB) ScheduleRepository {
 		Db: db,
 	}
 }
+func (repository *ScheduleRepositoryImpl) GroupingStartTimeAndFinishTimeCounseling(counselor_id int) ([]domain.Counseling_Schedule, error) {
 
-func (repository *ScheduleRepositoryImpl) CheckDayCounselingScheduleExists(id int, day string) (*domain.Counseling_Schedule, error) {
+	var counselorSchedules []domain.Counseling_Schedule
 
-	var counselorSchedule domain.Counseling_Schedule
+	GetListCounselor := repository.Db.Select("day_schedule,GROUP_CONCAT(time_start) AS time_starts,GROUP_CONCAT(time_finish) AS time_finishs").
+		Where("counselor_id = ?", counselor_id).
+		Group("day_schedule").
+		Order("day_schedule DESC").
+		Find(&counselorSchedules)
 
-	errGetDaySchedule := repository.Db.Where("counselor_id = ? AND day_schedule = ?", id, day).First(&counselorSchedule)
+	if GetListCounselor.Error != nil {
+		return nil, fmt.Errorf("Error to get schedules")
+	}
+
+	if GetListCounselor.RowsAffected == 0 {
+		return nil, fmt.Errorf("schedules not found")
+	}
+
+	return counselorSchedules, nil
+}
+
+func (repository *ScheduleRepositoryImpl) CheckDayCounselingScheduleExists(id int, day string) (*domain.Counseling_Single_Schedule, error) {
+
+	var counselorSchedule domain.Counseling_Single_Schedule
+
+	errGetDaySchedule := repository.Db.Where("counselor_id = ? AND day_schedule = ?", id, day).
+		Select("counselor_id", "day_schedule").
+		First(&counselorSchedule)
 
 	if errGetDaySchedule.Error != nil {
 		fmt.Errorf(errGetDaySchedule.Error.Error())
@@ -62,12 +86,12 @@ func (repository *ScheduleRepositoryImpl) CreateSchedule(counselor *domain.Couns
 
 }
 
-func (repository *ScheduleRepositoryImpl) FindFreeSchedule(day, start, finish string) (*domain.Counseling_Schedule, error) {
+func (repository *ScheduleRepositoryImpl) FindStartEndDateCounseling(counselor_id int, day string, start time.Time, finish time.Time) (*domain.Counseling_Schedule, error) {
 	var Schedule domain.Counseling_Schedule
 
-	DataSchedule := repository.Db.Preload("Counselors").Where("day = ? AND start = ? AND finish = ?", day, start, finish).First(&Schedule)
-	if DataSchedule.Error != nil {
-		return nil, DataSchedule.Error
+	GetScheduleData := repository.Db.Where("counselor_id = ? AND day_schedule = ? AND time_start = ? AND time_finish = ?", counselor_id, day, start, finish).First(&Schedule)
+	if GetScheduleData.Error != nil {
+		return nil, GetScheduleData.Error
 	}
 
 	return &Schedule, nil

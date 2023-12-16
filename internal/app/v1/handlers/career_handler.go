@@ -22,6 +22,9 @@ type CareerHandler interface {
 	RemoveJobType(ctx echo.Context) error
 	UpdateCareer(ctx echo.Context) error
 	DeleteCareer(ctx echo.Context) error
+	RecomendationCareerList(ctx echo.Context) error
+	UpdateRecomendationCareer(ctx echo.Context) error
+	RecomendationCareerListForMobile(ctx echo.Context) error
 }
 
 type CareerHandlerImpl struct {
@@ -197,4 +200,42 @@ func (handler *CareerHandlerImpl) DeleteCareer(ctx echo.Context) error {
 	}
 
 	return responses.StatusOK(ctx, "Success delete career", nil)
+}
+
+func (handler *CareerHandlerImpl) RecomendationCareerList(ctx echo.Context) error {
+	career, err := handler.CareerService.RecomendationCareerList(ctx)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "Career is empty") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+	}
+
+	careerResource := conversion.ConvertRecomendationCareer(career)
+
+	return responses.StatusOK(ctx, "Success Get All Career Recomendation", careerResource)
+}
+
+func (handler *CareerHandlerImpl) UpdateRecomendationCareer(ctx echo.Context) error {
+
+	err := handler.CareerService.UpdateRecomendationCareer(ctx)
+	if err != nil {
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Recomendation update", nil)
+}
+
+func (handler *CareerHandlerImpl) RecomendationCareerListForMobile(ctx echo.Context) error {
+	career, err := handler.CareerService.RecomendationCareerList(ctx)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "Career is empty") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+	}
+
+	careerResource := conversion.ConvertRecomendationCareer(career)
+
+	return responses.StatusOK(ctx, "Success Get All Career Recomendation", careerResource)
 }

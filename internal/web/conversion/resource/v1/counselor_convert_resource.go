@@ -1,6 +1,7 @@
 package conversion
 
 import (
+	"strings"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/web/resources/v1"
 	"woman-center-be/utils/helpers"
@@ -27,6 +28,7 @@ func ConvertCounselorDomainToCounselorResponse(counselor []domain.Counselors) []
 			First_name:      counselor.First_name,
 			Last_name:       counselor.Last_name,
 			Email:           counselor.Credential.Email,
+			Education:       counselor.Education,
 			Description:     counselor.Description,
 			Status:          counselor.Status,
 			Profile_picture: counselor.Profile_picture,
@@ -36,7 +38,7 @@ func ConvertCounselorDomainToCounselorResponse(counselor []domain.Counselors) []
 	return counselorResponse
 }
 
-func ConvertCounselorDomainToCounselorDetailResponse(counselor *domain.Counselors) resources.DetailCounselor {
+func ConvertCounselorDomainToCounselorDetailResponse(counselor *domain.Counselors, schedules []domain.Counseling_Schedule) resources.DetailCounselor {
 	counselorResponse := resources.DetailCounselor{
 		Full_name:       counselor.First_name + " " + counselor.Last_name,
 		Email:           counselor.Credential.Email,
@@ -51,12 +53,36 @@ func ConvertCounselorDomainToCounselorDetailResponse(counselor *domain.Counselor
 		})
 	}
 
-	for _, schedule := range counselor.Schedules {
-		counselorResponse.Schedule = append(counselorResponse.Schedule, resources.CounselingSchedule{
+	for _, schedule := range schedules {
+		var CounselingSchedule resources.CounselingSchedule
+		var TimeSchedule []resources.CounselingScheduleTime
+
+		CounselingSchedule = resources.CounselingSchedule{
 			Day_schedule: schedule.Day_schedule,
-			Time_start:   helpers.ParseTimeToClock(&schedule.Time_start),
-			Time_finish:  helpers.ParseTimeToClock(&schedule.Time_finish),
-		})
+		}
+
+		TimeStartSplit := strings.Split(*schedule.Time_starts, ",")
+		TimeEndSplit := strings.Split(*schedule.Time_finishs, ",")
+
+		TimeSchedulePerTime := resources.CounselingScheduleTime{}
+
+		for i, timeStart := range TimeStartSplit {
+			timeStrs := strings.Trim(timeStart, "[]")
+
+			if i < len(TimeEndSplit) {
+
+				timeEndStrs := strings.Trim(TimeEndSplit[i], "[]")
+
+				TimeSchedulePerTime.Time_start = helpers.ParseTimeToClock(helpers.ParseStringToTime(timeStrs))
+				TimeSchedulePerTime.Time_finish = helpers.ParseTimeToClock(helpers.ParseStringToTime(timeEndStrs))
+			}
+			TimeSchedule = append(TimeSchedule, TimeSchedulePerTime)
+		}
+
+		CounselingSchedule.Time_schedule = TimeSchedule
+
+		counselorResponse.Schedule = append(counselorResponse.Schedule, CounselingSchedule)
+
 	}
 
 	return counselorResponse

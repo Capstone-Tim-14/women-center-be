@@ -25,7 +25,7 @@ func ConvertLatestArticleResource(article *domain.Articles) *resources.ArticleRe
 		}
 	}
 
-	ArticleResource.PublishedAt = helpers.ParseDateFormat(&article.PublishedAt)
+	ArticleResource.PublishedAt = helpers.ParseOnlyDate(&article.PublishedAt)
 	ArticleResource.TimeUpload = helpers.GetDurationTime(article.PublishedAt)
 
 	return ArticleResource
@@ -51,7 +51,7 @@ func ConvertArticleResource(articles []domain.Articles) []resources.ArticleResou
 			}
 		}
 		singleArticleResource.Status = article.Status
-		singleArticleResource.PublishedAt = helpers.ParseDateFormat(&article.PublishedAt)
+		singleArticleResource.PublishedAt = helpers.ParseOnlyDate(&article.PublishedAt)
 
 		articleResource = append(articleResource, singleArticleResource)
 	}
@@ -86,7 +86,7 @@ func ConvertSingleArticleResource(article *domain.Articles) resources.ArticleRes
 	}
 	singleArticleResource.Tag = category
 	singleArticleResource.Status = article.Status
-	singleArticleResource.PublishedAt = helpers.ParseDateFormat(&article.PublishedAt)
+	singleArticleResource.PublishedAt = helpers.ParseOnlyDate(&article.PublishedAt)
 	singleArticleResource.CreatedAt = helpers.ParseDateFormat(&article.CreatedAt)
 	singleArticleResource.UpdatedAt = helpers.ParseDateFormat(&article.UpdatedAt)
 
@@ -116,7 +116,7 @@ func ConvertArticleCounselorResource(articles []domain.Articles, articlesCount d
 			}
 		}
 		singleArticleResource.Status = article.Status
-		singleArticleResource.PublishedAt = helpers.ParseDateFormat(&article.PublishedAt)
+		singleArticleResource.PublishedAt = helpers.ParseOnlyDate(&article.PublishedAt)
 
 		articleResource = append(articleResource, singleArticleResource)
 	}

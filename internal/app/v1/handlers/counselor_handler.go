@@ -113,6 +113,9 @@ func (handler *CounselorHandlerImpl) AddSpecialist(ctx echo.Context) error {
 	if validation != nil || len(request.Name) == 0 {
 		return exceptions.ValidationException(ctx, "Error Validation", validation)
 	}
+	if strings.Contains(err.Error(), "One of Counselor request is not found") {
+		return exceptions.StatusNotFound(ctx, err)
+	}
 	if err != nil {
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
@@ -136,7 +139,7 @@ func (handler *CounselorHandlerImpl) GetAllCounselorsHandler(ctx echo.Context) e
 }
 
 func (handler *CounselorHandlerImpl) UpdateCounselorHandler(ctx echo.Context) error {
-	counselorUpdateRequest := requests.CounselorRequest{}
+	counselorUpdateRequest := requests.UpdateCounselorProfileRequest{}
 	picture, _ := ctx.FormFile("picture")
 	err := ctx.Bind(&counselorUpdateRequest)
 	if err != nil {
@@ -161,7 +164,7 @@ func (handler *CounselorHandlerImpl) UpdateCounselorHandler(ctx echo.Context) er
 }
 
 func (handler *CounselorHandlerImpl) UpdateCounselorForMobile(ctx echo.Context) error {
-	counselorUpdateRequest := requests.CounselorRequest{}
+	counselorUpdateRequest := requests.UpdateCounselorProfileRequestForMobile{}
 	picture, _ := ctx.FormFile("picture")
 	err := ctx.Bind(&counselorUpdateRequest)
 	if err != nil {
@@ -211,9 +214,7 @@ func (handler *CounselorHandlerImpl) GetDetailCounselorHandler(ctx echo.Context)
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
-	counselorResponse := conversion.ConvertCounselorDomainToCounselorDetailResponse(response)
-
-	return responses.StatusOK(ctx, "Get detail counselor successfully", counselorResponse)
+	return responses.StatusOK(ctx, "Get detail counselor successfully", response)
 }
 
 func (handler *CounselorHandlerImpl) GetDetailCounselorWeb(ctx echo.Context) error {
@@ -227,9 +228,7 @@ func (handler *CounselorHandlerImpl) GetDetailCounselorWeb(ctx echo.Context) err
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
-	counselorResponse := conversion.ConvertCounselorDomainToCounselorDetailResponse(response)
-
-	return responses.StatusOK(ctx, "Get detail counselor successfully", counselorResponse)
+	return responses.StatusOK(ctx, "Get detail counselor successfully", response)
 }
 
 func (handler *CounselorHandlerImpl) GetCounselorProfile(ctx echo.Context) error {

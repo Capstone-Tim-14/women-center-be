@@ -30,7 +30,9 @@ type ArticleService interface {
 	FindArticleBySlug(ctx echo.Context, slug string) (*domain.Articles, error)
 	FindArticleForUserBySlug(ctx echo.Context, slug string) (*domain.Articles, error)
 	AddTagArticle(ctx echo.Context, id int, request requests.ArticlehasTagRequest) ([]exceptions.ValidationMessage, error)
+	AddTagArticleCounselor(ctx echo.Context, articleID int, request requests.ArticlehasTagRequest) ([]exceptions.ValidationMessage, error)
 	RemoveTagArticle(ctx echo.Context, id int, request requests.ArticleHasManyRequest) ([]exceptions.ValidationMessage, error)
+	RemoveTagArticleCounselor(ctx echo.Context, articleID int, request requests.ArticleHasManyRequest) ([]exceptions.ValidationMessage, error)
 	UpdateArticle(ctx echo.Context, request requests.ArticleRequest, thumbnail *multipart.FileHeader) ([]exceptions.ValidationMessage, error)
 }
 
@@ -130,6 +132,58 @@ func (service *ArticleServiceImpl) RemoveTagArticle(ctx echo.Context, id int, re
 
 	return nil, nil
 
+}
+
+func (service *ArticleServiceImpl) RemoveTagArticleCounselor(ctx echo.Context, articleID int, request requests.ArticleHasManyRequest) ([]exceptions.ValidationMessage, error) {
+
+	ValidationMessage := service.Validator.Struct(request)
+	var TagList []domain.Tag_Article
+
+	if ValidationMessage != nil {
+		return helpers.ValidationError(ctx, ValidationMessage), nil
+	}
+
+	GetArticleData, errGetArticle := service.ArticleRepo.FindById(articleID)
+	if errGetArticle != nil {
+		return nil, fmt.Errorf("Article not found")
+	}
+
+	counselorClaim := helpers.GetAuthClaims(ctx)
+
+	GetArticleCounselor, errGetArticleCounselor := service.ArticleRepo.FindArticleCounselorById(int(counselorClaim.Id), articleID)
+	if errGetArticleCounselor != nil {
+		return nil, fmt.Errorf("Access denied")
+	}
+	fmt.Println(GetArticleCounselor)
+	for _, val := range GetArticleCounselor.Tags {
+
+		for index := range request.Name {
+
+			if request.Name[index] == val.Name {
+
+				GetTags, errGetTags := service.TagRepo.FindTagByName(val.Name)
+
+				if errGetTags != nil {
+					return nil, fmt.Errorf("One of article request is not found")
+				}
+
+				TagList = append(TagList, *GetTags)
+
+			} else {
+				continue
+			}
+		}
+	}
+	if len(TagList) <= 0 {
+		return nil, fmt.Errorf("One of article request is not found")
+	}
+
+	ErrRemoveArticle := service.ArticlehasTagRepo.RemoveTag(*GetArticleData, TagList)
+	if ErrRemoveArticle != nil {
+		return nil, fmt.Errorf("Error when remove tag")
+	}
+
+	return nil, nil
 }
 
 func (service *ArticleServiceImpl) GetLatestArticle() (*resources.ArticleResource, error) {
@@ -302,6 +356,38 @@ func (service *ArticleServiceImpl) AddTagArticle(ctx echo.Context, id int, reque
 	return nil, nil
 }
 
+func (service *ArticleServiceImpl) AddTagArticleCounselor(ctx echo.Context, articleID int, request requests.ArticlehasTagRequest) ([]exceptions.ValidationMessage, error) {
+
+	err := service.Validator.Struct(request)
+	if err != nil {
+		return helpers.ValidationError(ctx, err), nil
+	}
+
+	counselorClaim := helpers.GetAuthClaims(ctx)
+
+	article, errArticle := service.ArticleRepo.FindById(articleID)
+	if errArticle != nil {
+		return nil, fmt.Errorf("Article not found")
+	}
+
+	article, errArticle = service.ArticleRepo.FindArticleCounselorById(int(counselorClaim.Id), articleID)
+	if errArticle != nil {
+		return nil, fmt.Errorf("Access denied")
+	}
+
+	tag, errTag := service.TagRepo.FindTagByName(request.Name)
+	if errTag != nil {
+		return nil, errTag
+	}
+
+	errAddTag := service.ArticlehasTagRepo.AddTag(*article, tag)
+	if errAddTag != nil {
+		return nil, errAddTag
+	}
+
+	return nil, nil
+}
+
 func (service *ArticleServiceImpl) FindArticleBySlug(ctx echo.Context, slug string) (*domain.Articles, error) {
 	result, err := service.ArticleRepo.FindBySlug(slug)
 	if err != nil {
@@ -318,11 +404,14 @@ func (service *ArticleServiceImpl) UpdateArticle(ctx echo.Context, request reque
 	}
 
 	id := ctx.Param("id")
-	getId, _ := strconv.Atoi(id)
+	getId, errId := strconv.Atoi(id)
+	if errId != nil {
+		return nil, fmt.Errorf("invalid id")
+	}
 
 	_, err = service.ArticleRepo.FindById(getId)
 	if err != nil {
-		return nil, fmt.Errorf("Article not found")
+		return nil, fmt.Errorf("article not found")
 
 	}
 	if thumbnail != nil {
@@ -339,7 +428,7 @@ func (service *ArticleServiceImpl) UpdateArticle(ctx echo.Context, request reque
 
 	_, err = service.ArticleRepo.UpdateArticle(getId, article), nil
 	if err != nil {
-		return nil, fmt.Errorf("Error update article")
+		return nil, fmt.Errorf("error update article")
 	}
 
 	return nil, nil

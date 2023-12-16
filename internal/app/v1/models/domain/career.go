@@ -17,6 +17,7 @@ type Career struct {
 	Company_industry      string
 	Size_company_employee uint
 	Job_type              []Job_Type `gorm:"many2many:career_has_types;foreignKey:Id;references:Id;"`
+	Recomendation         bool       `gorm:"default:false"`
 	CreatedAt             time.Time
 	UpdatedAt             time.Time
 }
