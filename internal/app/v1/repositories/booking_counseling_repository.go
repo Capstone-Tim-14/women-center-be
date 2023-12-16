@@ -31,7 +31,7 @@ func (repository *BookingCounselingRepositoryImpl) GetBookingCounselingDetail(co
 	var CounselingSessionDetail *domain.CounselingSessionDetail
 	var CounselingScheduleSessions []domain.CounselingScheduleSession
 
-	errGetCounselingSessionDetail := repository.db.Raw("SELECT booking.order_id, user.first_name, user.last_name, auth.email,package.title,booking.status FROM booking_counselings booking INNER JOIN users user ON user.id = booking.user_id INNER JOIN credentials auth ON auth.id = USER.credential_id INNER JOIN booking_counseling_details detail ON detail.id = booking.booking_detail_id INNER JOIN counseling_packages package ON package.id = detail.counseling_package_id WHERE booking.status = ? AND booking.order_id = ?", "SETTLEMENT", orderId).Scan(&CounselingSessionDetail)
+	errGetCounselingSessionDetail := repository.db.Raw("SELECT booking.order_id, user.first_name, user.last_name, auth.email,package.title,booking.status FROM booking_counselings booking INNER JOIN users user ON user.id = booking.user_id INNER JOIN credentials auth ON auth.id = user.credential_id INNER JOIN booking_counseling_details detail ON detail.id = booking.booking_detail_id INNER JOIN counseling_packages package ON package.id = detail.counseling_package_id WHERE booking.status = ? AND booking.order_id = ?", "SETTLEMENT", orderId).Scan(&CounselingSessionDetail)
 
 	if errGetCounselingSessionDetail.Error != nil {
 		return nil, nil, fmt.Errorf("User counseling not found")
