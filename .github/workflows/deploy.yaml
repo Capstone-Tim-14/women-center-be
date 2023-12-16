@@ -40,6 +40,7 @@ jobs:
               -e 's!example-email-user!${{ secrets.EMAIL_USER }}!g' \
               -e 's!example-email-pass!${{ secrets.EMAIL_PASS }}!g' \
               -e 's!example-openai-token!${{ secrets.OPENAI_TOKEN }}!g' \
+              -e 's!example-midtrans-server-key!${{ secrets.MIDTRANS_SECRET_KEY }}!g' \
               -e 's!example-secret-key-admin!${{ secrets.AUTH_ADMIN_SECRET_KEY }}!' \
             env.example.yaml > env.yaml
           echo "success create enviroment"
