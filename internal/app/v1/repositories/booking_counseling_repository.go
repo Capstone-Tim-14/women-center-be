@@ -56,7 +56,7 @@ func (repository *BookingCounselingRepositoryImpl) GetBookingListByCounselor(cou
 	}
 
 	if errGetBookingCounseling.RowsAffected == 0 {
-		return nil, fmt.Errorf("Error when find counseling data")
+		return nil, fmt.Errorf("Counseling session empty")
 	}
 
 	return CounselingSessionBooked, nil
