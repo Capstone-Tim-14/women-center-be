@@ -41,4 +41,5 @@ func HttpGenerateAiRoute(group *echo.Group, db *gorm.DB, validate *validator.Val
 	verifyUser := group.Group("", middlewares.VerifyTokenSignature("SECRET_KEY"))
 
 	verifyUser.POST("/career/generate-recommendation-career", RecommendedAiHandler.GenerateRecommendationHandler)
+	verifyUser.GET("/career/get-all-history-chat", RecommendedAiHandler.GetAllHistoryChatHandler)
 }

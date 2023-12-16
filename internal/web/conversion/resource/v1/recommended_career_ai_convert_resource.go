@@ -15,3 +15,20 @@ func ConvertSaveHistoryChatToCareerRecommendationResource(user domain.Users, cha
 		},
 	}
 }
+
+func ConvertHistoryChatToCareerRecommendationResource(user *domain.Users) resources.HistoryRecommendationCareerAiResource {
+
+	historyChat := []resources.ChatHistoryRecommendationCareerResource{}
+	chatResource := resources.HistoryRecommendationCareerAiResource{}
+	chatResource.Fullname = user.First_name + " " + user.Last_name
+	chatResource.Profile = user.Profile_picture
+	for _, chat := range user.HistoryChatRecommendationCareer {
+		historyChat = append(historyChat, resources.ChatHistoryRecommendationCareerResource{
+			Question: chat.User_question,
+			Answer:   chat.Recommended_message,
+		})
+	}
+	chatResource.HistoryChatCareer = historyChat
+
+	return chatResource
+}

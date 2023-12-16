@@ -18,6 +18,7 @@ import (
 type RecommendedAiService interface {
 	GetRecommendedCareers(ctx echo.Context, message string) string
 	SaveGenerateRecommendationCareer(ctx echo.Context, request requests.ChatRecomendedRequest) (*resources.GenerateRecommendationCareerResource, []exceptions.ValidationMessage, error)
+	GetAllHistoryRecommendationCareer(ctx echo.Context) (*resources.HistoryRecommendationCareerAiResource, error)
 }
 
 type RecommendedAiServiceImpl struct {
@@ -73,4 +74,22 @@ func (service *RecommendedAiServiceImpl) GetRecommendedCareers(ctx echo.Context,
 	GenerateMessage := service.OpenAi.GenerateMessage(ctx, SetPromptingCareer, message)
 
 	return GenerateMessage
+}
+
+func (service *RecommendedAiServiceImpl) GetAllHistoryRecommendationCareer(ctx echo.Context) (*resources.HistoryRecommendationCareerAiResource, error) {
+	UserProfile, errClaims := service.UserService.GetUserProfile(ctx)
+
+	if errClaims != nil {
+		return nil, fmt.Errorf("Error claim your user, please authentication")
+	}
+
+	_, errGetHistory := service.HistoryChatCareer.FindAllHistoryRecommendationCareer()
+
+	if errGetHistory != nil {
+		return nil, fmt.Errorf("Error get history")
+	}
+
+	ConversionHistory := conRes.ConvertHistoryChatToCareerRecommendationResource(UserProfile)
+
+	return &ConversionHistory, nil
 }

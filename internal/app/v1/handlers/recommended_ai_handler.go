@@ -12,6 +12,7 @@ import (
 
 type RecommendedAiHandler interface {
 	GenerateRecommendationHandler(echo.Context) error
+	GetAllHistoryChatHandler(echo.Context) error
 }
 
 type RecommendedAiHandlerImpl struct {
@@ -43,5 +44,17 @@ func (handler *RecommendedAiHandlerImpl) GenerateRecommendationHandler(ctx echo.
 	}
 
 	return responses.StatusCreated(ctx, "Answering your question", Response)
+
+}
+
+func (handler *RecommendedAiHandlerImpl) GetAllHistoryChatHandler(ctx echo.Context) error {
+
+	Response, err := handler.RecommendedAiService.GetAllHistoryRecommendationCareer(ctx)
+
+	if err != nil {
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Get all history chat", Response)
 
 }
