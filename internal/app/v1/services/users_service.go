@@ -19,6 +19,7 @@ import (
 
 type UserService interface {
 	UsersList() ([]resources.UserResource, error)
+	UserDetail(id uint) (*resources.UserResource, error)
 	RegisterUser(ctx echo.Context, request requests.UserRequest) (*domain.Users, []exceptions.ValidationMessage, error)
 	GetUserProfile(ctx echo.Context) (*domain.Users, error)
 	UpdateUserProfile(ctx echo.Context, request requests.UpdateUserProfileRequest, picture *multipart.FileHeader) (*domain.Users, []exceptions.ValidationMessage, error)
@@ -42,6 +43,19 @@ type UserServiceImpl struct {
 
 func NewUserService(userServiceImpl UserServiceImpl) UserService {
 	return &userServiceImpl
+}
+
+func (service *UserServiceImpl) UserDetail(id uint) (*resources.UserResource, error) {
+
+	getUserById, errGetUser := service.UserRepo.FindByID(int(id))
+
+	if errGetUser != nil {
+		return nil, errGetUser
+	}
+
+	UserResp := conRes.UserDomainToUserResource(getUserById)
+
+	return &UserResp, nil
 }
 
 func (service *UserServiceImpl) UsersList() ([]resources.UserResource, error) {
