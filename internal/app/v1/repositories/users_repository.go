@@ -8,6 +8,7 @@ import (
 )
 
 type UserRepository interface {
+	GetAllUsers() ([]domain.Users, error)
 	CreateUser(user *domain.Users) (*domain.Users, error)
 	FindyByEmail(email string) (*domain.Users, error)
 	FindByID(id int) (*domain.Users, error)
@@ -23,6 +24,24 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 	return &UserRepositoryImpl{
 		db: db,
 	}
+}
+
+func (repository *UserRepositoryImpl) GetAllUsers() ([]domain.Users, error) {
+
+	var users []domain.Users
+
+	errGetUsers := repository.db.Preload("Credential").Find(&users)
+
+	if errGetUsers.Error != nil {
+		return nil, fmt.Errorf("Error when get all user")
+	}
+
+	if errGetUsers.RowsAffected == 0 {
+		return nil, fmt.Errorf("User is empty")
+	}
+
+	return users, nil
+
 }
 
 func (repository *UserRepositoryImpl) UpdateOTP(user *domain.Users, secret string) error {
