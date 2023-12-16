@@ -43,7 +43,6 @@ func (repository *ScheduleRepositoryImpl) GroupingStartTimeAndFinishTimeCounseli
 	}
 
 	return counselorSchedules, nil
-
 }
 
 func (repository *ScheduleRepositoryImpl) CheckDayCounselingScheduleExists(id int, day string) (*domain.Counseling_Single_Schedule, error) {

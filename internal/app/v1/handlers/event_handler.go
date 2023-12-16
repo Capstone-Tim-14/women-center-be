@@ -18,6 +18,7 @@ type EventHandler interface {
 	GetDetailEventMobile(ctx echo.Context) error
 	GetAllEvent(ctx echo.Context) error
 	GetAllEventMobile(ctx echo.Context) error
+	UpdateEvent(ctx echo.Context) error
 }
 
 type EventHandlerImpl struct {
@@ -125,4 +126,27 @@ func (handler *EventHandlerImpl) GetAllEventMobile(ctx echo.Context) error {
 	result := conversion.AllEventConvertResource(events)
 
 	return responses.StatusOK(ctx, "Success Get All Event", result)
+}
+
+func (handler *EventHandlerImpl) UpdateEvent(ctx echo.Context) error {
+
+	var request requests.EventRequest
+	errBinding := ctx.Bind(&request)
+
+	Poster, _ := ctx.FormFile("poster")
+
+	if errBinding != nil {
+		return exceptions.StatusBadRequest(ctx, errBinding)
+	}
+
+	validation, err := handler.EventService.UpdateEvent(ctx, request, Poster)
+	if validation != nil {
+		return exceptions.ValidationException(ctx, "Error Validation", validation)
+	}
+
+	if err != nil {
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Event updated!", nil)
 }

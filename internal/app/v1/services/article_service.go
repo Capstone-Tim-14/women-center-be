@@ -318,11 +318,14 @@ func (service *ArticleServiceImpl) UpdateArticle(ctx echo.Context, request reque
 	}
 
 	id := ctx.Param("id")
-	getId, _ := strconv.Atoi(id)
+	getId, errId := strconv.Atoi(id)
+	if errId != nil {
+		return nil, fmt.Errorf("invalid id")
+	}
 
 	_, err = service.ArticleRepo.FindById(getId)
 	if err != nil {
-		return nil, fmt.Errorf("Article not found")
+		return nil, fmt.Errorf("article not found")
 
 	}
 	if thumbnail != nil {
@@ -339,7 +342,7 @@ func (service *ArticleServiceImpl) UpdateArticle(ctx echo.Context, request reque
 
 	_, err = service.ArticleRepo.UpdateArticle(getId, article), nil
 	if err != nil {
-		return nil, fmt.Errorf("Error update article")
+		return nil, fmt.Errorf("error update article")
 	}
 
 	return nil, nil

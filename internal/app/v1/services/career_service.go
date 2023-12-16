@@ -25,6 +25,9 @@ type CareerService interface {
 	RemoveJobType(ctx echo.Context, id int, request requests.CareerhasManyRequest) ([]exceptions.ValidationMessage, error)
 	UpdateCareer(ctx echo.Context, request requests.CareerRequest, logo *multipart.FileHeader, cover *multipart.FileHeader) ([]exceptions.ValidationMessage, error)
 	DeleteCareer(ctx echo.Context) error
+	RecomendationCareerList(ctx echo.Context) ([]domain.Career, error)
+	UpdateRecomendationCareer(ctx echo.Context) error
+	RecomendationCareerListForMobile(ctx echo.Context) ([]domain.Career, error)
 }
 
 type CareerServiceImpl struct {
@@ -244,4 +247,66 @@ func (service *CareerServiceImpl) DeleteCareer(ctx echo.Context) error {
 	}
 
 	return nil
+}
+
+func (service *CareerServiceImpl) RecomendationCareerList(ctx echo.Context) ([]domain.Career, error) {
+
+	var FilterCareer requests.CareerFilterRequest
+
+	JobType := ctx.QueryParam("job_type")
+
+	if JobType != "" {
+		FilterCareer.JobType = strings.Split(JobType, ",")
+	}
+
+	career, err := service.CareerRepo.RecomendationCareerList(FilterCareer)
+
+	if err != nil {
+		fmt.Errorf(err.Error())
+		return nil, fmt.Errorf("Career is empty")
+	}
+
+	return career, nil
+}
+
+func (service *CareerServiceImpl) UpdateRecomendationCareer(ctx echo.Context) error {
+
+	getId := ctx.QueryParam("career_id")
+	updateId, _ := strconv.Atoi(getId)
+
+	career, errCareer := service.CareerRepo.FindCareerByid(updateId)
+
+	if errCareer != nil {
+		return fmt.Errorf("Error get detail career: %w", errCareer)
+	}
+	getStatus := ctx.QueryParam("status")
+	updateStatus, _ := strconv.ParseBool(getStatus)
+
+	errUpdateCareer := service.CareerRepo.UpdateRecomendationCareer(updateStatus, career)
+
+	if errUpdateCareer != nil {
+		return fmt.Errorf("Error update career: %w", errUpdateCareer)
+	}
+
+	return nil
+}
+
+func (service *CareerServiceImpl) RecomendationCareerListForMobile(ctx echo.Context) ([]domain.Career, error) {
+
+	var FilterCareer requests.CareerFilterRequest
+
+	JobType := ctx.QueryParam("job_type")
+
+	if JobType != "" {
+		FilterCareer.JobType = strings.Split(JobType, ",")
+	}
+
+	career, err := service.CareerRepo.RecomendationCareerList(FilterCareer)
+
+	if err != nil {
+		fmt.Errorf(err.Error())
+		return nil, fmt.Errorf("Career is empty")
+	}
+
+	return career, nil
 }

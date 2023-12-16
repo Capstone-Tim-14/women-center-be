@@ -95,23 +95,20 @@ func UserFavoriteArticleResponse(user *domain.Users) *[]resources.ArticleResourc
 	return &userArticleFavorite
 }
 
-func UserCounselorFavoriteResponse(user *domain.Users) resources.UserCounselorFavorite {
-	var Counselor []resources.CounselorFavorite
-	CounselorFavoriteResource := resources.UserCounselorFavorite{}
-	CounselorFavoriteResource.Id = user.Id
-	CounselorFavoriteResource.First_name = user.First_name
-	CounselorFavoriteResource.Last_name = user.Last_name
-	CounselorFavoriteResource.Username = user.Credential.Username
+func UserCounselorFavoriteResponse(user *domain.Users) []resources.CounselorResource {
+	var Counselor []resources.CounselorResource
 	for _, counselorFav := range user.Counselor_Favorite {
-		Counselor = append(Counselor, resources.CounselorFavorite{
+		Counselor = append(Counselor, resources.CounselorResource{
 			Id:              counselorFav.Id,
 			First_name:      counselorFav.First_name,
 			Last_name:       counselorFav.Last_name,
+			Email:           counselorFav.Credential.Email,
 			Username:        counselorFav.Credential.Username,
 			Profile_picture: counselorFav.Profile_picture,
+			Description:     counselorFav.Description,
+			Status:          counselorFav.Status,
 		})
 	}
-	CounselorFavoriteResource.CounselorFavorite = Counselor
 
-	return CounselorFavoriteResource
+	return Counselor
 }

@@ -19,6 +19,8 @@ func HttpCounselorRoute(group *echo.Group, db *gorm.DB, validate *validator.Vali
 	ScheduleRepo := repositories.NewScheduleRepository(db)
 	AdminRepo := repositories.NewAdminRepository(db)
 	CounselorHasSpecialistRepo := repositories.NewCounselorHasSpecialistRepository(db)
+	BookingRepo := repositories.NewBookingCounselingRepository(db)
+
 	CounselorService := services.NewCounselorService(services.CounselorServiceImpl{
 		CounselorRepo:              CounselorRepo,
 		RoleRepo:                   RoleRepo,
@@ -29,11 +31,19 @@ func HttpCounselorRoute(group *echo.Group, db *gorm.DB, validate *validator.Vali
 		ScheduleRepo:               ScheduleRepo,
 	})
 	CounselorScheduleService := services.NewScheduleService(ScheduleRepo, validate, CounselorRepo)
+	CounselorCounselingSession := services.NewCounselingSessionService(services.CounselingSessionServiceImpl{
+		CounselorRepo:    CounselorRepo,
+		BookingRepo:      BookingRepo,
+		CounselorService: CounselorService,
+	})
 
 	CounselorHandler := handlers.NewCounselorHandler(CounselorService)
 	CounselorScheduleHandler := handlers.NewCounselorScheduleHandler(handlers.ScheduleHandlerImpl{
 		CounselorService:         CounselorService,
 		CounselorScheduleService: CounselorScheduleService,
+	})
+	CounselingSessionHandler := handlers.NewCounselingSessionHandlers(handlers.CounselingSessionHandlerImpl{
+		CounselingSession: CounselorCounselingSession,
 	})
 
 	userVerify := group.Group("/counselors", middlewares.VerifyTokenSignature("SECRET_KEY"))
@@ -42,6 +52,8 @@ func HttpCounselorRoute(group *echo.Group, db *gorm.DB, validate *validator.Vali
 	userVerify.PUT("", CounselorHandler.UpdateCounselorForMobile)
 	userVerify.GET("/:id", CounselorHandler.GetDetailCounselorHandler)
 	userVerify.GET("/profile", CounselorHandler.GetCounselorProfile)
+	userVerify.GET("/counseling-session", CounselingSessionHandler.ListCounselingSessionHandler)
+	userVerify.GET("/counseling-session/:order_id", CounselingSessionHandler.CounselingSessionDetailHandler)
 
 	verifyTokenAdmin := group.Group("/admin", middlewares.VerifyTokenSignature("SECRET_KEY_ADMIN"))
 

@@ -15,6 +15,8 @@ type CareerRepository interface {
 	UpdateCareerById(id int, career *domain.Career) error
 	DeleteCareerById(id int) error
 	PreloadJobType(id uint) (*domain.Career, error)
+	RecomendationCareerList(job requests.CareerFilterRequest) ([]domain.Career, error)
+	UpdateRecomendationCareer(status bool, career *domain.Career) error
 }
 
 type CareerRepositoryImpl struct {
@@ -133,4 +135,40 @@ func (repository *CareerRepositoryImpl) PreloadJobType(id uint) (*domain.Career,
 	}
 
 	return &career, nil
+}
+
+func (repository *CareerRepositoryImpl) RecomendationCareerList(job requests.CareerFilterRequest) ([]domain.Career, error) {
+
+	var career []domain.Career
+
+	var errTakeCareer *gorm.DB
+
+	if len(job.JobType) > 0 {
+		errTakeCareer = repository.db.Joins("INNER JOIN career_has_types ON careers.id = career_has_types.career_id").Joins("INNER JOIN job_types ON career_has_types.job_type_id = job_types.id").Where("job_types.name IN (?) AND recomendation = ?", job.JobType, true).Distinct().Find(&career)
+	} else {
+		errTakeCareer = repository.db.Where("recomendation = ?", true).Find(&career)
+	}
+
+	if errTakeCareer.Error != nil {
+		return nil, errTakeCareer.Error
+	}
+
+	if errTakeCareer.RowsAffected == 0 {
+		return nil, fmt.Errorf("Recomendation Career is empty")
+	}
+
+	return career, nil
+
+}
+
+func (repository *CareerRepositoryImpl) UpdateRecomendationCareer(status bool, career *domain.Career) error {
+
+	result := repository.db.Model(&career).Update("recomendation", status)
+
+	if result.Error != nil {
+		return fmt.Errorf("Error when update recomendation career")
+	}
+
+	return nil
+
 }
