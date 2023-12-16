@@ -10,6 +10,7 @@ import (
 
 type CareerRepository interface {
 	CreateCareer(career *domain.Career) (*domain.Career, error)
+	GetAllCareerNoFilter() ([]domain.Career, error)
 	GetAllCareer(job requests.CareerFilterRequest) ([]domain.Career, error)
 	FindCareerByid(id int) (*domain.Career, error)
 	UpdateCareerById(id int, career *domain.Career) error
@@ -27,6 +28,23 @@ func NewCareerRepository(db *gorm.DB) CareerRepository {
 	return &CareerRepositoryImpl{
 		db: db,
 	}
+}
+
+func (repository *CareerRepositoryImpl) GetAllCareerNoFilter() ([]domain.Career, error) {
+	var careers []domain.Career
+
+	errCareers := repository.db.Find(&careers)
+
+	if errCareers.Error != nil {
+		return nil, fmt.Errorf("Error to get list career")
+	}
+
+	if errCareers.RowsAffected == 0 {
+		return nil, fmt.Errorf("Career is empty")
+	}
+
+	return careers, nil
+
 }
 
 func (repository *CareerRepositoryImpl) CreateCareer(career *domain.Career) (*domain.Career, error) {

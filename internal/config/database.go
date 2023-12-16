@@ -48,4 +48,5 @@ func migrations(db *gorm.DB) {
 	db.AutoMigrate(schema.UserScheduleCounseling{})
 	db.AutoMigrate(schema.BookingCounseling{})
 	db.AutoMigrate(schema.Event{})
+	db.AutoMigrate(schema.HistoryRecommendationCareerAi{})
 }
