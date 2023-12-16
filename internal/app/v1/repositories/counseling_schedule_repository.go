@@ -10,6 +10,9 @@ import (
 
 type ScheduleRepository interface {
 	CreateSchedule(counselor *domain.Counselors, scheduling []domain.Counseling_Schedule) error
+	DeleteScheduleById(id int) error
+	FindById(id int) (*domain.Counseling_Schedule, error)
+	UpdateScheduleById(id int, schedule *domain.Counseling_Schedule) error
 	CheckDayCounselingScheduleExists(id int, day string) (*domain.Counseling_Single_Schedule, error)
 	FindStartEndDateCounseling(counselor_id int, day string, start time.Time, finish time.Time) (*domain.Counseling_Schedule, error)
 	GroupingStartTimeAndFinishTimeCounseling(counselor_id int) ([]domain.Counseling_Schedule, error)
@@ -92,4 +95,33 @@ func (repository *ScheduleRepositoryImpl) FindStartEndDateCounseling(counselor_i
 	}
 
 	return &Schedule, nil
+}
+
+func (repository *ScheduleRepositoryImpl) DeleteScheduleById(id int) error {
+	result := repository.Db.Delete(&domain.Counseling_Schedule{}, id)
+	if result.Error != nil {
+		return fmt.Errorf("failed to remove schedule")
+	}
+
+	return nil
+}
+
+func (repository *ScheduleRepositoryImpl) FindById(id int) (*domain.Counseling_Schedule, error) {
+	schedule := domain.Counseling_Schedule{}
+
+	result := repository.Db.Where("id = ?", id).First(&schedule)
+	if result.Error != nil {
+		return nil, fmt.Errorf("failed to find schedule")
+	}
+
+	return &schedule, nil
+}
+
+func (repository *ScheduleRepositoryImpl) UpdateScheduleById(id int, schedule *domain.Counseling_Schedule) error {
+	result := repository.Db.Model(&schedule).Where("id = ?", id).Updates(schedule)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
 }
