@@ -83,13 +83,13 @@ func (service *RecommendedAiServiceImpl) GetAllHistoryRecommendationCareer(ctx e
 		return nil, fmt.Errorf("Error claim your user, please authentication")
 	}
 
-	_, errGetHistory := service.HistoryChatCareer.FindAllHistoryRecommendationCareer()
+	Users, errGetHistory := service.HistoryChatCareer.FindAllHistoryRecommendationCareer(UserProfile.Id)
 
 	if errGetHistory != nil {
 		return nil, fmt.Errorf("Error get history")
 	}
 
-	ConversionHistory := conRes.ConvertHistoryChatToCareerRecommendationResource(UserProfile)
+	ConversionHistory := conRes.ConvertHistoryChatToCareerRecommendationResource(Users)
 
 	return &ConversionHistory, nil
 }

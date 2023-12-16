@@ -9,7 +9,7 @@ import (
 
 type RecommendationAiRepository interface {
 	SaveHistoryRecommendationCareer(domain.HistoryRecommendationCareerAi) (*domain.HistoryRecommendationCareerAi, error)
-	FindAllHistoryRecommendationCareer() (*domain.Users, error)
+	FindAllHistoryRecommendationCareer(id uint) (*domain.Users, error)
 }
 
 type NewRecommendationAiRepositoryImpl struct {
@@ -34,12 +34,12 @@ func (repo *NewRecommendationAiRepositoryImpl) SaveHistoryRecommendationCareer(c
 
 }
 
-func (repo *NewRecommendationAiRepositoryImpl) FindAllHistoryRecommendationCareer() (*domain.Users, error) {
+func (repo *NewRecommendationAiRepositoryImpl) FindAllHistoryRecommendationCareer(id uint) (*domain.Users, error) {
 	var user domain.Users
 
-	err := repo.Db.Preload("history_user_recommended_career_ai").Find(&user).Error
+	err := repo.Db.Preload("HistoryChatRecommendationCareer").Where("id = ?", id).First(&user).Error
 
-	if err.Error != nil {
+	if err != nil {
 		return nil, fmt.Errorf("Error get all history chat")
 	}
 

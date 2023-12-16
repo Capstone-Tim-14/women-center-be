@@ -16,5 +16,5 @@ type HistoryRecommendationCareerAiResource struct {
 	User_id           uint                                      `json:"user_id,omitempty"`
 	Fullname          string                                    `json:"fullname,omitempty"`
 	Profile           string                                    `json:"profile,omitempty"`
-	HistoryChatCareer []ChatHistoryRecommendationCareerResource `json:"history_chat_career,omitempty"`
+	HistoryChatCareer []ChatHistoryRecommendationCareerResource `json:"history_chat,omitempty"`
 }
