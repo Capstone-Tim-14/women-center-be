@@ -14,6 +14,9 @@ import (
 )
 
 type UserHandler interface {
+	ListUserHandler(echo.Context) error
+	UserDetailHandler(echo.Context) error
+	UserUpdateHandler(echo.Context) error
 	RegisterHandler(echo.Context) error
 	ProfileHandler(echo.Context) error
 	UpdateProfileHandler(echo.Context) error
@@ -33,6 +36,64 @@ func NewUserHandler(user services.UserService) UserHandler {
 	return &UserHandlerImpl{
 		UserService: user,
 	}
+}
+
+func (h *UserHandlerImpl) UserUpdateHandler(ctx echo.Context) error {
+
+	userUpdateRequest := requests.UpdateUserProfileRequest{}
+	pictureProfile, _ := ctx.FormFile("picture_profile")
+
+	err := ctx.Bind(&userUpdateRequest)
+
+	if err != nil {
+		return exceptions.StatusBadRequest(ctx, err)
+	}
+
+	_, validation, err := h.UserService.UpdateUser(ctx, userUpdateRequest, pictureProfile)
+
+	if validation != nil {
+		return exceptions.ValidationException(ctx, "Error validation", validation)
+	}
+
+	if err != nil {
+		if strings.Contains(err.Error(), "Email already exists") {
+			return exceptions.StatusAlreadyExist(ctx, err)
+		}
+
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusCreated(ctx, "User profile updated", nil)
+
+}
+
+func (h *UserHandlerImpl) UserDetailHandler(ctx echo.Context) error {
+
+	GetId := ctx.Param("id")
+	ConvertId, errId := strconv.Atoi(GetId)
+
+	if errId != nil {
+		return exceptions.StatusBadRequest(ctx, fmt.Errorf("Invalid format id"))
+	}
+
+	UserRes, errGetUser := h.UserService.UserDetail(uint(ConvertId))
+
+	if errGetUser != nil {
+		return exceptions.StatusInternalServerError(ctx, errGetUser)
+	}
+
+	return responses.StatusOK(ctx, "Success get user detail", UserRes)
+}
+
+func (h *UserHandlerImpl) ListUserHandler(ctx echo.Context) error {
+
+	GetUsers, errGetUser := h.UserService.UsersList()
+
+	if errGetUser != nil {
+		return exceptions.StatusBadRequest(ctx, errGetUser)
+	}
+
+	return responses.StatusOK(ctx, "Succcess get users", GetUsers)
 }
 
 func (h *UserHandlerImpl) ProfileHandler(ctx echo.Context) error {

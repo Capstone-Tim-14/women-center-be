@@ -19,6 +19,22 @@ func UserDomainToUserResource(user *domain.Users) resources.UserResource {
 	}
 }
 
+func UserDomainToUsersResource(users []domain.Users) []resources.UserResource {
+
+	var ResponseUser []resources.UserResource
+
+	for _, item := range users {
+		ResponseUser = append(ResponseUser, resources.UserResource{
+			Id:         item.Id,
+			First_name: item.First_name,
+			Last_name:  item.Last_name,
+			Email:      item.Credential.Email,
+		})
+	}
+
+	return ResponseUser
+}
+
 func UserDomainToUserProfileResource(user *domain.Users) resources.GetUserProfile {
 	UserProfile := resources.GetUserProfile{
 		Id:              user.Id,
