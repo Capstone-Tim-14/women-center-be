@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"woman-center-be/internal/app/v1/services"
 	"woman-center-be/internal/web/requests/v1"
@@ -13,6 +14,8 @@ import (
 
 type CounselorScheduleHandler interface {
 	CreateScheduleHandler(echo.Context) error
+	DeleteScheduleHandler(ctx echo.Context) error
+	UpdateScheduleHandler(ctx echo.Context) error
 }
 
 type ScheduleHandlerImpl struct {
@@ -48,4 +51,48 @@ func (handler *ScheduleHandlerImpl) CreateScheduleHandler(ctx echo.Context) erro
 	}
 
 	return responses.StatusCreated(ctx, "Schedule created", nil)
+}
+
+func (handler *ScheduleHandlerImpl) DeleteScheduleHandler(ctx echo.Context) error {
+	idSchedule := ctx.Param("id")
+	idInt, err := strconv.Atoi(idSchedule)
+	if err != nil {
+		return exceptions.StatusBadRequest(ctx, err)
+	}
+
+	err = handler.CounselorScheduleService.DeleteScheduletById(ctx, idInt)
+	if err != nil {
+		if strings.Contains(err.Error(), "failed to find schedule") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Success remove schedule", nil)
+}
+
+func (handler *ScheduleHandlerImpl) UpdateScheduleHandler(ctx echo.Context) error {
+	var request requests.CounselingScheduleRequest
+	errBinding := ctx.Bind(&request)
+
+	if errBinding != nil {
+		return exceptions.StatusBadRequest(ctx, errBinding)
+	}
+
+	validation, err := handler.CounselorScheduleService.UpdateScheduleById(ctx, request)
+	if validation != nil {
+		return exceptions.ValidationException(ctx, "Error Validation", validation)
+	}
+
+	if err != nil {
+		if strings.Contains(err.Error(), "invalid id") {
+			return exceptions.StatusBadRequest(ctx, err)
+		}
+		if strings.Contains(err.Error(), "schedule not found") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Schedule updated!", nil)
 }
