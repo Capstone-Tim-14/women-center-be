@@ -24,6 +24,7 @@ type CounselorHandler interface {
 	GetCounselorProfile(ctx echo.Context) error
 	UpdateCounselorHandler(echo.Context) error
 	UpdateCounselorForMobile(echo.Context) error
+	GetDetailCounselorSchedules(echo.Context) error
 }
 
 type CounselorHandlerImpl struct {
@@ -217,9 +218,23 @@ func (handler *CounselorHandlerImpl) GetDetailCounselorHandler(ctx echo.Context)
 	return responses.StatusOK(ctx, "Get detail counselor successfully", response)
 }
 
-func (handler *CounselorHandlerImpl) GetDetailCounselorWeb(ctx echo.Context) error {
+func (handler *CounselorHandlerImpl) GetDetailCounselorSchedules(ctx echo.Context) error {
 
 	response, err := handler.CounselorService.GetDetailCounselor(ctx)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "Counselor not found") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Get detail counselor successfully", response)
+}
+
+func (handler *CounselorHandlerImpl) GetDetailCounselorWeb(ctx echo.Context) error {
+
+	response, err := handler.CounselorService.GetDetailCounselorOnly(ctx)
 
 	if err != nil {
 		if strings.Contains(err.Error(), "Counselor not found") {
