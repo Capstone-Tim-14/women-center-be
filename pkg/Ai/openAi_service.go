@@ -3,7 +3,6 @@ package Ai
 import (
 	"context"
 	"woman-center-be/internal/app/v1/models/domain"
-	"woman-center-be/internal/app/v1/repositories"
 
 	"github.com/labstack/echo/v4"
 	"github.com/sashabaranov/go-openai"
@@ -16,11 +15,15 @@ type OpenAiService interface {
 }
 
 type OpenAiServiceImpl struct {
-	CareerRepo repositories.CareerRepository
+	OpenAi *openai.Client
 }
 
-func NewOpenAiService(openAi OpenAiServiceImpl) OpenAiService {
-	return &openAi
+func NewOpenAiService() OpenAiService {
+	client := openai.NewClient(viper.GetString("OPENAI.TOKEN"))
+
+	return &OpenAiServiceImpl{
+		OpenAi: client,
+	}
 }
 
 func (service *OpenAiServiceImpl) EmbeddedPromptByDataCareer(careers []domain.Career) string {
@@ -33,6 +36,9 @@ func (service *OpenAiServiceImpl) EmbeddedPromptByDataCareer(careers []domain.Ca
 		for _, item := range careers {
 			resultPrompting += item.Title_job + " " + item.About_job + " " + item.Location + " " + item.Linkedin_url + " "
 		}
+
+		resultPrompting += "lalu berikan hasil sesuai format-format dan link yang tertera pada data pada data-data yang sudah direkomendasikan."
+
 	} else {
 		resultPrompting = "Sebagai narasumber yang handal, Anda ditugaskan untuk memberikan daftar rekomendasi jenjang karier yang sedang tren untuk wanita saat ini. Berikan informasi tentang posisi atau industri yang menjanjikan pertumbuhan karier yang pesat, serta saran tentang keterampilan dan kualifikasi yang diperlukan. Pertimbangkan tren terkini dalam dunia kerja dan berikan wawasan mengenai bagaimana wanita dapat memanfaatkannya untuk memajukan karier mereka. Pastikan untuk memperhatikan diversifikasi industri dan cara mendukung kesetaraan gender di tempat kerja."
 	}
@@ -45,7 +51,7 @@ func (service *OpenAiServiceImpl) GenerateMessage(ctx echo.Context, prompt strin
 	result := make(chan string)
 
 	go func() {
-		client := openai.NewClient(viper.GetString("OPENAI.TOKEN"))
+		client := service.OpenAi
 		model := openai.GPT3Dot5Turbo
 		messages := []openai.ChatCompletionMessage{
 			{
