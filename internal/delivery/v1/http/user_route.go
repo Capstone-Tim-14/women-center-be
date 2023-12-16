@@ -39,6 +39,7 @@ func HttpUserRoute(group *echo.Group, db *gorm.DB, validate *validator.Validate)
 
 	adminVerify.GET("/users", UserHandler.ListUserHandler)
 	adminVerify.GET("/user/:id", UserHandler.UserDetailHandler)
+	adminVerify.PUT("/user/:id", UserHandler.UserUpdateHandler)
 
 	userVerify.GET("/profile", UserHandler.ProfileHandler)
 	userVerify.PUT("/profile", UserHandler.UpdateProfileHandler)

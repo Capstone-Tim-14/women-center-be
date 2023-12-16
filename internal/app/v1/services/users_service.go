@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"mime/multipart"
+	"strconv"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/app/v1/repositories"
 	conversion "woman-center-be/internal/web/conversion/request/v1"
@@ -22,6 +23,7 @@ type UserService interface {
 	UserDetail(id uint) (*resources.UserResource, error)
 	RegisterUser(ctx echo.Context, request requests.UserRequest) (*domain.Users, []exceptions.ValidationMessage, error)
 	GetUserProfile(ctx echo.Context) (*domain.Users, error)
+	UpdateUser(ctx echo.Context, request requests.UpdateUserProfileRequest, picture *multipart.FileHeader) (*domain.Users, []exceptions.ValidationMessage, error)
 	UpdateUserProfile(ctx echo.Context, request requests.UpdateUserProfileRequest, picture *multipart.FileHeader) (*domain.Users, []exceptions.ValidationMessage, error)
 	AddFavoriteArticle(ctx echo.Context, slug string) error
 	DeleteFavoriteArticle(ctx echo.Context, slug string) error
@@ -109,6 +111,47 @@ func (s *UserServiceImpl) GetUserProfile(ctx echo.Context) (*domain.Users, error
 		return nil, err
 	}
 	return user, nil
+}
+
+func (service *UserServiceImpl) UpdateUser(ctx echo.Context, request requests.UpdateUserProfileRequest, picture *multipart.FileHeader) (*domain.Users, []exceptions.ValidationMessage, error) {
+
+	if picture != nil {
+		cloudURL, errUpload := storage.S3PutFile(picture, "user/picture")
+
+		if errUpload != nil {
+			return nil, nil, errUpload
+		}
+
+		request.Profile_picture = cloudURL
+	}
+
+	GetId := ctx.Param("id")
+	ConvertId, errId := strconv.Atoi(GetId)
+
+	if errId != nil {
+		return nil, nil, fmt.Errorf("Invalid format id")
+	}
+
+	err := service.Validator.Struct(request)
+	if err != nil {
+		return nil, helpers.ValidationError(ctx, err), nil
+	}
+
+	getUser, err := service.UserRepo.FindByID(int(ConvertId))
+	if err != nil {
+		return nil, nil, fmt.Errorf("Failed to find user: %s", err.Error())
+	}
+
+	updateProfile := conversion.UserUpdateRequestToUserDomain(request, getUser)
+
+	updateProfile.Credential.Role_id = getUser.Credential.Role_id
+
+	updatedUser, err := service.UserRepo.UpdateUser(updateProfile)
+	if err != nil {
+		return nil, nil, fmt.Errorf("Error when updating user: %s", err.Error())
+	}
+
+	return updatedUser, nil, nil
 }
 
 func (service *UserServiceImpl) UpdateUserProfile(ctx echo.Context, request requests.UpdateUserProfileRequest, picture *multipart.FileHeader) (*domain.Users, []exceptions.ValidationMessage, error) {
