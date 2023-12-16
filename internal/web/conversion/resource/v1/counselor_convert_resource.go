@@ -1,6 +1,7 @@
 package conversion
 
 import (
+	"strconv"
 	"strings"
 	"woman-center-be/internal/app/v1/models/domain"
 	"woman-center-be/internal/web/resources/v1"
@@ -32,6 +33,25 @@ func ConvertCounselorDomainToCounselorResponse(counselor []domain.Counselors) []
 			Description:     counselor.Description,
 			Status:          counselor.Status,
 			Profile_picture: counselor.Profile_picture,
+		})
+	}
+
+	return counselorResponse
+}
+
+func ConvertCounselorDomainToDetail(counselor *domain.Counselors) resources.DetailCounselor {
+	counselorResponse := resources.DetailCounselor{
+		Id:              strconv.Itoa(int(counselor.Id)),
+		Full_name:       counselor.First_name + " " + counselor.Last_name,
+		Email:           counselor.Credential.Email,
+		Description:     counselor.Description,
+		Profile_picture: counselor.Profile_picture,
+	}
+
+	for _, specialist := range counselor.Specialists {
+		counselorResponse.Spesialist = append(counselorResponse.Spesialist, resources.SpecialistCounselor{
+			Id:   specialist.Id,
+			Name: specialist.Name,
 		})
 	}
 
