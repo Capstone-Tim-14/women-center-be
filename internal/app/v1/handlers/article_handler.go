@@ -360,19 +360,19 @@ func (handler *ArticleHandlerImpl) UpdateArticle(ctx echo.Context) error {
 	}
 
 	validation, err := handler.ArticleService.UpdateArticle(ctx, request, Thumbnail)
+
 	if validation != nil {
 		return exceptions.ValidationException(ctx, "Error Validation", validation)
 	}
 
-	if strings.Contains(err.Error(), "invalid id") {
-		return exceptions.StatusBadRequest(ctx, err)
-	}
-
-	if strings.Contains(err.Error(), "article not found") {
-		return exceptions.StatusNotFound(ctx, err)
-	}
-
 	if err != nil {
+		if strings.Contains(err.Error(), "invalid id") {
+			return exceptions.StatusBadRequest(ctx, err)
+		}
+
+		if strings.Contains(err.Error(), "article not found") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
