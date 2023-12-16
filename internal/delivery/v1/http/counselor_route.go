@@ -64,6 +64,7 @@ func HttpCounselorRoute(group *echo.Group, db *gorm.DB, validate *validator.Vali
 	verifyTokenAdmin.PUT("/counselors/:id", CounselorHandler.UpdateCounselorHandler)
 	verifyTokenAdmin.POST("/counselor/:id/schedule", CounselorScheduleHandler.CreateScheduleHandler)
 	verifyTokenAdmin.GET("/counselor/:id", CounselorHandler.GetDetailCounselorWeb)
+	verifyTokenAdmin.GET("/counselor-schedule/:id", CounselorHandler.GetDetailCounselorSchedules)
 	verifyTokenAdmin.DELETE("/counselor/:id/schedule", CounselorScheduleHandler.DeleteScheduleHandler)
 	verifyTokenAdmin.PUT("/counselor/:id/schedule", CounselorScheduleHandler.UpdateScheduleHandler)
 }
