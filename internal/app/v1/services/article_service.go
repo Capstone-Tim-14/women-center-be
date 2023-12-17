@@ -26,6 +26,7 @@ type ArticleService interface {
 	FindAllArticleCounselor(ctx echo.Context) (*resources.ArticleCounseloResource, error)
 	FindAllArticle(ctx echo.Context) ([]domain.Articles, *query.Pagination, error)
 	DeleteArticle(ctx echo.Context) error
+	DeleteArticleCounselor(ctx echo.Context) error
 	UpdatePublishedArticle(ctx echo.Context, request requests.PublishArticle) ([]exceptions.ValidationMessage, error)
 	FindArticleBySlug(ctx echo.Context, slug string) (*domain.Articles, error)
 	FindArticleForUserBySlug(ctx echo.Context, slug string) (*domain.Articles, error)
@@ -288,7 +289,7 @@ func (service *ArticleServiceImpl) DeleteArticle(ctx echo.Context) error {
 	getId, _ := strconv.Atoi(id)
 	err := service.ArticleRepo.DeleteArticleById(getId)
 	if err != nil {
-		return err
+		return fmt.Errorf("Article not found")
 	}
 
 	return nil
@@ -432,4 +433,27 @@ func (service *ArticleServiceImpl) UpdateArticle(ctx echo.Context, request reque
 	}
 
 	return nil, nil
+}
+
+func (service *ArticleServiceImpl) DeleteArticleCounselor(ctx echo.Context) error {
+
+	authClaims := helpers.GetAuthClaims(ctx)
+
+	id := ctx.Param("id")
+	getId, errId := strconv.Atoi(id)
+	if errId != nil {
+		return fmt.Errorf("invalid id")
+	}
+
+	_, err := service.ArticleRepo.FindArticleCounselorById(int(authClaims.Id), getId)
+	if err != nil {
+		return fmt.Errorf("article not found")
+	}
+
+	err = service.ArticleRepo.DeleteArticleById(getId)
+	if err != nil {
+		return fmt.Errorf("article not found")
+	}
+
+	return nil
 }

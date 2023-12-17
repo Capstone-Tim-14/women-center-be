@@ -17,6 +17,7 @@ type ArticleHandler interface {
 	CreateArticle(ctx echo.Context) error
 	FindAllArticle(ctx echo.Context) error
 	DeleteArticle(ctx echo.Context) error
+	DeleteArticleCounselor(ctx echo.Context) error
 	UpdatePublishedArticle(ctx echo.Context) error
 	UpdateArticle(ctx echo.Context) error
 	AddTagArticle(ctx echo.Context) error
@@ -377,4 +378,23 @@ func (handler *ArticleHandlerImpl) UpdateArticle(ctx echo.Context) error {
 	}
 
 	return responses.StatusOK(ctx, "Article updated!", nil)
+}
+
+func (handler *ArticleHandlerImpl) DeleteArticleCounselor(ctx echo.Context) error {
+
+	err := handler.ArticleService.DeleteArticleCounselor(ctx)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "Article not found") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+
+		if strings.Contains(err.Error(), "Access denied") {
+			return exceptions.StatusForbiddenResponse(ctx, err)
+		}
+
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Article deleted successfully", nil)
 }
