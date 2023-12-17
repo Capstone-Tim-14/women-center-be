@@ -196,7 +196,10 @@ func (handler *CareerHandlerImpl) DeleteCareer(ctx echo.Context) error {
 	err := handler.CareerService.DeleteCareer(ctx)
 
 	if err != nil {
-		return exceptions.ValidationException(ctx, "Error validation", nil)
+		if strings.Contains(err.Error(), "Career is empty") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
 	return responses.StatusOK(ctx, "Success delete career", nil)
