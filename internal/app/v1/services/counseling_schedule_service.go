@@ -100,16 +100,47 @@ func (service *ScheduleServiceImpl) UpdateScheduleById(ctx echo.Context, request
 		return helpers.ValidationError(ctx, err), nil
 	}
 
-	id := ctx.Param("id")
-	getId, errId := strconv.Atoi(id)
+	scheduleID := ctx.Param("id")
+	getId, errId := strconv.Atoi(scheduleID)
 	if errId != nil {
 		return nil, fmt.Errorf("invalid id")
 	}
 
-	_, err = service.ScheduleRepo.FindById(getId)
-	if err != nil {
+	Data, errData := service.ScheduleRepo.FindById(getId)
+	if errData != nil {
 		return nil, fmt.Errorf("schedule not found")
+	}
 
+	CounselorData, errCounselor := service.ScheduleRepo.GetSameDataCounselor(int(Data.Counselor_id))
+	if errCounselor != nil {
+		return nil, errCounselor
+	}
+
+	idSchedule := []int{}
+
+	for _, data := range *CounselorData {
+		fmt.Println(int(data.Id))
+		idSchedule = append(idSchedule, int(data.Id))
+	}
+
+	sliceId := helpers.RemoveValue(idSchedule, getId)
+	pictId := sliceId[0]
+
+	OtherData, errOther := service.ScheduleRepo.FindById(pictId)
+	if errOther != nil {
+		return nil, errOther
+	}
+
+	if OtherData.Day_schedule == request.Day_schedule {
+		if helpers.ParseClockToTime(request.Time_start).After(OtherData.Time_start) && helpers.ParseClockToTime(request.Time_start).Before(OtherData.Time_finish) {
+			return nil, fmt.Errorf("schedule conflict with other")
+		}
+		if helpers.ParseClockToTime(request.Time_finish).Before(OtherData.Time_finish) && helpers.ParseClockToTime(request.Time_finish).After(OtherData.Time_start) {
+			return nil, fmt.Errorf("schedule conflict with other")
+		}
+		if helpers.ParseClockToTime(request.Time_start).After(OtherData.Time_start) && helpers.ParseClockToTime(request.Time_finish).Before(OtherData.Time_finish) {
+			return nil, fmt.Errorf("schedule conflict with other")
+		}
 	}
 
 	schedule := conversion.ScheduleUpdateOnlyOne(request)

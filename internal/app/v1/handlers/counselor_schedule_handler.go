@@ -88,7 +88,13 @@ func (handler *ScheduleHandlerImpl) UpdateScheduleHandler(ctx echo.Context) erro
 		if strings.Contains(err.Error(), "invalid id") {
 			return exceptions.StatusBadRequest(ctx, err)
 		}
+		if strings.Contains(err.Error(), "schedule conflict with other") {
+			return exceptions.StatusAlreadyExist(ctx, err)
+		}
 		if strings.Contains(err.Error(), "schedule not found") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+		if strings.Contains(err.Error(), "access denied") {
 			return exceptions.StatusNotFound(ctx, err)
 		}
 		return exceptions.StatusInternalServerError(ctx, err)

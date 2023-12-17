@@ -12,10 +12,13 @@ type ScheduleRepository interface {
 	CreateSchedule(counselor *domain.Counselors, scheduling []domain.Counseling_Schedule) error
 	DeleteScheduleById(id int) error
 	FindById(id int) (*domain.Counseling_Schedule, error)
+	//FindById(ScheduleID int) (*domain.Counseling_Schedule, error)
+	FindCounselorDataById(ScheduleID int, CounselorID int) (*domain.Counseling_Schedule, error)
 	UpdateScheduleById(id int, schedule *domain.Counseling_Schedule) error
 	CheckDayCounselingScheduleExists(id int, day string) (*domain.Counseling_Single_Schedule, error)
 	FindStartEndDateCounseling(counselor_id int, day string, start time.Time, finish time.Time) (*domain.Counseling_Schedule, error)
 	GroupingStartTimeAndFinishTimeCounseling(counselor_id int) ([]domain.Counseling_Schedule, error)
+	GetSameDataCounselor(CounselorID int) (*[]domain.Counseling_Schedule, error)
 }
 
 type ScheduleRepositoryImpl struct {
@@ -111,7 +114,55 @@ func (repository *ScheduleRepositoryImpl) FindById(id int) (*domain.Counseling_S
 
 	result := repository.Db.Where("id = ?", id).First(&schedule)
 	if result.Error != nil {
-		return nil, fmt.Errorf("failed to find schedule")
+		return nil, fmt.Errorf("schedule not found")
+	}
+	if result.RowsAffected == 0 {
+		return nil, fmt.Errorf("schedule not found")
+	}
+
+	return &schedule, nil
+}
+
+// func (repository *ScheduleRepositoryImpl) FindById(ScheduleID int) (*domain.Counseling_Schedule, error) {
+// 	schedule := domain.Counseling_Schedule{}
+
+// 	result := repository.Db.Where("id = ?", ScheduleID).First(&schedule)
+// 	if result.Error != nil {
+// 		return nil, fmt.Errorf("schedule not found")
+// 	}
+
+// 	if result.RowsAffected == 0 {
+// 		return nil, fmt.Errorf("schedule not found")
+// 	}
+
+// 	return &schedule, nil
+// }
+
+func (repository *ScheduleRepositoryImpl) GetSameDataCounselor(CounselorID int) (*[]domain.Counseling_Schedule, error) {
+	schedule := []domain.Counseling_Schedule{}
+
+	result := repository.Db.Where("counselor_id = ?", CounselorID).Find(&schedule)
+	if result.Error != nil {
+		return nil, fmt.Errorf("access denied")
+	}
+
+	if result.RowsAffected == 0 {
+		return nil, fmt.Errorf("schedule not found")
+	}
+
+	return &schedule, nil
+}
+
+func (repository *ScheduleRepositoryImpl) FindCounselorDataById(ScheduleID int, CounselorID int) (*domain.Counseling_Schedule, error) {
+	schedule := domain.Counseling_Schedule{}
+
+	result := repository.Db.Where("id = ? AND counselor_id = ?", ScheduleID, CounselorID).First(&schedule)
+	if result.Error != nil {
+		return nil, fmt.Errorf("access denied")
+	}
+
+	if result.RowsAffected == 0 {
+		return nil, fmt.Errorf("schedule not found")
 	}
 
 	return &schedule, nil
