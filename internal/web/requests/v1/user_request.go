@@ -7,7 +7,7 @@ type UserRequest struct {
 	Profile_picture string `json:"profile_picture" form:"profile_picture"`
 	Phone_number    string `json:"phone_number" validate:"required" form:"phone_number"`
 	Username        string `json:"username" validate:"required" form:"username"`
-	Password        string `json:"password" validate:"required" form:"password"`
+	Password        string `json:"password" validate:"required,min=6" form:"password"`
 	Role_id         uint
 }
 

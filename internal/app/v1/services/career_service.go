@@ -237,13 +237,13 @@ func (service *CareerServiceImpl) DeleteCareer(ctx echo.Context) error {
 	_, errCareer := service.CareerRepo.FindCareerByid(deleteId)
 
 	if errCareer != nil {
-		return fmt.Errorf("Error get detail career: %w", errCareer)
+		return fmt.Errorf("Career Not Found")
 	}
 
 	errDeleteCareer := service.CareerRepo.DeleteCareerById(deleteId)
 
 	if errDeleteCareer != nil {
-		return fmt.Errorf("Error delete career: %w", errDeleteCareer)
+		return fmt.Errorf("Error delete career")
 	}
 
 	return nil
