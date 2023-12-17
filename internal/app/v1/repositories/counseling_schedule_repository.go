@@ -12,7 +12,6 @@ type ScheduleRepository interface {
 	CreateSchedule(counselor *domain.Counselors, scheduling []domain.Counseling_Schedule) error
 	DeleteScheduleById(id int) error
 	FindById(id int) (*domain.Counseling_Schedule, error)
-	//FindById(ScheduleID int) (*domain.Counseling_Schedule, error)
 	FindCounselorDataById(ScheduleID int, CounselorID int) (*domain.Counseling_Schedule, error)
 	UpdateScheduleById(id int, schedule *domain.Counseling_Schedule) error
 	CheckDayCounselingScheduleExists(id int, day string) (*domain.Counseling_Single_Schedule, error)
@@ -122,21 +121,6 @@ func (repository *ScheduleRepositoryImpl) FindById(id int) (*domain.Counseling_S
 
 	return &schedule, nil
 }
-
-// func (repository *ScheduleRepositoryImpl) FindById(ScheduleID int) (*domain.Counseling_Schedule, error) {
-// 	schedule := domain.Counseling_Schedule{}
-
-// 	result := repository.Db.Where("id = ?", ScheduleID).First(&schedule)
-// 	if result.Error != nil {
-// 		return nil, fmt.Errorf("schedule not found")
-// 	}
-
-// 	if result.RowsAffected == 0 {
-// 		return nil, fmt.Errorf("schedule not found")
-// 	}
-
-// 	return &schedule, nil
-// }
 
 func (repository *ScheduleRepositoryImpl) GetSameDataCounselor(CounselorID int) (*[]domain.Counseling_Schedule, error) {
 	schedule := []domain.Counseling_Schedule{}
