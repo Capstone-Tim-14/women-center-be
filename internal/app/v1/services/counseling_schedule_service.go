@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strconv"
 	"woman-center-be/internal/app/v1/repositories"
-	conversion "woman-center-be/internal/web/conversion/request/v1"
 	reqConversion "woman-center-be/internal/web/conversion/request/v1"
 	"woman-center-be/internal/web/requests/v1"
 	"woman-center-be/utils/exceptions"
@@ -100,19 +99,59 @@ func (service *ScheduleServiceImpl) UpdateScheduleById(ctx echo.Context, request
 		return helpers.ValidationError(ctx, err), nil
 	}
 
-	id := ctx.Param("id")
-	getId, errId := strconv.Atoi(id)
+	scheduleID := ctx.Param("id")
+	getId, errId := strconv.Atoi(scheduleID)
 	if errId != nil {
 		return nil, fmt.Errorf("invalid id")
 	}
 
-	_, err = service.ScheduleRepo.FindById(getId)
-	if err != nil {
+	Data, errData := service.ScheduleRepo.FindById(getId)
+	if errData != nil {
 		return nil, fmt.Errorf("schedule not found")
-
 	}
 
-	schedule := conversion.ScheduleUpdateOnlyOne(request)
+	CounselorData, errCounselor := service.ScheduleRepo.GetSameDataCounselor(int(Data.Counselor_id))
+	if errCounselor != nil {
+		return nil, errCounselor
+	}
+
+	idSchedule := []int{}
+
+	for _, data := range *CounselorData {
+		idSchedule = append(idSchedule, int(data.Id))
+	}
+
+	sliceId := helpers.RemoveValue(idSchedule, getId)
+
+	for _, id := range sliceId {
+
+		OtherData, errOther := service.ScheduleRepo.FindById(id)
+		if errOther != nil {
+			return nil, errOther
+		}
+
+		if OtherData.Day_schedule == request.Day_schedule {
+			if helpers.ParseClockToTime(request.Time_start).After(OtherData.Time_start) && helpers.ParseClockToTime(request.Time_start).Before(OtherData.Time_finish) {
+				return nil, fmt.Errorf("schedule conflict with other")
+			}
+			if helpers.ParseClockToTime(request.Time_finish).Before(OtherData.Time_finish) && helpers.ParseClockToTime(request.Time_finish).After(OtherData.Time_start) {
+				return nil, fmt.Errorf("schedule conflict with other")
+			}
+			if helpers.ParseClockToTime(request.Time_start).After(OtherData.Time_start) && helpers.ParseClockToTime(request.Time_finish).Before(OtherData.Time_finish) {
+				return nil, fmt.Errorf("schedule conflict with other")
+			}
+			if helpers.ParseClockToTime(request.Time_start) == OtherData.Time_start {
+				return nil, fmt.Errorf("schedule conflict with other")
+			}
+			if helpers.ParseClockToTime(request.Time_finish) == OtherData.Time_finish {
+				return nil, fmt.Errorf("schedule conflict with other")
+			}
+		} else {
+			continue
+		}
+	}
+
+	schedule := reqConversion.ScheduleUpdateOnlyOne(request)
 
 	err = service.ScheduleRepo.UpdateScheduleById(getId, &schedule)
 	if err != nil {
