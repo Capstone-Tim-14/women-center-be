@@ -5,6 +5,6 @@ type AdminRequest struct {
 	Last_name  string `json:"last_name" validate:"required"`
 	Email      string `json:"email" validate:"required,email"`
 	Username   string `json:"username" validate:"required"`
-	Password   string `json:"password" validate:"required"`
+	Password   string `json:"password" validate:"required,min=6"`
 	Role_id    uint
 }
