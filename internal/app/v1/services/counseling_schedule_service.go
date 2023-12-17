@@ -124,7 +124,7 @@ func (service *ScheduleServiceImpl) UpdateScheduleById(ctx echo.Context, request
 	sliceId := helpers.RemoveValue(idSchedule, getId)
 
 	for _, id := range sliceId {
-		fmt.Println(id)
+
 		OtherData, errOther := service.ScheduleRepo.FindById(id)
 		if errOther != nil {
 			return nil, errOther
