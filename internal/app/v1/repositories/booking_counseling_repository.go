@@ -9,6 +9,7 @@ import (
 )
 
 type BookingCounselingRepository interface {
+	GetBookingListByUser(id uint) ([]domain.BookingCounseling, error)
 	CreateBooking(booking *domain.BookingCounseling) (*domain.BookingCounseling, error)
 	FindByOrderId(orderId uuid.UUID) (*domain.BookingCounseling, error)
 	UpdateStatusBooking(orderId uuid.UUID, status string) (bool, error)
@@ -24,6 +25,23 @@ func NewBookingCounselingRepository(db *gorm.DB) BookingCounselingRepository {
 	return &BookingCounselingRepositoryImpl{
 		db: db,
 	}
+}
+
+func (repository *BookingCounselingRepositoryImpl) GetBookingListByUser(id uint) ([]domain.BookingCounseling, error) {
+
+	var Bookings []domain.BookingCounseling
+
+	errGetcounseling := repository.db.Preload("User").Preload("User.Credential").Preload("BookingDetail").Preload("BookingDetail.Package").Find(&Bookings, "user_id = ?", id)
+
+	if errGetcounseling.Error != nil {
+		return nil, fmt.Errorf("Error to get booking counseling")
+	}
+
+	if errGetcounseling.RowsAffected == 0 {
+		return nil, fmt.Errorf("Booking counseling empty")
+	}
+
+	return Bookings, nil
 }
 
 func (repository *BookingCounselingRepositoryImpl) GetBookingCounselingDetail(counselor_id uint, orderId uuid.UUID) (*domain.CounselingSessionDetail, []domain.CounselingScheduleSession, error) {
