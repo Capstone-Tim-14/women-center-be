@@ -17,6 +17,7 @@ type BookingCounselingHandler interface {
 	CreateBookingHandler(echo.Context) error
 	CreateTransactionPaymentHandler(echo.Context) error
 	NotificationHandler(echo.Context) error
+	GetListBookingHandler(echo.Context) error
 }
 
 type BookingCounselingHandlerImpl struct {
@@ -27,6 +28,20 @@ type BookingCounselingHandlerImpl struct {
 
 func NewBookingCounselingHandler(bookingHandler BookingCounselingHandlerImpl) BookingCounselingHandler {
 	return &bookingHandler
+}
+
+func (handler *BookingCounselingHandlerImpl) GetListBookingHandler(ctx echo.Context) error {
+
+	Responses, err := handler.BookingService.ListBookings(ctx)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "Booking counseling empty") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
+		return exceptions.StatusInternalServerError(ctx, err)
+	}
+
+	return responses.StatusOK(ctx, "Success get booking list", Responses)
 }
 
 func (handler *BookingCounselingHandlerImpl) NotificationHandler(ctx echo.Context) error {

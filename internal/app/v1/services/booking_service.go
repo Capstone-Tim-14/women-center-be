@@ -23,6 +23,7 @@ type BookingService interface {
 	GetUserLoginAndCounselorData(ctx echo.Context, counselor_id int) (*domain.Counselors, *domain.Users, error)
 	CreateUserScheduleBooking(request requests.BookingCounselingRequest, counselor *domain.Counselors, userAuth *domain.Users) (*domain.UserScheduleCounseling, error)
 	UpdateStatusBooking(orderId string, status string) (bool, error)
+	ListBookings(ctx echo.Context) ([]resources.BookingCounselingResource, error)
 }
 
 type BookingServiceImpl struct {
@@ -38,6 +39,25 @@ type BookingServiceImpl struct {
 
 func NewBookingService(bookingService BookingServiceImpl) BookingService {
 	return &bookingService
+}
+
+func (service *BookingServiceImpl) ListBookings(ctx echo.Context) ([]resources.BookingCounselingResource, error) {
+
+	GetUserClaim, ErrGetUser := service.UserService.GetUserProfile(ctx)
+
+	if ErrGetUser != nil {
+		return nil, ErrGetUser
+	}
+
+	BookingList, ErrBookingList := service.BookingRepo.GetBookingListByUser(GetUserClaim.Id)
+
+	if ErrBookingList != nil {
+		return nil, ErrBookingList
+	}
+
+	response := resource.ConvertBookingList(BookingList)
+
+	return response, nil
 }
 
 func (service *BookingServiceImpl) UpdateStatusBooking(orderId string, status string) (bool, error) {
