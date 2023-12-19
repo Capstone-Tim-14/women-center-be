@@ -1,2 +1,2 @@
 env.yaml
-test/result_tests.cov
+tests/result_tests.cov
