@@ -37,11 +37,16 @@ func (service *RoleServiceImpl) CreateRole(ctx echo.Context, request requests.Ro
 		return nil, helpers.ValidationError(ctx, err), nil
 	}
 
+	existingRole, _ := service.RoleRepo.FindByName(request.Name)
+	if existingRole != nil {
+		return nil, nil, fmt.Errorf("Role already exists")
+	}
+
 	role := conversion.RoleCreateRequestToRoleDomain(request)
 
 	result, err := service.RoleRepo.CreateRole(role)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Error when create role: %s", err.Error())
+		return nil, nil, fmt.Errorf("Error when create role")
 	}
 
 	return result, nil, nil
