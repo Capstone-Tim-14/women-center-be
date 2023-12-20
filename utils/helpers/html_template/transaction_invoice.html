@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Success</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #666;
+        }
+
+        ul {
+            list-style: none;
+            margin-left: 0;
+            padding-left: 0;
+        }
+
+        ul li {
+            font-size: 16px;
+            margin-left: 0;
+            margin-bottom: 8px;
+        }
+
+        .footer {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <body>
+        <div class="container">
+            <h2><strong>Invoice booking counseling</strong></h2>
+
+            <p>Dear {{ .Name_customer }},</p>
+
+            <p>Thank you for reservation booking our package {{ .package_name }} here your counseling data</p>
+
+            <ul>
+                <li>Counselor name : {{ .Counselor_name }}</li>
+                <li>Date schedule : {{ .date_schedule }}</li>
+                <li>Total Paid: {{ .Total }}</li>
+            </ul>
+
+
+            <p>Apabila Anda memiliki pertanyaan atau perlu bantuan tambahan, jangan ragu untuk menghubungi tim layanan
+                pelanggan kami melalui email ini atau nomor telepon kami yang tertera di bawah.</p>
+
+            <p>Thank you once again for choosing us. I look forward to hearing from
+                you and supporting you on your journey toward positive change.</p>
+
+            <p>Best regards,<br>
+                Mrs. Putri<br>
+                Fermina care<br>
+                customerservice@fermina.com</p>
+        </div>
+
+        <div class="footer">
+            &copy; 2023 Fermina care
+        </div>
+    </body>
+</body>
+
+</html>
