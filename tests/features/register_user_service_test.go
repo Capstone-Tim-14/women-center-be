@@ -73,7 +73,7 @@ func TestUserRegister_created(t *testing.T) {
 	mockUserRepo.AssertExpectations(t)
 	mockRoleRepo.AssertExpectations(t)
 }
-func TestUserRegister_error_validation(t *testing.T) {
+func TestUserRegister_errorValidation(t *testing.T) {
 
 	e := echo.New()
 
