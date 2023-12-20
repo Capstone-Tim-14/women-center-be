@@ -10,7 +10,7 @@ build-app:
 tidy:
 	@go mod tidy
 dev_test:
-	@go test ./tests/features/**/*.go
+	@go test ./tests/features/*.go -coverpkg=./internal/app/v1/services
 dev_test_make_profile:
 	@go test ./tests/features/*.go -coverpkg=./internal/app/v1/services -coverprofile=tests/result_tests.cov && go tool cover -func tests/result_tests.cov
 execute_tests:
