@@ -23,6 +23,7 @@ type BookingService interface {
 	GetUserLoginAndCounselorData(ctx echo.Context, counselor_id int) (*domain.Counselors, *domain.Users, error)
 	CreateUserScheduleBooking(request requests.BookingCounselingRequest, counselor *domain.Counselors, userAuth *domain.Users) (*domain.UserScheduleCounseling, error)
 	UpdateStatusBooking(orderId string, status string) (bool, error)
+	EmailTransactionSettlement(orderId string) error
 	ListBookings(ctx echo.Context) ([]resources.BookingCounselingResource, error)
 }
 
@@ -39,6 +40,32 @@ type BookingServiceImpl struct {
 
 func NewBookingService(bookingService BookingServiceImpl) BookingService {
 	return &bookingService
+}
+
+func (service *BookingServiceImpl) EmailTransactionSettlement(orderId string) error {
+
+	convertOrderId, errConvert := uuid.FromString(orderId)
+
+	if errConvert != nil {
+		return fmt.Errorf("Error invalid format order id")
+	}
+
+	getBooking, errGetBooking := service.BookingRepo.FindByOrderId(convertOrderId)
+
+	if errGetBooking != nil {
+		return fmt.Errorf("Error booking not found")
+	}
+
+	requestEmail := conversion.ConvertBookingDataRequest(*getBooking)
+
+	errSendEmail := helpers.SendingEmailWithHTML(getBooking.User.Credential.Email, "Notification transaction settlement", "transaction_invoice.html", requestEmail)
+
+	if errSendEmail != nil {
+		fmt.Println(errSendEmail)
+		return fmt.Errorf("Error failed send email")
+	}
+
+	return nil
 }
 
 func (service *BookingServiceImpl) ListBookings(ctx echo.Context) ([]resources.BookingCounselingResource, error) {
