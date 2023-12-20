@@ -24,6 +24,7 @@ type BookingService interface {
 	CreateUserScheduleBooking(request requests.BookingCounselingRequest, counselor *domain.Counselors, userAuth *domain.Users) (*domain.UserScheduleCounseling, error)
 	UpdateStatusBooking(orderId string, status string) (bool, error)
 	EmailTransactionSettlement(orderId string) error
+	ListBookings(ctx echo.Context) ([]resources.BookingCounselingResource, error)
 }
 
 type BookingServiceImpl struct {
@@ -65,7 +66,25 @@ func (service *BookingServiceImpl) EmailTransactionSettlement(orderId string) er
 	}
 
 	return nil
+}
 
+func (service *BookingServiceImpl) ListBookings(ctx echo.Context) ([]resources.BookingCounselingResource, error) {
+
+	GetUserClaim, ErrGetUser := service.UserService.GetUserProfile(ctx)
+
+	if ErrGetUser != nil {
+		return nil, ErrGetUser
+	}
+
+	BookingList, ErrBookingList := service.BookingRepo.GetBookingListByUser(GetUserClaim.Id)
+
+	if ErrBookingList != nil {
+		return nil, ErrBookingList
+	}
+
+	response := resource.ConvertBookingList(BookingList)
+
+	return response, nil
 }
 
 func (service *BookingServiceImpl) UpdateStatusBooking(orderId string, status string) (bool, error) {

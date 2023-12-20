@@ -59,5 +59,5 @@ func HttpBookingCounselingRoute(group *echo.Group, db *gorm.DB, validate *valida
 	verifyToken.POST("/booking", BookingCounselingHandler.CreateBookingHandler)
 	verifyToken.POST("/charge-payment", BookingCounselingHandler.CreateTransactionPaymentHandler)
 	group.POST("/notification-payment", BookingCounselingHandler.NotificationHandler)
-
+	verifyToken.GET("/bookings", BookingCounselingHandler.GetListBookingHandler)
 }

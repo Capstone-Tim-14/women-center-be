@@ -7,6 +7,30 @@ import (
 	"woman-center-be/utils/helpers"
 )
 
+func ConvertBookingList(bookings []domain.BookingCounseling) []resources.BookingCounselingResource {
+
+	var resultBooking []resources.BookingCounselingResource
+
+	for _, item := range bookings {
+		resultBooking = append(resultBooking, resources.BookingCounselingResource{
+			Order_id:         item.OrderId,
+			Transaction_date: helpers.ParseOnlyDate(&item.Transaction_date),
+			Status:           item.Status,
+			UserBooking: resources.UserBookingCounseling{
+				FullName: item.User.First_name + " " + item.User.Last_name,
+				Email:    item.User.Credential.Email,
+			},
+			CounselingPackege: resources.CouselingPackage{
+				Title: item.BookingDetail.Package.Title,
+				Price: int(item.BookingDetail.Package.Price.IntPart()),
+			},
+		})
+	}
+
+	return resultBooking
+
+}
+
 func BookingCounselingToDomainBookingCounseling(transaction *domain.BookingCounseling, counselingPackage *domain.CounselingPackage, user *domain.Users, Counselor *domain.Counselors, schedule []domain.UserScheduleCounseling) *resources.BookingCounselingResource {
 	result := resources.BookingCounselingResource{
 		Order_id:         transaction.OrderId,
