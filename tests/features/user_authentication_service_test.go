@@ -1,6 +1,7 @@
 package features
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 	"woman-center-be/internal/app/v1/models/domain"
@@ -120,6 +121,50 @@ func TestUserAuthentication_uncorrectPassword(t *testing.T) {
 
 	errComparePassword := helpers.ComparePassword(hashPassword, request.Password)
 	assert.Error(t, errComparePassword)
+
+	resultToken, _, err := authService.UserAuthentication(request, e.NewContext(nil, nil))
+
+	assert.Error(t, err)
+	assert.Equal(t, err, fmt.Errorf("Error uncorrect credential"))
+	assert.Nil(t, resultToken)
+
+	mockCredentialRepo.AssertExpectations(t)
+}
+func TestUserAuthentication_NoRoleAccess(t *testing.T) {
+
+	e := echo.New()
+
+	mockUserRepo := new(mocks.UserRepository)
+	mockRoleRepo := new(mocks.RoleRepository)
+	mockCredentialRepo := new(mocks.CredentialRepository)
+
+	validate := validator.New()
+
+	authService := services.NewAuthService(services.AuthServiceImpl{
+		UserRepo:       mockUserRepo,
+		RoleRepo:       mockRoleRepo,
+		Validate:       validate,
+		CredentialRepo: mockCredentialRepo,
+	})
+
+	request := requests.AuthRequest{
+		Email:    "usertest1@gmail.com",
+		Password: "usertest123",
+	}
+
+	hashPassword := helpers.HashPassword("usertest123")
+
+	mockCredentialRepo.On("CheckEmailCredential", request.Email).Return(&domain.Credentials{
+		Id:       1,
+		Username: "usertest1",
+		Email:    "usertest1@gmail.com",
+		Role_id:  1,
+		Password: hashPassword,
+		Role: &domain.Roles{
+			Id:   1,
+			Name: "admin",
+		},
+	}, nil)
 
 	resultToken, _, err := authService.UserAuthentication(request, e.NewContext(nil, nil))
 
@@ -316,6 +361,75 @@ func TestUserAuthentication_successAuthAsUser(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, resultToken)
+
+	mockCredentialRepo.AssertExpectations(t)
+}
+func TestUserAuthentication_failedGenerateToken(t *testing.T) {
+
+	e := echo.New()
+
+	mockUserRepo := new(mocks.UserRepository)
+	mockRoleRepo := new(mocks.RoleRepository)
+	mockCredentialRepo := new(mocks.CredentialRepository)
+
+	validate := validator.New()
+
+	authService := services.NewAuthService(services.AuthServiceImpl{
+		UserRepo:       mockUserRepo,
+		RoleRepo:       mockRoleRepo,
+		Validate:       validate,
+		CredentialRepo: mockCredentialRepo,
+	})
+
+	request := requests.AuthRequest{
+		Email:    "usertest1@gmail.com",
+		Password: "usertest123",
+	}
+
+	hashPassword := helpers.HashPassword("usertest123")
+
+	mockCredentialRepo.On("CheckEmailCredential", request.Email).Return(&domain.Credentials{
+		Id:       1,
+		Username: "usertest1",
+		Email:    "usertest1@gmail.com",
+		Role_id:  1,
+		Password: hashPassword,
+		Role: &domain.Roles{
+			Id:   1,
+			Name: "user",
+		},
+	}, nil)
+
+	getUser, _ := mockCredentialRepo.CheckEmailCredential(request.Email)
+
+	assert.NotNil(t, getUser)
+
+	errComparePassword := helpers.ComparePassword(hashPassword, request.Password)
+	assert.NoError(t, errComparePassword)
+
+	mockCredentialRepo.On("GetAuthUser", getUser.Id, getUser.Role.Name).Return(&domain.Users{
+		Id:            1,
+		Credential_id: 1,
+		First_name:    "User",
+		Last_name:     "Test1",
+		Credential: &domain.Credentials{
+			Id:       1,
+			Username: "usertest1",
+			Email:    "usertest1@gmail.com",
+			Role_id:  1,
+			Password: hashPassword,
+			Role: &domain.Roles{
+				Id:   1,
+				Name: "test",
+			},
+		},
+	}, nil, nil)
+
+	resultToken, _, err := authService.UserAuthentication(request, e.NewContext(nil, nil))
+
+	assert.Error(t, err)
+	assert.Equal(t, err, errors.New("Failed generate token"))
+	assert.Nil(t, resultToken)
 
 	mockCredentialRepo.AssertExpectations(t)
 }

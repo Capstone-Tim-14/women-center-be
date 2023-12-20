@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"fmt"
 	"time"
 	"woman-center-be/internal/web/resources/v1"
 
@@ -34,8 +35,10 @@ func GenerateToken(data resources.AuthResource, ctx echo.Context) (string, error
 
 	if data.Role == "admin" || data.Role == "super admin" {
 		token, errToken = SigningToken.SignedString([]byte(viper.GetString("SECRET_KEY_ADMIN")))
-	} else {
+	} else if data.Role == "user" || data.Role == "counselor" {
 		token, errToken = SigningToken.SignedString([]byte(viper.GetString("SECRET_KEY")))
+	} else {
+		return "", fmt.Errorf("Failed generate token")
 	}
 
 	if errToken != nil {
