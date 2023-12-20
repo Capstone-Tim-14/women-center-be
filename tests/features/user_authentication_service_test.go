@@ -184,6 +184,61 @@ func TestUserAuthentication_ErrorGetAuthUser(t *testing.T) {
 
 	mockCredentialRepo.AssertExpectations(t)
 }
+func TestUserAuthentication_ErrorGetAuthCounselor(t *testing.T) {
+
+	e := echo.New()
+
+	mockUserRepo := new(mocks.UserRepository)
+	mockRoleRepo := new(mocks.RoleRepository)
+	mockCredentialRepo := new(mocks.CredentialRepository)
+
+	validate := validator.New()
+
+	authService := services.NewAuthService(services.AuthServiceImpl{
+		UserRepo:       mockUserRepo,
+		RoleRepo:       mockRoleRepo,
+		Validate:       validate,
+		CredentialRepo: mockCredentialRepo,
+	})
+
+	request := requests.AuthRequest{
+		Email:    "usertest1@gmail.com",
+		Password: "usertest123",
+	}
+
+	hashPassword := helpers.HashPassword("usertest123")
+
+	mockCredentialRepo.On("CheckEmailCredential", request.Email).Return(&domain.Credentials{
+		Id:       2,
+		Username: "usertest2",
+		Email:    "usertest2@gmail.com",
+		Role_id:  2,
+		Password: hashPassword,
+		Role: &domain.Roles{
+			Id:   2,
+			Name: "counselor",
+		},
+	}, nil)
+
+	getUser, _ := mockCredentialRepo.CheckEmailCredential(request.Email)
+	assert.NotNil(t, getUser)
+
+	errComparePassword := helpers.ComparePassword(hashPassword, request.Password)
+	assert.NoError(t, errComparePassword)
+
+	mockCredentialRepo.On("GetAuthUser", mock.AnythingOfType("uint"), mock.AnythingOfType("string")).Return(nil, nil, fmt.Errorf("Error counselor not found"))
+
+	_, _, errGetUser := mockCredentialRepo.GetAuthUser(uint(2), "user")
+
+	assert.Error(t, errGetUser)
+
+	_, _, err := authService.UserAuthentication(request, e.NewContext(nil, nil))
+
+	assert.Error(t, err)
+	assert.Equal(t, err, fmt.Errorf("Error uncorrect credential"))
+
+	mockCredentialRepo.AssertExpectations(t)
+}
 func TestUserAuthentication_successAuthAsUser(t *testing.T) {
 
 	e := echo.New()
