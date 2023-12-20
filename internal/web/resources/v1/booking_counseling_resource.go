@@ -1,6 +1,8 @@
 package resources
 
-import uuid "github.com/satori/go.uuid"
+import (
+	uuid "github.com/satori/go.uuid"
+)
 
 type BookingCounselingResource struct {
 	Order_id          uuid.UUID                   `json:"order_id,omitempty"`
@@ -52,4 +54,12 @@ type CounselingScheduleSessionResource struct {
 	Day_schedule string `json:"date_schedule,omitempty"`
 	Time_start   string `json:"time_start,omitempty"`
 	Time_finish  string `json:"time_finish,omitempty"`
+}
+
+type BookingEmailRequest struct {
+	Order_id         string
+	Name_customer    string
+	Transaction_date string
+	Package_name     string
+	Total            int
 }

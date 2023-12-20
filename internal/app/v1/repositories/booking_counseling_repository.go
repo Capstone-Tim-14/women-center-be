@@ -84,7 +84,7 @@ func (repository *BookingCounselingRepositoryImpl) FindByOrderId(orderId uuid.UU
 		Preload("BookingDetail").
 		Preload("BookingDetail.Package").
 		Preload("BookingDetail.User_Schedules").
-		First(&booking, "order_id = ? AND status = ?", orderId, "IN PROCESS")
+		First(&booking, "order_id = ?", orderId)
 
 	if errGetbooking.Error != nil {
 		fmt.Errorf(errGetbooking.Error.Error())

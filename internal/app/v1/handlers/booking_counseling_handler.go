@@ -54,6 +54,13 @@ func (handler *BookingCounselingHandlerImpl) NotificationHandler(ctx echo.Contex
 
 	if GetTransactionStatus == "challange" || GetTransactionStatus == "accept" || GetTransactionStatus == "settlement" || GetTransactionStatus == "deny" {
 		_, errUpdateStatusBooking = handler.BookingService.UpdateStatusBooking(orderId, "SETTLEMENT")
+
+		errEmailSending := handler.BookingService.EmailTransactionSettlement(orderId)
+
+		if errEmailSending != nil {
+			fmt.Println(errEmailSending.Error())
+		}
+
 	} else if GetTransactionStatus == "cancel" || GetTransactionStatus == "expire" {
 		_, errUpdateStatusBooking = handler.BookingService.UpdateStatusBooking(orderId, "FAILED")
 	} else if GetTransactionStatus == "pending" {

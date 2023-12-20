@@ -17,7 +17,7 @@
             max-width: 600px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #fff;
+            background-color: #eee;
         }
 
         h1 {
@@ -55,21 +55,22 @@
 
     <body>
         <div class="container">
-            <h2><strong>Invoice booking counseling</strong></h2>
+            <h2><strong>Notification : Invoice Booking Counseling</strong></h2>
 
             <p>Dear {{ .Name_customer }},</p>
 
-            <p>Thank you for reservation booking our package {{ .package_name }} here your counseling data</p>
+            <p>Thank you for booking counseling here your invoice</p>
 
             <ul>
-                <li>Counselor name : {{ .Counselor_name }}</li>
-                <li>Date schedule : {{ .date_schedule }}</li>
+                <li>Transaction id : {{ .Order_id }}</li>
+                <li>Transaction date : {{ .Transaction_date }}</li>
+                <li>Package Booking : {{ .Package_name }}</li>
                 <li>Total Paid: {{ .Total }}</li>
             </ul>
 
 
-            <p>Apabila Anda memiliki pertanyaan atau perlu bantuan tambahan, jangan ragu untuk menghubungi tim layanan
-                pelanggan kami melalui email ini atau nomor telepon kami yang tertera di bawah.</p>
+            <p>If you have any questions or need additional assistance, please feel free to contact our customer service
+                team via this email or our phone number listed below.</p>
 
             <p>Thank you once again for choosing us. I look forward to hearing from
                 you and supporting you on your journey toward positive change.</p>
@@ -78,10 +79,10 @@
                 Mrs. Putri<br>
                 Fermina care<br>
                 customerservice@fermina.com</p>
-        </div>
 
-        <div class="footer">
-            &copy; 2023 Fermina care
+            <div class="footer">
+                &copy; 2023 Fermina care
+            </div>
         </div>
     </body>
 </body>
