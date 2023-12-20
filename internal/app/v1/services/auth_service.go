@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"woman-center-be/internal/app/v1/repositories"
 	conversion "woman-center-be/internal/web/conversion/request/v1"
@@ -200,6 +201,8 @@ func (service *AuthServiceImpl) UserAuthentication(request requests.AuthRequest,
 
 		UserConvert = conversionResource.CounselorDomainToAuthResource(GetCounselor)
 
+	} else {
+		return nil, nil, fmt.Errorf("Error uncorrect credential")
 	}
 
 	GetToken, ErrToken := helpers.GenerateToken(UserConvert, ctx)
