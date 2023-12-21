@@ -111,13 +111,15 @@ func (handler *CounselorHandlerImpl) AddSpecialist(ctx echo.Context) error {
 	}
 
 	validation, err := handler.CounselorService.AddSpecialist(ctx, uint(convertid), request)
+
 	if validation != nil || len(request.Name) == 0 {
 		return exceptions.ValidationException(ctx, "Error Validation", validation)
 	}
-	if strings.Contains(err.Error(), "One of Counselor request is not found") {
-		return exceptions.StatusNotFound(ctx, err)
-	}
+
 	if err != nil {
+		if strings.Contains(err.Error(), "One of Counselor request is not found") {
+			return exceptions.StatusNotFound(ctx, err)
+		}
 		return exceptions.StatusInternalServerError(ctx, err)
 	}
 
