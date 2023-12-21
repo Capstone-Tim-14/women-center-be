@@ -22,7 +22,7 @@ import (
 type ArticleService interface {
 	CreateArticle(ctx echo.Context, request requests.ArticleRequest, thumbnail *multipart.FileHeader) (*domain.Articles, []exceptions.ValidationMessage, error)
 	GetLatestArticle() (*resources.ArticleResource, error)
-	FindAllArticleUser() ([]resources.ArticleResource, error)
+	FindAllArticleUser(ctx echo.Context) ([]resources.ArticleResource, error)
 	FindAllArticleCounselor(ctx echo.Context) (*resources.ArticleCounseloResource, error)
 	FindAllArticle(ctx echo.Context) ([]domain.Articles, *query.Pagination, error)
 	DeleteArticle(ctx echo.Context) error
@@ -200,12 +200,13 @@ func (service *ArticleServiceImpl) GetLatestArticle() (*resources.ArticleResourc
 	return GetResources, nil
 }
 
-func (service *ArticleServiceImpl) FindAllArticleUser() ([]resources.ArticleResource, error) {
+func (service *ArticleServiceImpl) FindAllArticleUser(ctx echo.Context) ([]resources.ArticleResource, error) {
+	search := ctx.QueryParam("search")
 
-	Getarticles, err := service.ArticleRepo.GetListArticleForUser()
+	Getarticles, err := service.ArticleRepo.GetListArticleForUser(search)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Article is empty")
 	}
 
 	Resources := conResources.ConvertArticleResource(Getarticles)
