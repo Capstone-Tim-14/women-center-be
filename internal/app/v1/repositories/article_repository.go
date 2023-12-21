@@ -13,7 +13,7 @@ import (
 type ArticleRepository interface {
 	CreateArticle(article *domain.Articles) (*domain.Articles, error)
 	GetLatestArticleForUser() (*domain.Articles, error)
-	GetListArticleForUser() ([]domain.Articles, error)
+	GetListArticleForUser(search string) ([]domain.Articles, error)
 	FindAllArticle(string, string, query.Pagination) ([]domain.Articles, *query.Pagination, error)
 	FindArticleCounselor(id int) ([]domain.Articles, *domain.ArticleStatusCount, error)
 	FindById(id int) (*domain.Articles, error)
@@ -101,10 +101,10 @@ func (repository *ArticleRepositoryImpl) GetLatestArticleForUser() (*domain.Arti
 	return article, nil
 }
 
-func (repository *ArticleRepositoryImpl) GetListArticleForUser() ([]domain.Articles, error) {
+func (repository *ArticleRepositoryImpl) GetListArticleForUser(search string) ([]domain.Articles, error) {
 
 	var articles []domain.Articles
-	errListArticles := repository.db.Preload("Admin").Preload("Admin.Credential").Preload("Admin.Credential.Role").Preload("Counselors").Preload("Counselors.Credential").Preload("Counselors.Credential.Role").Find(&articles, "status = ?", "PUBLISHED")
+	errListArticles := repository.db.Preload("Admin").Preload("Admin.Credential").Preload("Admin.Credential.Role").Preload("Counselors").Preload("Counselors.Credential").Preload("Counselors.Credential.Role").Where("title LIKE ?", "%"+search+"%").Find(&articles, "status = ?", "PUBLISHED")
 
 	if errListArticles.Error != nil {
 		fmt.Errorf(errListArticles.Error.Error())
