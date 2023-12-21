@@ -195,7 +195,7 @@ func (handler *ArticleHandlerImpl) CreateArticle(ctx echo.Context) error {
 
 func (handler *ArticleHandlerImpl) FindAllArticleUser(ctx echo.Context) error {
 
-	GetArticleResource, err := handler.ArticleService.FindAllArticleUser()
+	GetArticleResource, err := handler.ArticleService.FindAllArticleUser(ctx)
 
 	if err != nil {
 		if strings.Contains(err.Error(), "Article is empty") {
