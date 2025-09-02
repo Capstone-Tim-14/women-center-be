@@ -11,3 +11,6 @@ The Women Center Data Management API is a RESTful API application designed to ma
 - :calendar: Event calendar with career information and event.
 - :woman: Get career recommendations for women.
 - :computer: Customer service chatbot (AI).
+
+
+<!-- Security scan triggered at 2025-09-02 15:21:06 -->
